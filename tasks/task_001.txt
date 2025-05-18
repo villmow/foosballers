@@ -50,13 +50,13 @@ Code structure:
 6. Test the build process for both development and production environments
 
 # Subtasks:
-## 1. Initialize Vue.js Frontend with Vite and Configure TypeScript [pending]
+## 1. Initialize Vue.js Frontend with Vite and Configure TypeScript [done]
 ### Dependencies: None
 ### Description: Set up the Vue.js project using Vite as the build tool and configure TypeScript for type safety in the frontend codebase.
 ### Details:
 Run `npm create vite@latest client -- --template vue-ts` to initialize the Vue.js project with TypeScript. Configure tsconfig.json with strict type checking. Create the basic directory structure for the frontend including assets, components, views, services, store, and types folders. Install required dependencies including PrimeVue and Tailwind CSS with `npm install primevue tailwindcss postcss autoprefixer`.
 
-## 2. Set up Express.js Backend with TypeScript [pending]
+## 2. Set up Express.js Backend with TypeScript [done]
 ### Dependencies: None
 ### Description: Initialize the Node.js/Express backend with TypeScript support and create the basic server structure.
 ### Details:

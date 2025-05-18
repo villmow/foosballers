@@ -16,7 +16,7 @@
           "description": "Set up the Vue.js project using Vite as the build tool and configure TypeScript for type safety in the frontend codebase.",
           "dependencies": [],
           "details": "Run `npm create vite@latest client -- --template vue-ts` to initialize the Vue.js project with TypeScript. Configure tsconfig.json with strict type checking. Create the basic directory structure for the frontend including assets, components, views, services, store, and types folders. Install required dependencies including PrimeVue and Tailwind CSS with `npm install primevue tailwindcss postcss autoprefixer`.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Verify the project builds successfully with `npm run build`. Ensure TypeScript compilation works without errors using `npm run type-check`."
         },
         {
@@ -25,7 +25,7 @@
           "description": "Initialize the Node.js/Express backend with TypeScript support and create the basic server structure.",
           "dependencies": [],
           "details": "Create a server directory and initialize a new Node.js project with `npm init -y`. Install Express and TypeScript with `npm install express typescript ts-node @types/express @types/node`. Configure tsconfig.json for the backend. Create the basic directory structure including controllers, models, routes, services, middleware, and config folders. Set up a basic Express server in app.ts with error handling middleware and CORS support.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create a simple health check endpoint and test it using a tool like Postman or curl. Verify TypeScript compilation works correctly."
         },
         {
