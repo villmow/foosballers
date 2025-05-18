@@ -1,0 +1,81 @@
+# Task ID: 5
+# Title: Implement Match and Set Lifecycle Management
+# Status: pending
+# Dependencies: 3, 4
+# Priority: high
+# Description: Develop functionality to manage the lifecycle of matches and sets, including starting/ending matches and sets, and tracking match state.
+# Details:
+1. Implement match state machine with states: notStarted, inProgress, completed, aborted
+2. Create API endpoints for match lifecycle actions
+3. Implement set state management
+4. Develop UI controls for match and set actions
+5. Implement automatic set progression based on winning conditions
+6. Add match abort/delete functionality with confirmation
+7. Implement timestamp recording for all state changes
+
+API Endpoints:
+```
+POST /api/matches/:id/start - Start a match
+POST /api/matches/:id/sets - Start a new set
+POST /api/matches/:id/end - End a match
+POST /api/matches/:id/abort - Abort a match
+```
+
+State Transitions:
+1. Match created → notStarted
+2. Start match → inProgress (first set starts)
+3. Set completed → check winning condition
+   a. If winning condition met → match completed
+   b. If not → start new set
+4. Abort match → aborted
+
+Set Lifecycle:
+1. Set created → notStarted
+2. Start set → inProgress
+3. Goal scored → check set winning condition
+   a. If winning condition met → set completed
+   b. If not → continue set
+
+# Test Strategy:
+1. Test starting a match and verify state changes
+2. Test completing a set and verify score tracking
+3. Verify that winning conditions are correctly evaluated
+4. Test automatic progression to new sets
+5. Verify that match completion is triggered when winning condition is met
+6. Test aborting a match and verify state change
+7. Verify that timestamps are recorded for all state changes
+8. Test edge cases like aborting a match during a set
+9. Verify that only authenticated users can control match lifecycle
+10. Test the UI controls for match and set management
+
+# Subtasks:
+## 1. Implement Match State Machine [pending]
+### Dependencies: None
+### Description: Create a state machine to manage match states (notStarted, inProgress, completed, aborted) with appropriate transition methods and validation.
+### Details:
+Create a MatchStateMachine class that encapsulates the match state logic. Implement methods for each transition (startMatch, endMatch, abortMatch) with validation to prevent invalid transitions. Include timestamp recording for all state changes. The state machine should be the single source of truth for match state.
+
+## 2. Implement Set Lifecycle Management [pending]
+### Dependencies: 5.1
+### Description: Create functionality to manage set states (notStarted, inProgress, completed) with transitions and winning condition checks.
+### Details:
+Develop a SetManager class that handles set creation, state transitions, and winning condition evaluation. Implement methods to start a set, record goals, check winning conditions, and complete sets. Ensure sets can only be started when a match is inProgress. Include timestamp recording for all set state changes.
+
+## 3. Create API Endpoints for Match and Set Lifecycle [pending]
+### Dependencies: 5.1, 5.2
+### Description: Implement the REST API endpoints for managing match and set lifecycle actions.
+### Details:
+Create controllers and routes for the specified endpoints: start match, start new set, end match, and abort match. Each endpoint should validate the request, use the appropriate state machine methods, and return meaningful success/error responses. Implement proper error handling for invalid state transitions.
+
+## 4. Implement Automatic Set Progression [pending]
+### Dependencies: 5.2, 5.3
+### Description: Develop functionality to automatically progress from one set to the next based on winning conditions.
+### Details:
+Extend the SetManager to automatically trigger the next set when a set is completed if the match winning condition isn't met. Implement logic to determine when a match should be completed based on set results (e.g., best of 3 sets). Add event listeners or hooks to detect set completion and trigger the appropriate next actions.
+
+## 5. Develop UI Controls for Match and Set Management [pending]
+### Dependencies: 5.3, 5.4
+### Description: Create user interface components to control match and set lifecycle actions.
+### Details:
+Implement UI buttons and controls for starting/ending matches, starting new sets, and aborting matches. Add confirmation dialogs for destructive actions like match abortion. Create visual indicators of current match and set state. Connect UI components to the API endpoints. Ensure UI state reflects the server state and handles errors appropriately.
+

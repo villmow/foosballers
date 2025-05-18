@@ -1,0 +1,115 @@
+# Task ID: 9
+# Title: Implement External API Integration
+# Status: pending
+# Dependencies: 3, 4
+# Priority: medium
+# Description: Develop functionality to fetch match data from external APIs, including team and player information, with proper error handling and data mapping.
+# Details:
+1. Create configurable API connection settings
+2. Implement secure credential storage
+3. Develop data fetching services
+4. Create data mapping between external and internal formats
+5. Implement error handling and retry logic
+6. Add test connection functionality
+7. Create UI for API configuration
+
+API Configuration Schema:
+```typescript
+interface ApiConfig {
+  _id: string;
+  name: string;
+  endpoint: string;
+  authType: 'none' | 'basic' | 'bearer' | 'apiKey';
+  credentials: {
+    username?: string;
+    password?: string;
+    token?: string;
+    apiKey?: string;
+  };
+  headers: Record<string, string>;
+  pollingInterval: number; // in seconds
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+Data Mapping Functions:
+```typescript
+// Example mapping function
+function mapExternalMatch(externalData: any): Partial<Match> {
+  return {
+    teams: [
+      {
+        name: externalData.team1?.name || 'Team 1',
+        players: externalData.team1?.players || [],
+        color: externalData.team1?.color || 'red',
+        setsWon: 0
+      },
+      {
+        name: externalData.team2?.name || 'Team 2',
+        players: externalData.team2?.players || [],
+        color: externalData.team2?.color || 'blue',
+        setsWon: 0
+      }
+    ],
+    format: mapFormat(externalData.format),
+    playerSetup: externalData.playerCount === 4 ? '2v2' : '1v1',
+    // Map other fields as needed
+  };
+}
+```
+
+API Endpoints:
+```
+GET /api/config/api - Get API configurations
+POST /api/config/api - Create API configuration
+PUT /api/config/api/:id - Update API configuration
+DELETE /api/config/api/:id - Delete API configuration
+POST /api/config/api/:id/test - Test API connection
+GET /api/external/matches - Fetch matches from external API
+```
+
+# Test Strategy:
+1. Test API configuration with various authentication methods
+2. Verify that credentials are securely stored
+3. Test connection to external APIs
+4. Verify that data mapping works correctly
+5. Test error handling with invalid or unavailable APIs
+6. Verify retry logic for temporary failures
+7. Test the UI for API configuration
+8. Verify that fetched data is correctly imported into the system
+9. Test performance with large data sets
+10. Verify that only authorized users can configure APIs
+
+# Subtasks:
+## 1. Create API Configuration Backend [pending]
+### Dependencies: None
+### Description: Implement the backend services for managing API configurations, including CRUD operations and secure credential storage.
+### Details:
+Create a MongoDB schema for ApiConfig matching the provided TypeScript interface. Implement the API endpoints for creating, reading, updating, and deleting API configurations. Ensure credentials are encrypted before storage using a library like bcrypt or a secure vault service. Implement validation for the configuration data to ensure required fields are present and valid.
+
+## 2. Implement External API Connection Service [pending]
+### Dependencies: 9.1
+### Description: Develop a service to establish connections to external APIs based on stored configurations, with test connection functionality.
+### Details:
+Create a service that can dynamically connect to external APIs using the stored configurations. Implement different authentication methods (none, basic, bearer, apiKey) as specified in the ApiConfig interface. Add a test connection method that validates the connection without fetching full data. Handle connection timeouts and authentication failures appropriately. Implement the POST /api/config/api/:id/test endpoint.
+
+## 3. Develop Data Fetching and Polling Service [pending]
+### Dependencies: 9.2
+### Description: Create a service to fetch match data from external APIs with configurable polling intervals and retry logic.
+### Details:
+Implement a service that fetches match data from external APIs based on the polling interval specified in the configuration. Add retry logic for failed requests with exponential backoff. Create a background job scheduler that manages the polling for all enabled API configurations. Implement the GET /api/external/matches endpoint that returns the latest fetched data. Add logging for all API interactions.
+
+## 4. Create Data Mapping Layer [pending]
+### Dependencies: 9.3
+### Description: Implement data mapping functions to transform external API data into the application's internal format.
+### Details:
+Expand on the example mapExternalMatch function to handle all required fields. Create mapping functions for different external API formats that might be encountered. Implement validation to ensure mapped data meets the application's requirements. Add error handling for malformed or unexpected external data structures. Create utility functions for common mapping operations.
+
+## 5. Build API Configuration UI [pending]
+### Dependencies: 9.1, 9.2
+### Description: Develop a user interface for managing external API configurations and testing connections.
+### Details:
+Create a configuration page that allows users to add, edit, and delete API configurations. Implement forms for entering API details with appropriate validation. Add a 'Test Connection' button that calls the test endpoint and displays the result. Include toggle switches for enabling/disabling specific API integrations. Add a dashboard showing the status of all configured APIs with their last successful fetch time. Implement secure handling of credential input fields.
+

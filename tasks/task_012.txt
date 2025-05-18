@@ -1,0 +1,88 @@
+# Task ID: 12
+# Title: Implement Responsive UI for Commentators
+# Status: pending
+# Dependencies: 4, 5, 6, 8
+# Priority: high
+# Description: Develop a responsive, intuitive user interface for commentators to manage matches, with optimized controls for quick actions during fast-paced matches.
+# Details:
+1. Design and implement responsive layouts for all commentator screens
+2. Create optimized controls for scoring and timeouts
+3. Implement keyboard shortcuts for common actions
+4. Develop intuitive match creation workflow
+5. Create real-time feedback for user actions
+6. Implement dark mode support
+7. Optimize for tablet use during matches
+
+Key UI Components:
+
+Match Management Dashboard:
+- Active match display
+- Quick access to recent and upcoming matches
+- Match creation button
+- Match history access
+
+Active Match Control Panel:
+- Prominent score buttons for both teams
+- Timeout buttons with remaining count display
+- Set control buttons (start new set, end match)
+- Undo buttons for recent actions
+- Real-time match status and statistics
+
+Scoreboard Control Panel:
+- View selection controls
+- Banner text input
+- Scoreboard positioning controls
+- QR code and URL display for sharing
+
+Keyboard Shortcuts:
+- Team 1 Score: '1' or 'q'
+- Team 2 Score: '2' or 'p'
+- Team 1 Timeout: 'Shift+1' or 'Shift+q'
+- Team 2 Timeout: 'Shift+2' or 'Shift+p'
+- Undo: 'Ctrl+z' or 'Cmd+z'
+- New Set: 'n'
+- End Match: 'e'
+
+# Test Strategy:
+1. Test responsive behavior on various screen sizes
+2. Verify that controls are accessible and intuitive
+3. Test keyboard shortcuts for all actions
+4. Verify that real-time feedback is provided for user actions
+5. Test dark mode appearance
+6. Verify that the UI is optimized for touch input on tablets
+7. Test performance during rapid scoring sequences
+8. Verify that all UI components follow accessibility guidelines
+9. Test the UI with different browsers and devices
+10. Conduct usability testing with actual commentators
+
+# Subtasks:
+## 1. Implement Match Management Dashboard Layout [pending]
+### Dependencies: None
+### Description: Design and implement the responsive layout for the Match Management Dashboard, which serves as the main entry point for commentators.
+### Details:
+Create a responsive grid layout with flexbox or CSS Grid that adapts to different screen sizes. Implement the active match display component, quick access section for recent/upcoming matches, prominent match creation button, and match history access. Use media queries to optimize the layout for tablet view. Ensure all interactive elements have appropriate touch targets for tablet use.
+
+## 2. Develop Active Match Control Panel with Scoring Controls [pending]
+### Dependencies: 12.1
+### Description: Create the core match control interface with optimized controls for scoring, timeouts, and match flow management.
+### Details:
+Implement large, touch-friendly score buttons for both teams with visual feedback on press. Create timeout buttons with remaining count displays. Add set control buttons (start new set, end match) with confirmation dialogs to prevent accidental triggers. Design and implement undo functionality for recent actions with a visible history of changes. Include real-time match status and statistics display that updates instantly after actions.
+
+## 3. Implement Keyboard Shortcuts System [pending]
+### Dependencies: 12.2
+### Description: Create a comprehensive keyboard shortcuts system to allow commentators to perform common actions quickly without using the mouse or touchscreen.
+### Details:
+Implement the specified keyboard shortcuts: Team 1 Score ('1'/'q'), Team 2 Score ('2'/'p'), Team 1 Timeout ('Shift+1'/'Shift+q'), Team 2 Timeout ('Shift+2'/'Shift+p'), Undo ('Ctrl+z'/'Cmd+z'), New Set ('n'), End Match ('e'). Create a keyboard shortcut listener service that works across all commentator screens. Add visual indicators when shortcuts are pressed and implement a shortcuts help modal that can be triggered with '?' key. Ensure shortcuts don't interfere with text input fields.
+
+## 4. Create Scoreboard Control Panel [pending]
+### Dependencies: 12.2
+### Description: Implement the interface for controlling the public-facing scoreboard display, including view selection, banner text, positioning controls, and sharing options.
+### Details:
+Design and implement view selection controls with preview thumbnails. Create text input for banner messages with character count and validation. Implement scoreboard positioning controls with drag-and-drop functionality and preset positions. Generate and display QR codes and shortened URLs for easy scoreboard sharing. Add a preview mode that shows how the scoreboard appears to viewers. Implement settings persistence so user preferences are remembered.
+
+## 5. Implement Dark Mode and Real-time Feedback System [pending]
+### Dependencies: 12.1, 12.2, 12.3, 12.4
+### Description: Add dark mode support across all commentator interfaces and implement a comprehensive real-time feedback system for user actions.
+### Details:
+Create a themeable CSS architecture using CSS variables for color schemes. Implement automatic dark mode detection based on system preferences and manual toggle option. Add smooth transitions between light/dark modes. For the feedback system, implement toast notifications for successful actions, error states with recovery options, loading indicators for async operations, and subtle animations for state changes. Ensure all feedback is accessible and not solely reliant on color.
+

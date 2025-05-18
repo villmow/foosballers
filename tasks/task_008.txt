@@ -1,0 +1,85 @@
+# Task ID: 8
+# Title: Implement Multiple Scoreboard Views
+# Status: pending
+# Dependencies: 7
+# Priority: medium
+# Description: Develop different scoreboard views including default, detailed, and banner modes, with controls for commentators to switch between views.
+# Details:
+1. Implement default scoreboard view with current scores, timeouts, and sets won
+2. Create detailed view showing all sets' scores and statistics
+3. Develop banner mode for custom messages
+4. Implement view switching controls for commentators
+5. Create scoreboard positioning controls
+6. Develop responsive layouts for all views
+7. Implement real-time view updates via WebSockets
+
+View Components:
+
+Default View:
+- Team names and colors
+- Current set score
+- Timeouts remaining for each team
+- Sets won by each team
+- Match format information
+
+Detailed View:
+- All information from default view
+- Complete history of all sets played
+- Set-by-set scores
+- Timeout usage per set
+- Optional statistics (total goals, etc.)
+
+Banner View:
+- Custom text message
+- Optional team information
+- Configurable appearance
+
+Commentator Controls:
+- View selection dropdown
+- Banner text input field
+- Scoreboard position controls (top, bottom, left, right)
+- Size adjustment controls
+
+# Test Strategy:
+1. Test switching between different views
+2. Verify that all views display correct information
+3. Test banner mode with various text lengths
+4. Verify that view changes are broadcast in real-time
+5. Test responsive behavior on different screen sizes
+6. Verify that scoreboard positioning controls work correctly
+7. Test accessibility of all views
+8. Verify that views render correctly in different browsers
+9. Test performance of view transitions
+10. Verify that commentator controls update views immediately
+
+# Subtasks:
+## 1. Implement Default Scoreboard View [pending]
+### Dependencies: None
+### Description: Create the default scoreboard view component displaying essential match information including team names, colors, current set score, timeouts remaining, sets won, and match format.
+### Details:
+Create a React component for the default view with styled containers for each information element. Use CSS Grid or Flexbox for layout. Implement props for all data points (team names, colors, scores, timeouts, sets). Add appropriate styling with team color integration. Ensure the component is responsive and maintains readability at different screen sizes.
+
+## 2. Develop Detailed and Banner View Components [pending]
+### Dependencies: 8.1
+### Description: Create the detailed scoreboard view showing comprehensive match statistics and the banner view for custom messages.
+### Details:
+For the detailed view, extend the default view component to include set-by-set scores, timeout usage history, and optional statistics. Implement collapsible sections for better organization. For the banner view, create a component that displays custom text with configurable styling options. Both views should maintain consistent styling with the default view while accommodating their specific content requirements.
+
+## 3. Implement View Switching Controls [pending]
+### Dependencies: 8.2
+### Description: Create a control panel for commentators to switch between different scoreboard views and configure the banner text.
+### Details:
+Develop a control component with a view selection dropdown (Default, Detailed, Banner). When Banner is selected, show a text input field for custom messages. Implement state management to track the current view selection. Create a clean, intuitive interface that's easy to use during live commentary. Add keyboard shortcuts for quick view switching.
+
+## 4. Add Scoreboard Positioning and Size Controls [pending]
+### Dependencies: 8.3
+### Description: Implement controls for adjusting the scoreboard's position and size on the screen.
+### Details:
+Create position controls with options for top, bottom, left, and right screen placement. Add size adjustment controls (small, medium, large, or a slider for custom sizing). Implement drag-and-drop functionality for custom positioning. Store position and size preferences in state and persist them in local storage. Ensure the scoreboard remains within screen boundaries regardless of position or size.
+
+## 5. Implement Real-time Updates via WebSockets [pending]
+### Dependencies: 8.4
+### Description: Set up WebSocket connections to enable real-time updates to all scoreboard views when data changes.
+### Details:
+Integrate a WebSocket client to connect to the backend. Implement event listeners for score updates, timeout changes, and other relevant data points. Create handlers to update the UI components when new data arrives. Add visual indicators for recent changes (e.g., briefly highlighting changed values). Implement reconnection logic for handling connection drops. Ensure all three views update seamlessly when receiving new data.
+

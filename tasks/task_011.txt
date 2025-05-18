@@ -1,0 +1,93 @@
+# Task ID: 11
+# Title: Implement Match Editing and Administration
+# Status: pending
+# Dependencies: 3, 10
+# Priority: medium
+# Description: Develop functionality for administrators to edit historical match data, including scores, timeouts, and player information.
+# Details:
+1. Create API endpoints for match editing
+2. Implement validation for edited data
+3. Develop audit logging for all changes
+4. Create UI for match editing
+5. Implement confirmation workflows for significant changes
+6. Add match deletion with proper authorization
+
+API Endpoints:
+```
+PUT /api/matches/:id - Update match details
+PUT /api/matches/:id/sets/:setId - Update set details
+PUT /api/matches/:id/sets/:setId/goals/:goalId - Update goal details
+PUT /api/matches/:id/sets/:setId/timeouts/:timeoutId - Update timeout details
+DELETE /api/matches/:id - Delete match and all related data
+```
+
+Editable Fields:
+- Match: teams, player names, match format, timeout configuration
+- Set: scores, timeouts used, start/end times
+- Goal: team attribution, timestamp, scoring row
+- Timeout: team attribution, timestamp
+
+Audit Log Schema:
+```typescript
+interface AuditLog {
+  _id: string;
+  userId: string;
+  action: 'create' | 'update' | 'delete';
+  entityType: 'match' | 'set' | 'goal' | 'timeout' | 'user';
+  entityId: string;
+  previousState: any;
+  newState: any;
+  timestamp: Date;
+  ipAddress: string;
+}
+```
+
+Validation Rules:
+- Scores must be non-negative integers
+- Set scores must be consistent with goals recorded
+- Timeouts used cannot exceed configured limit
+- Match format cannot be changed if sets have been played
+
+# Test Strategy:
+1. Test editing various match properties
+2. Verify that validation rules are enforced
+3. Test audit logging for all changes
+4. Verify that only administrators can edit matches
+5. Test confirmation workflows for destructive actions
+6. Verify that match deletion removes all related data
+7. Test the UI for match editing
+8. Verify that changes are reflected in statistics and reports
+9. Test edge cases like editing completed matches
+10. Verify that concurrent edits are handled properly
+
+# Subtasks:
+## 1. Create API endpoints for match editing and deletion [pending]
+### Dependencies: None
+### Description: Implement all required API endpoints for editing match details, sets, goals, timeouts, and match deletion with proper authorization checks.
+### Details:
+Implement the following endpoints: PUT /api/matches/:id, PUT /api/matches/:id/sets/:setId, PUT /api/matches/:id/sets/:setId/goals/:goalId, PUT /api/matches/:id/sets/:setId/timeouts/:timeoutId, and DELETE /api/matches/:id. Each endpoint should verify user authentication and admin authorization before processing. Structure the controllers to handle the request validation, service calls, and appropriate response formatting.
+
+## 2. Implement validation logic for match data edits [pending]
+### Dependencies: 11.1
+### Description: Create a validation service that enforces all business rules for match data edits according to the specified validation rules.
+### Details:
+Develop a validation service with methods for each entity type (match, set, goal, timeout). Implement validation rules: ensure scores are non-negative integers, verify set scores match recorded goals, check timeout counts against limits, and prevent match format changes for matches with existing sets. Return detailed validation errors that can be passed to the client.
+
+## 3. Develop audit logging system for match changes [pending]
+### Dependencies: 11.1
+### Description: Create a system to log all changes to match data according to the provided audit log schema, capturing previous and new states.
+### Details:
+Implement an AuditLogService that records all create, update, and delete operations on match entities. Store the user ID, action type, entity type, entity ID, previous state, new state, timestamp, and IP address. Integrate this service with all API endpoints to automatically log changes. Ensure the service handles serialization of complex objects and properly sanitizes sensitive data.
+
+## 4. Create admin UI for match editing [pending]
+### Dependencies: 11.1, 11.2
+### Description: Develop the user interface components for administrators to edit match details, sets, goals, and timeouts with appropriate forms and validation.
+### Details:
+Create React components for editing each entity type. Implement forms with validation for all editable fields: match details (teams, player names, match format, timeout configuration), set details (scores, timeouts, start/end times), goal details (team, timestamp, scoring row), and timeout details (team, timestamp). Add error handling to display validation errors from the API. Include confirmation dialogs for potentially destructive actions.
+
+## 5. Implement confirmation workflows for significant changes [pending]
+### Dependencies: 11.4
+### Description: Add confirmation dialogs and authorization workflows for significant or potentially destructive changes to match data.
+### Details:
+Identify high-impact changes that require additional confirmation (e.g., match deletion, score changes that affect match outcome, changes to completed matches). Implement a multi-step confirmation process for these actions, potentially requiring secondary authorization for critical changes. For match deletion, require typing a confirmation phrase. Add clear warnings about the consequences of each action and provide cancel options at each step.
+

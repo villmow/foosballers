@@ -1,0 +1,107 @@
+# Task ID: 10
+# Title: Implement Match History and Statistics
+# Status: pending
+# Dependencies: 3, 5, 6
+# Priority: medium
+# Description: Develop functionality to store, retrieve, and display match history and statistics, with filtering and search capabilities.
+# Details:
+1. Create API endpoints for match history and statistics
+2. Implement filtering and search functionality
+3. Develop statistics calculation services
+4. Create UI for browsing match history
+5. Implement detailed match view
+6. Add export functionality for reports
+7. Develop data visualization for statistics
+
+API Endpoints:
+```
+GET /api/matches - Get list of matches with filtering
+GET /api/matches/:id/statistics - Get detailed statistics for a match
+GET /api/players/statistics - Get player statistics across matches
+GET /api/export/match/:id - Export match data (PDF/CSV)
+```
+
+Filter Parameters:
+- dateFrom, dateTo: Filter by date range
+- players: Filter by player names
+- teams: Filter by team names
+- format: Filter by match format
+- status: Filter by match status
+
+Statistics Calculations:
+- Total goals per team/player
+- Goals by row (if tracked)
+- Timeout usage patterns
+- Win/loss records
+- Average goals per set
+- Set duration statistics
+
+UI Components:
+- Filterable match list
+- Detailed match view with set-by-set breakdown
+- Statistics visualizations (charts, graphs)
+- Export controls for reports
+
+# Test Strategy:
+1. Test filtering and search functionality with various criteria
+2. Verify that statistics are calculated correctly
+3. Test pagination of match history
+4. Verify that detailed match view shows all relevant information
+5. Test export functionality for different formats
+6. Verify that data visualizations render correctly
+7. Test performance with large match history
+8. Verify that only authorized users can access certain statistics
+9. Test the UI for usability and responsiveness
+10. Verify that exported reports contain accurate data
+
+# Subtasks:
+## 1. Create Database Models and API Endpoints for Match History [pending]
+### Dependencies: None
+### Description: Design and implement database models for storing match history and statistics. Create RESTful API endpoints for retrieving match data with filtering capabilities.
+### Details:
+1. Create/update database models for Match, MatchStatistics, and PlayerStatistics entities with appropriate relationships.
+2. Implement the GET /api/matches endpoint with query parameter support for all filter parameters (dateFrom, dateTo, players, teams, format, status).
+3. Implement the GET /api/matches/:id/statistics endpoint to retrieve detailed statistics for a specific match.
+4. Add pagination support for match listing endpoint.
+5. Include proper error handling and validation for all API endpoints.
+
+## 2. Implement Statistics Calculation Service [pending]
+### Dependencies: 10.1
+### Description: Develop a service layer that calculates various statistics from match data, including player and team performance metrics.
+### Details:
+1. Create a StatisticsService class with methods for calculating all required statistics (total goals, goals by row, timeout patterns, win/loss records, etc.).
+2. Implement the GET /api/players/statistics endpoint to retrieve aggregated player statistics across matches.
+3. Add caching mechanisms for frequently accessed statistics to improve performance.
+4. Ensure calculations handle edge cases (incomplete matches, forfeits, etc.).
+5. Design the service to be extensible for future statistics types.
+
+## 3. Develop Match History UI Components [pending]
+### Dependencies: 10.1
+### Description: Create UI components for browsing and filtering match history, including a filterable match list and detailed match view.
+### Details:
+1. Implement a filterable match list component with controls for all filter parameters.
+2. Create a detailed match view component showing set-by-set breakdown of match data.
+3. Add pagination controls for the match list.
+4. Implement responsive design for mobile and desktop views.
+5. Add loading states and error handling for API requests.
+
+## 4. Implement Data Visualization for Statistics [pending]
+### Dependencies: 10.2, 10.3
+### Description: Create interactive data visualizations (charts, graphs) to display match and player statistics in an intuitive way.
+### Details:
+1. Select and integrate an appropriate charting library (e.g., Chart.js, D3.js).
+2. Implement visualizations for key statistics (win/loss records, goals per set, etc.).
+3. Create a dashboard layout to display multiple visualizations.
+4. Add interactive features (tooltips, filtering, drill-down capabilities).
+5. Ensure visualizations are accessible and responsive.
+
+## 5. Add Export Functionality for Reports [pending]
+### Dependencies: 10.2, 10.4
+### Description: Implement functionality to export match data and statistics in various formats (PDF, CSV).
+### Details:
+1. Implement the GET /api/export/match/:id endpoint to generate exportable data.
+2. Create service methods to format data for different export types (PDF, CSV).
+3. Add UI controls in the match detail view to trigger exports.
+4. Implement client-side or server-side export generation based on performance considerations.
+5. Include metadata and formatting in exports to improve readability.
+

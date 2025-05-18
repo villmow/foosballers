@@ -1,0 +1,136 @@
+# Task ID: 7
+# Title: Implement Real-time Scoreboard with WebSockets
+# Status: pending
+# Dependencies: 5, 6
+# Priority: high
+# Description: Develop a real-time scoreboard system using WebSockets for instant updates, with fallback to polling for environments without WebSocket support.
+# Details:
+1. Implement WebSocket server using Socket.io
+2. Create scoreboard data models for different views
+3. Implement real-time update broadcasting
+4. Develop fallback polling mechanism
+5. Create unique session URLs for scoreboards
+6. Implement QR code generation for easy sharing
+7. Develop responsive scoreboard layouts
+
+WebSocket Events:
+```
+'match:update' - Broadcast match state changes
+'score:update' - Broadcast score changes
+'timeout:update' - Broadcast timeout usage
+'set:update' - Broadcast set changes
+'view:change' - Broadcast scoreboard view changes
+```
+
+Scoreboard Data Structure:
+```typescript
+interface ScoreboardData {
+  matchId: string;
+  teams: [
+    {
+      name: string;
+      color: string;
+      players: string[];
+      score: number; // Current set score
+      setsWon: number;
+      timeoutsLeft: number;
+    },
+    {
+      name: string;
+      color: string;
+      players: string[];
+      score: number; // Current set score
+      setsWon: number;
+      timeoutsLeft: number;
+    }
+  ];
+  currentSet: number;
+  sets: Array<{
+    setNumber: number;
+    scores: [number, number];
+    timeoutsUsed: [number, number];
+    winner: number | null;
+  }>;
+  matchFormat: string;
+  status: string;
+  currentView: 'default' | 'detailed' | 'banner';
+  bannerText: string;
+}
+```
+
+Polling Fallback:
+- Implement endpoint for scoreboard data: GET /api/scoreboard/:sessionId
+- Configure polling interval (2-3 seconds)
+- Implement client-side logic to detect WebSocket failure and switch to polling
+
+# Test Strategy:
+1. Test WebSocket connection establishment
+2. Verify that scoreboard updates in real-time when scores change
+3. Test fallback to polling when WebSockets are unavailable
+4. Verify that unique session URLs work correctly
+5. Test QR code generation and scanning
+6. Verify that scoreboard is responsive on different devices
+7. Test performance with multiple concurrent viewers
+8. Verify that all scoreboard views display correctly
+9. Test reconnection behavior after connection loss
+10. Verify that page title updates with current score
+
+# Subtasks:
+## 1. Set up WebSocket Server with Socket.io [pending]
+### Dependencies: None
+### Description: Implement the WebSocket server using Socket.io to handle real-time communication between clients and server for scoreboard updates.
+### Details:
+1. Install Socket.io package
+2. Configure Socket.io server to run alongside the existing HTTP server
+3. Define event handlers for the specified events ('match:update', 'score:update', etc.)
+4. Implement authentication/authorization for WebSocket connections
+5. Set up namespaces for different scoreboards using sessionId
+6. Implement error handling and logging for WebSocket connections
+
+## 2. Implement Scoreboard Data Models and Storage [pending]
+### Dependencies: 7.1
+### Description: Create the data models for storing and managing scoreboard data according to the specified structure, including persistence and retrieval mechanisms.
+### Details:
+1. Implement the ScoreboardData interface in the codebase
+2. Create a repository/service for managing scoreboard data
+3. Implement methods for creating, retrieving, and updating scoreboard data
+4. Set up data validation to ensure scoreboard updates maintain data integrity
+5. Implement session management for unique scoreboard URLs
+6. Create methods to generate initial scoreboard state based on match configuration
+
+## 3. Develop Real-time Update Broadcasting System [pending]
+### Dependencies: 7.1, 7.2
+### Description: Implement the system for broadcasting scoreboard updates to all connected clients when changes occur, using the WebSocket server.
+### Details:
+1. Create event emitters for each update type ('match:update', 'score:update', etc.)
+2. Implement middleware to capture scoreboard changes and trigger appropriate events
+3. Develop throttling mechanism to prevent broadcast storms
+4. Implement room-based broadcasting to ensure updates only go to relevant clients
+5. Create server-side handlers for client-initiated update requests
+6. Add security measures to validate update requests before broadcasting
+
+## 4. Implement Polling Fallback Mechanism [pending]
+### Dependencies: 7.2
+### Description: Develop a fallback mechanism using HTTP polling for environments where WebSockets are not supported or are blocked.
+### Details:
+1. Create RESTful endpoint for scoreboard data: GET /api/scoreboard/:sessionId
+2. Implement caching to reduce database load from frequent polling
+3. Add ETag support for efficient polling
+4. Develop client-side detection of WebSocket failures
+5. Implement automatic fallback to polling when WebSockets fail
+6. Configure appropriate polling intervals (2-3 seconds) with exponential backoff
+7. Add monitoring to track WebSocket vs. polling usage
+
+## 5. Create Responsive Scoreboard UI with Sharing Features [pending]
+### Dependencies: 7.3, 7.4
+### Description: Develop the frontend components for displaying the scoreboard in different views, along with sharing functionality via unique URLs and QR codes.
+### Details:
+1. Implement responsive scoreboard layouts for 'default', 'detailed', and 'banner' views
+2. Create UI components to display all scoreboard data elements
+3. Implement real-time updates using WebSocket client connection
+4. Add view switching functionality with appropriate animations
+5. Implement unique session URL generation and display
+6. Integrate QR code generation library for easy sharing
+7. Create copy-to-clipboard functionality for scoreboard URLs
+8. Implement view-specific optimizations for different device sizes
+

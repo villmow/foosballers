@@ -1,0 +1,131 @@
+# Task ID: 3
+# Title: Design and Implement Database Schema
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Design and implement the MongoDB database schema for all entities including users, matches, sets, goals, timeouts, and their relationships.
+# Details:
+1. Design comprehensive MongoDB schemas for all entities
+2. Implement Mongoose models with proper validation
+3. Define relationships between entities
+4. Create indexes for optimized queries
+5. Implement database connection and error handling
+
+Key Schemas:
+
+```typescript
+// Match Schema
+interface Match {
+  _id: string;
+  format: 'single' | 'bestOf3' | 'bestOf9';
+  playerSetup: '1v1' | '2v2';
+  teams: [
+    {
+      name: string;
+      color: string;
+      players: string[];
+      setsWon: number;
+    },
+    {
+      name: string;
+      color: string;
+      players: string[];
+      setsWon: number;
+    }
+  ];
+  timeoutsPerSet: number;
+  lastSetTwoGoalRule: boolean;
+  status: 'notStarted' | 'inProgress' | 'completed' | 'aborted';
+  startTime: Date;
+  endTime: Date;
+  createdBy: string; // User ID
+  sets: string[]; // Set IDs
+  currentSet: string; // Set ID
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Set Schema
+interface Set {
+  _id: string;
+  matchId: string;
+  setNumber: number;
+  scores: [number, number];
+  timeoutsUsed: [number, number];
+  goals: string[]; // Goal IDs
+  timeouts: string[]; // Timeout IDs
+  startTime: Date;
+  endTime: Date;
+  status: 'notStarted' | 'inProgress' | 'completed';
+  winner: number; // 0 or 1 (team index)
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Goal Schema
+interface Goal {
+  _id: string;
+  matchId: string;
+  setId: string;
+  teamIndex: number; // 0 or 1
+  timestamp: Date;
+  scoringRow?: 'goalie' | '2-bar' | '5-bar' | '3-bar';
+  voided: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Timeout Schema
+interface Timeout {
+  _id: string;
+  matchId: string;
+  setId: string;
+  teamIndex: number; // 0 or 1
+  timestamp: Date;
+  voided: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+# Test Strategy:
+1. Verify that all schemas are correctly defined with proper validation
+2. Test creation, reading, updating, and deletion of all entity types
+3. Verify that relationships between entities are maintained
+4. Test query performance with indexes
+5. Verify that constraints are enforced (e.g., maximum timeouts per set)
+6. Test database operations with large datasets
+7. Verify data integrity across related collections
+8. Test error handling for database operations
+
+# Subtasks:
+## 1. Define User Schema and Authentication Models [pending]
+### Dependencies: None
+### Description: Create the MongoDB schema and Mongoose model for users with authentication-related fields and validation rules.
+### Details:
+Implement the User schema with fields for authentication (email, password hash, salt), profile information (name, avatar), roles/permissions, and account status. Include proper validation for all fields, password hashing functionality, and methods for authentication. Set up appropriate indexes for email and username fields for faster lookups during authentication.
+
+## 2. Implement Match and Team Schema Models [pending]
+### Dependencies: 3.1
+### Description: Create the MongoDB schemas and Mongoose models for matches and team structures with proper validation and relationships.
+### Details:
+Implement the Match schema as defined in the specification, ensuring proper validation for all fields. Add methods for match creation, status updates, and team management. Define virtual properties for derived data like match duration and winner. Create indexes for efficient querying by status, player IDs, and date ranges. Implement proper references to User schema for the createdBy field.
+
+## 3. Implement Set and Scoring Models [pending]
+### Dependencies: 3.2
+### Description: Create the MongoDB schemas and Mongoose models for sets with proper validation, scoring logic, and relationships to matches.
+### Details:
+Implement the Set schema with proper validation and references to the Match schema. Add methods for set creation, score updates, and winner determination. Implement virtual properties for set duration and current score. Create indexes for efficient querying by matchId and status. Add pre/post hooks to update the parent Match document when a Set is updated (e.g., incrementing setsWon when a set is completed).
+
+## 4. Implement Goal and Timeout Models [pending]
+### Dependencies: 3.3
+### Description: Create the MongoDB schemas and Mongoose models for goals and timeouts with proper validation and relationships to sets and matches.
+### Details:
+Implement the Goal and Timeout schemas with proper validation and references to both Match and Set schemas. Add methods for creating, voiding, and querying goals/timeouts. Implement hooks to update the parent Set document's scores and timeoutsUsed arrays when goals/timeouts are created or voided. Create indexes for efficient querying by matchId, setId, and timestamp.
+
+## 5. Implement Database Connection and Error Handling [pending]
+### Dependencies: 3.1, 3.2, 3.3, 3.4
+### Description: Set up the MongoDB connection with proper error handling, reconnection logic, and configuration for different environments.
+### Details:
+Create a database connection module that handles connection to MongoDB using Mongoose. Implement proper error handling for connection failures, timeouts, and other database errors. Add reconnection logic with exponential backoff. Set up configuration for different environments (development, testing, production). Implement connection pooling for optimal performance. Create a database initialization script that creates indexes and validates schemas on application startup.
+

@@ -1,0 +1,1039 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Project Structure and Development Environment",
+      "description": "Initialize the project repository with Vue.js frontend and Node.js/Express backend, configure build tools, and set up the development environment.",
+      "details": "1. Initialize a new Vue.js project using Vite\n2. Configure TypeScript for both frontend and backend\n3. Set up Express.js server with basic routing\n4. Configure MongoDB connection\n5. Set up PrimeVue and Tailwind CSS 4\n6. Configure ESLint and Prettier for code quality\n7. Set up development, testing, and production environments\n8. Create basic project structure with directories for components, views, services, and API routes\n9. Configure WebSocket support\n10. Set up basic CI/CD pipeline\n\nCode structure:\n```\n/client\n  /src\n    /assets\n    /components\n    /views\n    /services\n    /store\n    /types\n    main.ts\n/server\n  /src\n    /controllers\n    /models\n    /routes\n    /services\n    /middleware\n    /config\n    app.ts\n/shared\n  /types\n  /utils\n```",
+      "testStrategy": "1. Verify that the development server starts correctly\n2. Confirm that the frontend can communicate with the backend\n3. Test MongoDB connection\n4. Verify that WebSocket connections can be established\n5. Run linting and type checking to ensure code quality\n6. Test the build process for both development and production environments",
+      "priority": "high",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initialize Vue.js Frontend with Vite and Configure TypeScript",
+          "description": "Set up the Vue.js project using Vite as the build tool and configure TypeScript for type safety in the frontend codebase.",
+          "dependencies": [],
+          "details": "Run `npm create vite@latest client -- --template vue-ts` to initialize the Vue.js project with TypeScript. Configure tsconfig.json with strict type checking. Create the basic directory structure for the frontend including assets, components, views, services, store, and types folders. Install required dependencies including PrimeVue and Tailwind CSS with `npm install primevue tailwindcss postcss autoprefixer`.",
+          "status": "pending",
+          "testStrategy": "Verify the project builds successfully with `npm run build`. Ensure TypeScript compilation works without errors using `npm run type-check`."
+        },
+        {
+          "id": 2,
+          "title": "Set up Express.js Backend with TypeScript",
+          "description": "Initialize the Node.js/Express backend with TypeScript support and create the basic server structure.",
+          "dependencies": [],
+          "details": "Create a server directory and initialize a new Node.js project with `npm init -y`. Install Express and TypeScript with `npm install express typescript ts-node @types/express @types/node`. Configure tsconfig.json for the backend. Create the basic directory structure including controllers, models, routes, services, middleware, and config folders. Set up a basic Express server in app.ts with error handling middleware and CORS support.",
+          "status": "pending",
+          "testStrategy": "Create a simple health check endpoint and test it using a tool like Postman or curl. Verify TypeScript compilation works correctly."
+        },
+        {
+          "id": 3,
+          "title": "Configure MongoDB Connection and Basic Models",
+          "description": "Set up MongoDB connection using Mongoose and create basic data models for the application.",
+          "dependencies": [
+            2
+          ],
+          "details": "Install Mongoose with `npm install mongoose @types/mongoose`. Create a database configuration file in the server/src/config directory. Implement connection handling with proper error handling and reconnection logic. Set up a basic schema and model structure. Create a connection utility that can be imported by other parts of the application.",
+          "status": "pending",
+          "testStrategy": "Write a simple script to test the database connection. Verify that models can be created and basic CRUD operations work correctly."
+        },
+        {
+          "id": 4,
+          "title": "Implement WebSocket Support and Shared Types",
+          "description": "Set up WebSocket support using Socket.IO and create shared type definitions between frontend and backend.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Install Socket.IO with `npm install socket.io` on the backend and `npm install socket.io-client` on the frontend. Configure Socket.IO server in the Express application. Create a shared types directory with TypeScript interfaces that can be used by both frontend and backend. Implement basic Socket.IO connection handling and event structure. Create utility functions for WebSocket communication.",
+          "status": "pending",
+          "testStrategy": "Create a simple test client that connects to the WebSocket server and exchanges messages. Verify that type definitions are correctly shared between frontend and backend."
+        },
+        {
+          "id": 5,
+          "title": "Configure Code Quality Tools and CI/CD Pipeline",
+          "description": "Set up ESLint, Prettier, and a basic CI/CD pipeline for the project.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Install ESLint and Prettier with `npm install --save-dev eslint prettier eslint-plugin-vue @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier`. Create configuration files (.eslintrc.js, .prettierrc) for both frontend and backend. Set up pre-commit hooks using Husky to enforce code quality. Create a basic CI/CD pipeline configuration using GitHub Actions or similar service with jobs for linting, testing, and building the application. Configure environment variables for development, testing, and production environments.",
+          "status": "pending",
+          "testStrategy": "Run linting and formatting checks to ensure they work correctly. Test the CI pipeline by making a small change and pushing it to the repository."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement User Authentication System",
+      "description": "Create a secure authentication system with login, registration, password recovery, and session management for commentators and administrators.",
+      "details": "1. Create MongoDB schema for users with fields: username, email, password (hashed), role, lastLogin, createdAt, updatedAt\n2. Implement password hashing using bcrypt\n3. Create authentication middleware for protected routes\n4. Implement JWT token generation and validation\n5. Create login endpoint with rate limiting\n6. Implement password recovery flow with secure email links\n7. Create account creation endpoint (admin only)\n8. Implement session timeout after 90 minutes of inactivity\n9. Create frontend login form with validation\n10. Implement password reset form\n\nUser Schema:\n```typescript\ninterface User {\n  _id: string;\n  username: string;\n  email: string;\n  password: string; // hashed\n  role: 'commentator' | 'administrator';\n  lastLogin: Date;\n  loginAttempts: number;\n  lockUntil: Date;\n  createdAt: Date;\n  updatedAt: Date;\n}\n```\n\nAuthentication Flow:\n1. User submits credentials\n2. Server validates credentials and checks account status\n3. If valid, server generates JWT token\n4. Token is returned to client and stored\n5. Token is included in subsequent API requests\n6. Server validates token on protected routes",
+      "testStrategy": "1. Test user registration with valid and invalid data\n2. Verify login with correct and incorrect credentials\n3. Test password reset functionality\n4. Verify account lockout after 5 failed attempts\n5. Test session timeout after 90 minutes\n6. Verify that protected routes reject unauthorized access\n7. Test JWT token validation and expiration\n8. Verify that passwords are properly hashed in the database\n9. Test administrator ability to create new accounts\n10. Verify email notifications for account creation and password reset",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement User Model and Authentication Utilities",
+          "description": "Create the MongoDB user schema and implement core authentication utilities including password hashing with bcrypt and JWT token generation/validation.",
+          "dependencies": [],
+          "details": "1. Create MongoDB schema for User model with all required fields\n2. Implement password hashing and comparison functions using bcrypt\n3. Create JWT token generation function with appropriate payload and expiration\n4. Implement JWT token validation function\n5. Add utility functions for managing login attempts and account locking",
+          "status": "pending",
+          "testStrategy": "Unit test password hashing, JWT generation/validation, and account locking logic with mock data. Ensure password hashing is one-way and JWT tokens contain correct claims."
+        },
+        {
+          "id": 2,
+          "title": "Create Authentication API Endpoints",
+          "description": "Implement the core authentication API endpoints including login, logout, and token refresh with appropriate security measures.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create login endpoint with credential validation and rate limiting\n2. Implement logout endpoint that invalidates tokens\n3. Add token refresh endpoint to extend sessions\n4. Implement proper error handling and status codes\n5. Add request validation middleware for authentication requests",
+          "status": "pending",
+          "testStrategy": "Integration test each endpoint with valid and invalid credentials. Test rate limiting by simulating multiple failed login attempts. Verify token invalidation on logout."
+        },
+        {
+          "id": 3,
+          "title": "Implement User Registration and Management",
+          "description": "Create endpoints for user registration, account creation by administrators, and user profile management.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement user registration endpoint with email verification\n2. Create admin-only endpoint for creating new user accounts\n3. Add endpoint for updating user profiles\n4. Implement email uniqueness validation\n5. Add role-based permission checks for user management operations",
+          "status": "pending",
+          "testStrategy": "Test registration with valid and invalid data. Verify admin-only routes are protected. Test email uniqueness constraints and validation rules."
+        },
+        {
+          "id": 4,
+          "title": "Implement Password Recovery Flow",
+          "description": "Create a secure password recovery system with time-limited reset tokens sent via email.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create endpoint to request password reset that generates a secure token\n2. Implement email sending functionality with reset links\n3. Create endpoint to validate reset tokens\n4. Implement password reset endpoint with new password validation\n5. Add token expiration handling (1 hour validity)",
+          "status": "pending",
+          "testStrategy": "Test the complete password reset flow. Verify token expiration works correctly. Test email delivery with a test email service. Ensure reset tokens are single-use only."
+        },
+        {
+          "id": 5,
+          "title": "Implement Authentication Middleware and Session Management",
+          "description": "Create middleware for protecting routes and implement session management with timeout after inactivity.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Implement authentication middleware for protected routes\n2. Create role-based authorization middleware\n3. Add session timeout logic (90 minutes inactivity)\n4. Implement request logging for authentication events\n5. Add security headers and CSRF protection",
+          "status": "pending",
+          "testStrategy": "Test middleware with authenticated and unauthenticated requests. Verify session timeout works correctly. Test role-based access control with different user types."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Design and Implement Database Schema",
+      "description": "Design and implement the MongoDB database schema for all entities including users, matches, sets, goals, timeouts, and their relationships.",
+      "details": "1. Design comprehensive MongoDB schemas for all entities\n2. Implement Mongoose models with proper validation\n3. Define relationships between entities\n4. Create indexes for optimized queries\n5. Implement database connection and error handling\n\nKey Schemas:\n\n```typescript\n// Match Schema\ninterface Match {\n  _id: string;\n  format: 'single' | 'bestOf3' | 'bestOf9';\n  playerSetup: '1v1' | '2v2';\n  teams: [\n    {\n      name: string;\n      color: string;\n      players: string[];\n      setsWon: number;\n    },\n    {\n      name: string;\n      color: string;\n      players: string[];\n      setsWon: number;\n    }\n  ];\n  timeoutsPerSet: number;\n  lastSetTwoGoalRule: boolean;\n  status: 'notStarted' | 'inProgress' | 'completed' | 'aborted';\n  startTime: Date;\n  endTime: Date;\n  createdBy: string; // User ID\n  sets: string[]; // Set IDs\n  currentSet: string; // Set ID\n  createdAt: Date;\n  updatedAt: Date;\n}\n\n// Set Schema\ninterface Set {\n  _id: string;\n  matchId: string;\n  setNumber: number;\n  scores: [number, number];\n  timeoutsUsed: [number, number];\n  goals: string[]; // Goal IDs\n  timeouts: string[]; // Timeout IDs\n  startTime: Date;\n  endTime: Date;\n  status: 'notStarted' | 'inProgress' | 'completed';\n  winner: number; // 0 or 1 (team index)\n  createdAt: Date;\n  updatedAt: Date;\n}\n\n// Goal Schema\ninterface Goal {\n  _id: string;\n  matchId: string;\n  setId: string;\n  teamIndex: number; // 0 or 1\n  timestamp: Date;\n  scoringRow?: 'goalie' | '2-bar' | '5-bar' | '3-bar';\n  voided: boolean;\n  createdAt: Date;\n  updatedAt: Date;\n}\n\n// Timeout Schema\ninterface Timeout {\n  _id: string;\n  matchId: string;\n  setId: string;\n  teamIndex: number; // 0 or 1\n  timestamp: Date;\n  voided: boolean;\n  createdAt: Date;\n  updatedAt: Date;\n}\n```",
+      "testStrategy": "1. Verify that all schemas are correctly defined with proper validation\n2. Test creation, reading, updating, and deletion of all entity types\n3. Verify that relationships between entities are maintained\n4. Test query performance with indexes\n5. Verify that constraints are enforced (e.g., maximum timeouts per set)\n6. Test database operations with large datasets\n7. Verify data integrity across related collections\n8. Test error handling for database operations",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Define User Schema and Authentication Models",
+          "description": "Create the MongoDB schema and Mongoose model for users with authentication-related fields and validation rules.",
+          "dependencies": [],
+          "details": "Implement the User schema with fields for authentication (email, password hash, salt), profile information (name, avatar), roles/permissions, and account status. Include proper validation for all fields, password hashing functionality, and methods for authentication. Set up appropriate indexes for email and username fields for faster lookups during authentication.",
+          "status": "pending",
+          "testStrategy": "Write unit tests to verify schema validation rules, password hashing, and authentication methods. Test edge cases like duplicate emails and invalid password formats."
+        },
+        {
+          "id": 2,
+          "title": "Implement Match and Team Schema Models",
+          "description": "Create the MongoDB schemas and Mongoose models for matches and team structures with proper validation and relationships.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement the Match schema as defined in the specification, ensuring proper validation for all fields. Add methods for match creation, status updates, and team management. Define virtual properties for derived data like match duration and winner. Create indexes for efficient querying by status, player IDs, and date ranges. Implement proper references to User schema for the createdBy field.",
+          "status": "pending",
+          "testStrategy": "Test match creation with various formats and player setups. Verify validation rules for required fields and enum values. Test methods for updating match status and calculating match statistics."
+        },
+        {
+          "id": 3,
+          "title": "Implement Set and Scoring Models",
+          "description": "Create the MongoDB schemas and Mongoose models for sets with proper validation, scoring logic, and relationships to matches.",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement the Set schema with proper validation and references to the Match schema. Add methods for set creation, score updates, and winner determination. Implement virtual properties for set duration and current score. Create indexes for efficient querying by matchId and status. Add pre/post hooks to update the parent Match document when a Set is updated (e.g., incrementing setsWon when a set is completed).",
+          "status": "pending",
+          "testStrategy": "Test set creation within matches of different formats. Verify score update methods and winner determination logic. Test the cascading updates to the parent Match document when sets are completed."
+        },
+        {
+          "id": 4,
+          "title": "Implement Goal and Timeout Models",
+          "description": "Create the MongoDB schemas and Mongoose models for goals and timeouts with proper validation and relationships to sets and matches.",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement the Goal and Timeout schemas with proper validation and references to both Match and Set schemas. Add methods for creating, voiding, and querying goals/timeouts. Implement hooks to update the parent Set document's scores and timeoutsUsed arrays when goals/timeouts are created or voided. Create indexes for efficient querying by matchId, setId, and timestamp.",
+          "status": "pending",
+          "testStrategy": "Test goal and timeout creation, including validation rules. Verify that parent Set documents are properly updated when goals/timeouts are created or voided. Test querying goals/timeouts by various criteria."
+        },
+        {
+          "id": 5,
+          "title": "Implement Database Connection and Error Handling",
+          "description": "Set up the MongoDB connection with proper error handling, reconnection logic, and configuration for different environments.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create a database connection module that handles connection to MongoDB using Mongoose. Implement proper error handling for connection failures, timeouts, and other database errors. Add reconnection logic with exponential backoff. Set up configuration for different environments (development, testing, production). Implement connection pooling for optimal performance. Create a database initialization script that creates indexes and validates schemas on application startup.",
+          "status": "pending",
+          "testStrategy": "Test database connection with mock MongoDB instances. Verify reconnection logic by simulating connection failures. Test error handling by triggering various database errors."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Match Creation and Configuration",
+      "description": "Develop the functionality to create and configure new matches, including team setup, match format selection, and timeout configuration.",
+      "details": "1. Create API endpoints for match creation and configuration\n2. Implement match configuration validation\n3. Develop frontend form for match creation\n4. Implement team and player assignment\n5. Create match format selection with predefined options\n6. Implement timeout configuration\n7. Add figure color selection for teams\n\nAPI Endpoints:\n```\nPOST /api/matches - Create a new match\nGET /api/matches/:id - Get match details\nPUT /api/matches/:id - Update match configuration\nDELETE /api/matches/:id - Delete a match\n```\n\nMatch Creation Form Fields:\n- Match format (Single set, Best of 3, Best of 9)\n- Player setup (1v1 or 2v2)\n- Team names\n- Player names (1 or 2 per team)\n- Team colors\n- Timeouts per set (1 or 2, default: 2)\n- Last-set 2-goal rule toggle\n\nValidation Rules:\n- Team names must be unique\n- Player names must be provided\n- Valid match format must be selected\n- Timeout count must be 1 or 2",
+      "testStrategy": "1. Test match creation with valid and invalid data\n2. Verify that validation rules are enforced\n3. Test all match format configurations\n4. Verify that team and player assignments are saved correctly\n5. Test timeout configuration options\n6. Verify that match state is correctly initialized\n7. Test match deletion and confirm data is removed\n8. Verify that only authenticated users can create matches\n9. Test the UI form for usability and error handling",
+      "priority": "high",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Match API Endpoints",
+          "description": "Implement the backend API endpoints for match creation, retrieval, updating, and deletion.",
+          "dependencies": [],
+          "details": "Create RESTful API endpoints for match operations: POST /api/matches for creation, GET /api/matches/:id for retrieval, PUT /api/matches/:id for updates, and DELETE /api/matches/:id for deletion. Implement proper request handling, response formatting, and error handling. Define the Match model with all required fields including match format, player setup, team names, player names, team colors, timeout settings, and last-set rule toggle.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for each endpoint using a testing framework like Jest. Test successful operations and error cases including validation failures. Use mock database for testing."
+        },
+        {
+          "id": 2,
+          "title": "Implement Match Configuration Validation",
+          "description": "Create validation logic for match configuration to ensure all required fields are present and valid.",
+          "dependencies": [],
+          "details": "Implement server-side validation for match configuration that enforces: unique team names, required player names, valid match format selection (Single set, Best of 3, Best of 9), and timeout count validation (must be 1 or 2). Create reusable validation functions that can be used by both API endpoints and potentially frontend validation. Return appropriate error messages for validation failures.",
+          "status": "pending",
+          "testStrategy": "Create unit tests for each validation rule with both valid and invalid inputs. Test edge cases like empty strings, duplicate names, and invalid format selections."
+        },
+        {
+          "id": 3,
+          "title": "Develop Match Creation Form UI",
+          "description": "Create the frontend form interface for match creation and configuration with all required input fields.",
+          "dependencies": [],
+          "details": "Build a multi-step or single-page form with fields for: match format selection (radio buttons or dropdown), player setup selection (1v1 or 2v2), team name inputs, player name inputs (dynamically showing 1 or 2 per team based on setup), team color pickers, timeout count selector, and last-set 2-goal rule toggle. Include appropriate labels, placeholders, and help text. Implement responsive design for mobile and desktop views.",
+          "status": "pending",
+          "testStrategy": "Perform component testing to verify form rendering and behavior. Test form responsiveness across different screen sizes. Conduct usability testing to ensure the form is intuitive."
+        },
+        {
+          "id": 4,
+          "title": "Implement Form Validation and Submission",
+          "description": "Add client-side validation to the match creation form and connect it to the backend API.",
+          "dependencies": [],
+          "details": "Implement client-side validation that mirrors server-side rules: unique team names, required player names, valid match format, and valid timeout count. Show inline validation errors. Create form submission handler that collects form data, validates it, and sends it to the backend API. Handle API responses including success and error cases. Implement loading states during submission and redirect to the match view on successful creation.",
+          "status": "pending",
+          "testStrategy": "Test form validation with various input combinations. Test form submission with mock API responses. Verify error handling and success flows."
+        },
+        {
+          "id": 5,
+          "title": "Create Match Configuration Preview",
+          "description": "Implement a preview component that shows the match configuration before final submission.",
+          "dependencies": [],
+          "details": "Create a visual preview component that displays the complete match configuration including: teams with their colors, players, match format, timeout settings, and other rules. This should update in real-time as the user changes form values. Add a confirmation step before final submission where users can review their configuration. Include the ability to go back and edit before confirming.",
+          "status": "pending",
+          "testStrategy": "Test the preview component with different configuration combinations. Verify that changes in the form are reflected in the preview. Test the edit and confirm workflow."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement Match and Set Lifecycle Management",
+      "description": "Develop functionality to manage the lifecycle of matches and sets, including starting/ending matches and sets, and tracking match state.",
+      "details": "1. Implement match state machine with states: notStarted, inProgress, completed, aborted\n2. Create API endpoints for match lifecycle actions\n3. Implement set state management\n4. Develop UI controls for match and set actions\n5. Implement automatic set progression based on winning conditions\n6. Add match abort/delete functionality with confirmation\n7. Implement timestamp recording for all state changes\n\nAPI Endpoints:\n```\nPOST /api/matches/:id/start - Start a match\nPOST /api/matches/:id/sets - Start a new set\nPOST /api/matches/:id/end - End a match\nPOST /api/matches/:id/abort - Abort a match\n```\n\nState Transitions:\n1. Match created → notStarted\n2. Start match → inProgress (first set starts)\n3. Set completed → check winning condition\n   a. If winning condition met → match completed\n   b. If not → start new set\n4. Abort match → aborted\n\nSet Lifecycle:\n1. Set created → notStarted\n2. Start set → inProgress\n3. Goal scored → check set winning condition\n   a. If winning condition met → set completed\n   b. If not → continue set",
+      "testStrategy": "1. Test starting a match and verify state changes\n2. Test completing a set and verify score tracking\n3. Verify that winning conditions are correctly evaluated\n4. Test automatic progression to new sets\n5. Verify that match completion is triggered when winning condition is met\n6. Test aborting a match and verify state change\n7. Verify that timestamps are recorded for all state changes\n8. Test edge cases like aborting a match during a set\n9. Verify that only authenticated users can control match lifecycle\n10. Test the UI controls for match and set management",
+      "priority": "high",
+      "dependencies": [
+        3,
+        4
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Match State Machine",
+          "description": "Create a state machine to manage match states (notStarted, inProgress, completed, aborted) with appropriate transition methods and validation.",
+          "dependencies": [],
+          "details": "Create a MatchStateMachine class that encapsulates the match state logic. Implement methods for each transition (startMatch, endMatch, abortMatch) with validation to prevent invalid transitions. Include timestamp recording for all state changes. The state machine should be the single source of truth for match state.",
+          "status": "pending",
+          "testStrategy": "Unit test each transition with valid and invalid state changes. Verify timestamps are recorded correctly and that invalid transitions throw appropriate errors."
+        },
+        {
+          "id": 2,
+          "title": "Implement Set Lifecycle Management",
+          "description": "Create functionality to manage set states (notStarted, inProgress, completed) with transitions and winning condition checks.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a SetManager class that handles set creation, state transitions, and winning condition evaluation. Implement methods to start a set, record goals, check winning conditions, and complete sets. Ensure sets can only be started when a match is inProgress. Include timestamp recording for all set state changes.",
+          "status": "pending",
+          "testStrategy": "Unit test set creation, state transitions, and winning condition logic. Test integration with the match state machine to verify proper coordination."
+        },
+        {
+          "id": 3,
+          "title": "Create API Endpoints for Match and Set Lifecycle",
+          "description": "Implement the REST API endpoints for managing match and set lifecycle actions.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create controllers and routes for the specified endpoints: start match, start new set, end match, and abort match. Each endpoint should validate the request, use the appropriate state machine methods, and return meaningful success/error responses. Implement proper error handling for invalid state transitions.",
+          "status": "pending",
+          "testStrategy": "Write API tests for each endpoint covering successful operations and error cases. Test the complete lifecycle flow from match creation through completion."
+        },
+        {
+          "id": 4,
+          "title": "Implement Automatic Set Progression",
+          "description": "Develop functionality to automatically progress from one set to the next based on winning conditions.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Extend the SetManager to automatically trigger the next set when a set is completed if the match winning condition isn't met. Implement logic to determine when a match should be completed based on set results (e.g., best of 3 sets). Add event listeners or hooks to detect set completion and trigger the appropriate next actions.",
+          "status": "pending",
+          "testStrategy": "Test automatic progression through multiple sets. Verify match completion occurs correctly after the appropriate number of sets are won by a player."
+        },
+        {
+          "id": 5,
+          "title": "Develop UI Controls for Match and Set Management",
+          "description": "Create user interface components to control match and set lifecycle actions.",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Implement UI buttons and controls for starting/ending matches, starting new sets, and aborting matches. Add confirmation dialogs for destructive actions like match abortion. Create visual indicators of current match and set state. Connect UI components to the API endpoints. Ensure UI state reflects the server state and handles errors appropriately.",
+          "status": "pending",
+          "testStrategy": "Perform UI component testing to verify buttons trigger the correct API calls. Test UI state updates in response to API responses. Conduct end-to-end testing of the complete match lifecycle through the UI."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Implement Scoring and Timeout Tracking",
+      "description": "Develop functionality to record and manage goals and timeouts, including undo capabilities for both.",
+      "details": "1. Create API endpoints for recording goals and timeouts\n2. Implement goal attribution to teams\n3. Develop timeout tracking with per-set limits\n4. Implement undo functionality for goals and timeouts\n5. Create UI controls for scoring and timeouts\n6. Add optional tracking of which row scored\n7. Implement real-time validation of timeout limits\n\nAPI Endpoints:\n```\nPOST /api/matches/:id/sets/:setId/goals - Record a goal\nDELETE /api/matches/:id/sets/:setId/goals/:goalId - Undo a goal\nPOST /api/matches/:id/sets/:setId/timeouts - Record a timeout\nDELETE /api/matches/:id/sets/:setId/timeouts/:timeoutId - Undo a timeout\n```\n\nGoal Recording Logic:\n1. Validate that match and set are in progress\n2. Create goal record with team attribution\n3. Update set score\n4. Check if set winning condition is met\n5. If set is won, update set status and trigger set completion\n\nTimeout Recording Logic:\n1. Validate that match and set are in progress\n2. Check if team has remaining timeouts in current set\n3. If valid, create timeout record\n4. Update remaining timeout count for team\n\nUndo Logic:\n1. For goals: mark goal as voided, update set score, recheck winning condition\n2. For timeouts: mark timeout as voided, restore timeout count for team",
+      "testStrategy": "1. Test recording goals for both teams\n2. Verify that set scores are updated correctly\n3. Test that set winning conditions are evaluated after each goal\n4. Test timeout recording and verify limit enforcement\n5. Verify that undo functionality works for goals and timeouts\n6. Test edge cases like undoing the winning goal\n7. Verify that optional row scoring data is recorded\n8. Test the UI controls for scoring and timeouts\n9. Verify that only authenticated users can record scores and timeouts\n10. Test performance with rapid scoring sequences",
+      "priority": "high",
+      "dependencies": [
+        3,
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement API endpoints for goal and timeout management",
+          "description": "Create the backend API endpoints for recording and undoing goals and timeouts during a match.",
+          "dependencies": [],
+          "details": "Implement four API endpoints: POST /api/matches/:id/sets/:setId/goals for recording goals, DELETE /api/matches/:id/sets/:setId/goals/:goalId for undoing goals, POST /api/matches/:id/sets/:setId/timeouts for recording timeouts, and DELETE /api/matches/:id/sets/:setId/timeouts/:timeoutId for undoing timeouts. Each endpoint should validate the match and set status before processing the request. Include proper error handling and response codes.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for each endpoint with various scenarios including valid requests, invalid match/set states, and edge cases. Use mock database calls to isolate API logic."
+        },
+        {
+          "id": 2,
+          "title": "Develop goal recording and attribution logic",
+          "description": "Implement the business logic for recording goals, attributing them to teams, and updating set scores.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a service layer that handles goal recording logic: validating match/set status, creating goal records with team attribution, updating set scores, checking for set winning conditions, and handling set completion if needed. Optionally implement tracking of which row scored. The logic should follow the steps outlined in the Goal Recording Logic section.",
+          "status": "pending",
+          "testStrategy": "Test goal attribution with different scenarios including regular goals, set-winning goals, and goals with row attribution. Verify that set scores are correctly updated and winning conditions are properly detected."
+        },
+        {
+          "id": 3,
+          "title": "Implement timeout tracking with validation",
+          "description": "Develop the logic for tracking timeouts with per-set limits and real-time validation.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a service that manages timeout tracking, enforcing per-set limits for each team. Implement validation to check if a team has remaining timeouts before recording a new one. Track the remaining timeout count for each team within a set. Implement real-time validation to prevent teams from exceeding their timeout limits.",
+          "status": "pending",
+          "testStrategy": "Test timeout tracking with scenarios including valid timeouts, attempts to exceed the limit, and timeouts across different sets. Verify that timeout counts are correctly maintained."
+        },
+        {
+          "id": 4,
+          "title": "Develop undo functionality for goals and timeouts",
+          "description": "Implement the logic to undo previously recorded goals and timeouts.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Create services to handle undoing goals and timeouts. For goals: mark the goal as voided, update the set score, and recheck the winning condition (potentially reverting a completed set to in-progress). For timeouts: mark the timeout as voided and restore the timeout count for the team. Ensure that the undo operations maintain data integrity and properly update all related state.",
+          "status": "pending",
+          "testStrategy": "Test undo functionality with scenarios including undoing regular goals, undoing set-winning goals, and undoing timeouts. Verify that all state is correctly restored after undo operations."
+        },
+        {
+          "id": 5,
+          "title": "Create UI controls for scoring and timeout management",
+          "description": "Develop the user interface components for recording and undoing goals and timeouts.",
+          "dependencies": [
+            2,
+            3,
+            4
+          ],
+          "details": "Create UI controls for scoring (including optional row attribution) and timeout tracking. Implement buttons for recording goals for each team, with optional dropdown for row selection. Add timeout buttons for each team that are disabled when a team has used all their timeouts. Include undo buttons for both goals and timeouts with appropriate confirmation dialogs. Display current score and remaining timeouts prominently. Ensure all UI elements update in real-time when changes occur.",
+          "status": "pending",
+          "testStrategy": "Perform component testing to verify UI behavior under different states. Test UI responsiveness to backend state changes. Conduct usability testing to ensure the interface is intuitive for scorekeepers."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Implement Real-time Scoreboard with WebSockets",
+      "description": "Develop a real-time scoreboard system using WebSockets for instant updates, with fallback to polling for environments without WebSocket support.",
+      "details": "1. Implement WebSocket server using Socket.io\n2. Create scoreboard data models for different views\n3. Implement real-time update broadcasting\n4. Develop fallback polling mechanism\n5. Create unique session URLs for scoreboards\n6. Implement QR code generation for easy sharing\n7. Develop responsive scoreboard layouts\n\nWebSocket Events:\n```\n'match:update' - Broadcast match state changes\n'score:update' - Broadcast score changes\n'timeout:update' - Broadcast timeout usage\n'set:update' - Broadcast set changes\n'view:change' - Broadcast scoreboard view changes\n```\n\nScoreboard Data Structure:\n```typescript\ninterface ScoreboardData {\n  matchId: string;\n  teams: [\n    {\n      name: string;\n      color: string;\n      players: string[];\n      score: number; // Current set score\n      setsWon: number;\n      timeoutsLeft: number;\n    },\n    {\n      name: string;\n      color: string;\n      players: string[];\n      score: number; // Current set score\n      setsWon: number;\n      timeoutsLeft: number;\n    }\n  ];\n  currentSet: number;\n  sets: Array<{\n    setNumber: number;\n    scores: [number, number];\n    timeoutsUsed: [number, number];\n    winner: number | null;\n  }>;\n  matchFormat: string;\n  status: string;\n  currentView: 'default' | 'detailed' | 'banner';\n  bannerText: string;\n}\n```\n\nPolling Fallback:\n- Implement endpoint for scoreboard data: GET /api/scoreboard/:sessionId\n- Configure polling interval (2-3 seconds)\n- Implement client-side logic to detect WebSocket failure and switch to polling",
+      "testStrategy": "1. Test WebSocket connection establishment\n2. Verify that scoreboard updates in real-time when scores change\n3. Test fallback to polling when WebSockets are unavailable\n4. Verify that unique session URLs work correctly\n5. Test QR code generation and scanning\n6. Verify that scoreboard is responsive on different devices\n7. Test performance with multiple concurrent viewers\n8. Verify that all scoreboard views display correctly\n9. Test reconnection behavior after connection loss\n10. Verify that page title updates with current score",
+      "priority": "high",
+      "dependencies": [
+        5,
+        6
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up WebSocket Server with Socket.io",
+          "description": "Implement the WebSocket server using Socket.io to handle real-time communication between clients and server for scoreboard updates.",
+          "dependencies": [],
+          "details": "1. Install Socket.io package\n2. Configure Socket.io server to run alongside the existing HTTP server\n3. Define event handlers for the specified events ('match:update', 'score:update', etc.)\n4. Implement authentication/authorization for WebSocket connections\n5. Set up namespaces for different scoreboards using sessionId\n6. Implement error handling and logging for WebSocket connections",
+          "status": "pending",
+          "testStrategy": "Use Socket.io client library to create test clients that connect to the server and verify event handling. Mock multiple clients to ensure broadcast functionality works correctly."
+        },
+        {
+          "id": 2,
+          "title": "Implement Scoreboard Data Models and Storage",
+          "description": "Create the data models for storing and managing scoreboard data according to the specified structure, including persistence and retrieval mechanisms.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement the ScoreboardData interface in the codebase\n2. Create a repository/service for managing scoreboard data\n3. Implement methods for creating, retrieving, and updating scoreboard data\n4. Set up data validation to ensure scoreboard updates maintain data integrity\n5. Implement session management for unique scoreboard URLs\n6. Create methods to generate initial scoreboard state based on match configuration",
+          "status": "pending",
+          "testStrategy": "Write unit tests for the data model and repository methods. Test data validation, state transitions, and edge cases like handling concurrent updates."
+        },
+        {
+          "id": 3,
+          "title": "Develop Real-time Update Broadcasting System",
+          "description": "Implement the system for broadcasting scoreboard updates to all connected clients when changes occur, using the WebSocket server.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Create event emitters for each update type ('match:update', 'score:update', etc.)\n2. Implement middleware to capture scoreboard changes and trigger appropriate events\n3. Develop throttling mechanism to prevent broadcast storms\n4. Implement room-based broadcasting to ensure updates only go to relevant clients\n5. Create server-side handlers for client-initiated update requests\n6. Add security measures to validate update requests before broadcasting",
+          "status": "pending",
+          "testStrategy": "Test with multiple connected clients to verify all clients receive updates. Simulate high-frequency updates to test throttling. Verify that updates are only sent to clients in the correct rooms."
+        },
+        {
+          "id": 4,
+          "title": "Implement Polling Fallback Mechanism",
+          "description": "Develop a fallback mechanism using HTTP polling for environments where WebSockets are not supported or are blocked.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Create RESTful endpoint for scoreboard data: GET /api/scoreboard/:sessionId\n2. Implement caching to reduce database load from frequent polling\n3. Add ETag support for efficient polling\n4. Develop client-side detection of WebSocket failures\n5. Implement automatic fallback to polling when WebSockets fail\n6. Configure appropriate polling intervals (2-3 seconds) with exponential backoff\n7. Add monitoring to track WebSocket vs. polling usage",
+          "status": "pending",
+          "testStrategy": "Test in environments with WebSockets blocked. Verify that the transition to polling is seamless. Load test the polling endpoint to ensure it can handle multiple clients polling simultaneously."
+        },
+        {
+          "id": 5,
+          "title": "Create Responsive Scoreboard UI with Sharing Features",
+          "description": "Develop the frontend components for displaying the scoreboard in different views, along with sharing functionality via unique URLs and QR codes.",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "1. Implement responsive scoreboard layouts for 'default', 'detailed', and 'banner' views\n2. Create UI components to display all scoreboard data elements\n3. Implement real-time updates using WebSocket client connection\n4. Add view switching functionality with appropriate animations\n5. Implement unique session URL generation and display\n6. Integrate QR code generation library for easy sharing\n7. Create copy-to-clipboard functionality for scoreboard URLs\n8. Implement view-specific optimizations for different device sizes",
+          "status": "pending",
+          "testStrategy": "Test UI on multiple device sizes to verify responsiveness. Verify that real-time updates are reflected immediately in the UI. Test QR code generation and scanning to ensure URLs work correctly."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Implement Multiple Scoreboard Views",
+      "description": "Develop different scoreboard views including default, detailed, and banner modes, with controls for commentators to switch between views.",
+      "details": "1. Implement default scoreboard view with current scores, timeouts, and sets won\n2. Create detailed view showing all sets' scores and statistics\n3. Develop banner mode for custom messages\n4. Implement view switching controls for commentators\n5. Create scoreboard positioning controls\n6. Develop responsive layouts for all views\n7. Implement real-time view updates via WebSockets\n\nView Components:\n\nDefault View:\n- Team names and colors\n- Current set score\n- Timeouts remaining for each team\n- Sets won by each team\n- Match format information\n\nDetailed View:\n- All information from default view\n- Complete history of all sets played\n- Set-by-set scores\n- Timeout usage per set\n- Optional statistics (total goals, etc.)\n\nBanner View:\n- Custom text message\n- Optional team information\n- Configurable appearance\n\nCommentator Controls:\n- View selection dropdown\n- Banner text input field\n- Scoreboard position controls (top, bottom, left, right)\n- Size adjustment controls",
+      "testStrategy": "1. Test switching between different views\n2. Verify that all views display correct information\n3. Test banner mode with various text lengths\n4. Verify that view changes are broadcast in real-time\n5. Test responsive behavior on different screen sizes\n6. Verify that scoreboard positioning controls work correctly\n7. Test accessibility of all views\n8. Verify that views render correctly in different browsers\n9. Test performance of view transitions\n10. Verify that commentator controls update views immediately",
+      "priority": "medium",
+      "dependencies": [
+        7
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Default Scoreboard View",
+          "description": "Create the default scoreboard view component displaying essential match information including team names, colors, current set score, timeouts remaining, sets won, and match format.",
+          "dependencies": [],
+          "details": "Create a React component for the default view with styled containers for each information element. Use CSS Grid or Flexbox for layout. Implement props for all data points (team names, colors, scores, timeouts, sets). Add appropriate styling with team color integration. Ensure the component is responsive and maintains readability at different screen sizes.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for the component rendering with various prop combinations. Test responsive behavior using different viewport sizes. Verify all data elements display correctly."
+        },
+        {
+          "id": 2,
+          "title": "Develop Detailed and Banner View Components",
+          "description": "Create the detailed scoreboard view showing comprehensive match statistics and the banner view for custom messages.",
+          "dependencies": [
+            1
+          ],
+          "details": "For the detailed view, extend the default view component to include set-by-set scores, timeout usage history, and optional statistics. Implement collapsible sections for better organization. For the banner view, create a component that displays custom text with configurable styling options. Both views should maintain consistent styling with the default view while accommodating their specific content requirements.",
+          "status": "pending",
+          "testStrategy": "Test both components with various data scenarios. For detailed view, verify historical data displays correctly. For banner view, test different text lengths and styling configurations."
+        },
+        {
+          "id": 3,
+          "title": "Implement View Switching Controls",
+          "description": "Create a control panel for commentators to switch between different scoreboard views and configure the banner text.",
+          "dependencies": [
+            2
+          ],
+          "details": "Develop a control component with a view selection dropdown (Default, Detailed, Banner). When Banner is selected, show a text input field for custom messages. Implement state management to track the current view selection. Create a clean, intuitive interface that's easy to use during live commentary. Add keyboard shortcuts for quick view switching.",
+          "status": "pending",
+          "testStrategy": "Test view switching functionality ensures the correct view renders when selected. Verify banner text updates in real-time. Test keyboard shortcuts work as expected."
+        },
+        {
+          "id": 4,
+          "title": "Add Scoreboard Positioning and Size Controls",
+          "description": "Implement controls for adjusting the scoreboard's position and size on the screen.",
+          "dependencies": [
+            3
+          ],
+          "details": "Create position controls with options for top, bottom, left, and right screen placement. Add size adjustment controls (small, medium, large, or a slider for custom sizing). Implement drag-and-drop functionality for custom positioning. Store position and size preferences in state and persist them in local storage. Ensure the scoreboard remains within screen boundaries regardless of position or size.",
+          "status": "pending",
+          "testStrategy": "Test position changes apply correctly. Verify size adjustments work across all views. Test boundary constraints prevent the scoreboard from moving off-screen. Verify preferences persist between page reloads."
+        },
+        {
+          "id": 5,
+          "title": "Implement Real-time Updates via WebSockets",
+          "description": "Set up WebSocket connections to enable real-time updates to all scoreboard views when data changes.",
+          "dependencies": [
+            4
+          ],
+          "details": "Integrate a WebSocket client to connect to the backend. Implement event listeners for score updates, timeout changes, and other relevant data points. Create handlers to update the UI components when new data arrives. Add visual indicators for recent changes (e.g., briefly highlighting changed values). Implement reconnection logic for handling connection drops. Ensure all three views update seamlessly when receiving new data.",
+          "status": "pending",
+          "testStrategy": "Test WebSocket connection establishment and reconnection. Verify UI updates correctly when receiving different types of data updates. Test performance under rapid update scenarios. Simulate connection drops to verify reconnection behavior."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implement External API Integration",
+      "description": "Develop functionality to fetch match data from external APIs, including team and player information, with proper error handling and data mapping.",
+      "details": "1. Create configurable API connection settings\n2. Implement secure credential storage\n3. Develop data fetching services\n4. Create data mapping between external and internal formats\n5. Implement error handling and retry logic\n6. Add test connection functionality\n7. Create UI for API configuration\n\nAPI Configuration Schema:\n```typescript\ninterface ApiConfig {\n  _id: string;\n  name: string;\n  endpoint: string;\n  authType: 'none' | 'basic' | 'bearer' | 'apiKey';\n  credentials: {\n    username?: string;\n    password?: string;\n    token?: string;\n    apiKey?: string;\n  };\n  headers: Record<string, string>;\n  pollingInterval: number; // in seconds\n  enabled: boolean;\n  createdAt: Date;\n  updatedAt: Date;\n}\n```\n\nData Mapping Functions:\n```typescript\n// Example mapping function\nfunction mapExternalMatch(externalData: any): Partial<Match> {\n  return {\n    teams: [\n      {\n        name: externalData.team1?.name || 'Team 1',\n        players: externalData.team1?.players || [],\n        color: externalData.team1?.color || 'red',\n        setsWon: 0\n      },\n      {\n        name: externalData.team2?.name || 'Team 2',\n        players: externalData.team2?.players || [],\n        color: externalData.team2?.color || 'blue',\n        setsWon: 0\n      }\n    ],\n    format: mapFormat(externalData.format),\n    playerSetup: externalData.playerCount === 4 ? '2v2' : '1v1',\n    // Map other fields as needed\n  };\n}\n```\n\nAPI Endpoints:\n```\nGET /api/config/api - Get API configurations\nPOST /api/config/api - Create API configuration\nPUT /api/config/api/:id - Update API configuration\nDELETE /api/config/api/:id - Delete API configuration\nPOST /api/config/api/:id/test - Test API connection\nGET /api/external/matches - Fetch matches from external API\n```",
+      "testStrategy": "1. Test API configuration with various authentication methods\n2. Verify that credentials are securely stored\n3. Test connection to external APIs\n4. Verify that data mapping works correctly\n5. Test error handling with invalid or unavailable APIs\n6. Verify retry logic for temporary failures\n7. Test the UI for API configuration\n8. Verify that fetched data is correctly imported into the system\n9. Test performance with large data sets\n10. Verify that only authorized users can configure APIs",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        4
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create API Configuration Backend",
+          "description": "Implement the backend services for managing API configurations, including CRUD operations and secure credential storage.",
+          "dependencies": [],
+          "details": "Create a MongoDB schema for ApiConfig matching the provided TypeScript interface. Implement the API endpoints for creating, reading, updating, and deleting API configurations. Ensure credentials are encrypted before storage using a library like bcrypt or a secure vault service. Implement validation for the configuration data to ensure required fields are present and valid.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for the API configuration service with mocked database. Create integration tests that verify CRUD operations against a test database. Test encryption/decryption of credentials."
+        },
+        {
+          "id": 2,
+          "title": "Implement External API Connection Service",
+          "description": "Develop a service to establish connections to external APIs based on stored configurations, with test connection functionality.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a service that can dynamically connect to external APIs using the stored configurations. Implement different authentication methods (none, basic, bearer, apiKey) as specified in the ApiConfig interface. Add a test connection method that validates the connection without fetching full data. Handle connection timeouts and authentication failures appropriately. Implement the POST /api/config/api/:id/test endpoint.",
+          "status": "pending",
+          "testStrategy": "Create mock external API responses for testing. Test each authentication method separately. Verify error handling for various failure scenarios (timeout, auth failure, etc.)."
+        },
+        {
+          "id": 3,
+          "title": "Develop Data Fetching and Polling Service",
+          "description": "Create a service to fetch match data from external APIs with configurable polling intervals and retry logic.",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement a service that fetches match data from external APIs based on the polling interval specified in the configuration. Add retry logic for failed requests with exponential backoff. Create a background job scheduler that manages the polling for all enabled API configurations. Implement the GET /api/external/matches endpoint that returns the latest fetched data. Add logging for all API interactions.",
+          "status": "pending",
+          "testStrategy": "Test the polling mechanism with different intervals. Verify retry logic works correctly by simulating network failures. Test the scheduler with multiple concurrent API configurations."
+        },
+        {
+          "id": 4,
+          "title": "Create Data Mapping Layer",
+          "description": "Implement data mapping functions to transform external API data into the application's internal format.",
+          "dependencies": [
+            3
+          ],
+          "details": "Expand on the example mapExternalMatch function to handle all required fields. Create mapping functions for different external API formats that might be encountered. Implement validation to ensure mapped data meets the application's requirements. Add error handling for malformed or unexpected external data structures. Create utility functions for common mapping operations.",
+          "status": "pending",
+          "testStrategy": "Test mapping functions with various sample payloads from external APIs. Verify error handling for incomplete or malformed data. Create unit tests for each mapping function."
+        },
+        {
+          "id": 5,
+          "title": "Build API Configuration UI",
+          "description": "Develop a user interface for managing external API configurations and testing connections.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create a configuration page that allows users to add, edit, and delete API configurations. Implement forms for entering API details with appropriate validation. Add a 'Test Connection' button that calls the test endpoint and displays the result. Include toggle switches for enabling/disabling specific API integrations. Add a dashboard showing the status of all configured APIs with their last successful fetch time. Implement secure handling of credential input fields.",
+          "status": "pending",
+          "testStrategy": "Create UI component tests for the configuration forms. Test form validation for required fields and format validation. Test the connection status display with various API states (connected, failed, disabled)."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Implement Match History and Statistics",
+      "description": "Develop functionality to store, retrieve, and display match history and statistics, with filtering and search capabilities.",
+      "details": "1. Create API endpoints for match history and statistics\n2. Implement filtering and search functionality\n3. Develop statistics calculation services\n4. Create UI for browsing match history\n5. Implement detailed match view\n6. Add export functionality for reports\n7. Develop data visualization for statistics\n\nAPI Endpoints:\n```\nGET /api/matches - Get list of matches with filtering\nGET /api/matches/:id/statistics - Get detailed statistics for a match\nGET /api/players/statistics - Get player statistics across matches\nGET /api/export/match/:id - Export match data (PDF/CSV)\n```\n\nFilter Parameters:\n- dateFrom, dateTo: Filter by date range\n- players: Filter by player names\n- teams: Filter by team names\n- format: Filter by match format\n- status: Filter by match status\n\nStatistics Calculations:\n- Total goals per team/player\n- Goals by row (if tracked)\n- Timeout usage patterns\n- Win/loss records\n- Average goals per set\n- Set duration statistics\n\nUI Components:\n- Filterable match list\n- Detailed match view with set-by-set breakdown\n- Statistics visualizations (charts, graphs)\n- Export controls for reports",
+      "testStrategy": "1. Test filtering and search functionality with various criteria\n2. Verify that statistics are calculated correctly\n3. Test pagination of match history\n4. Verify that detailed match view shows all relevant information\n5. Test export functionality for different formats\n6. Verify that data visualizations render correctly\n7. Test performance with large match history\n8. Verify that only authorized users can access certain statistics\n9. Test the UI for usability and responsiveness\n10. Verify that exported reports contain accurate data",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        5,
+        6
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Database Models and API Endpoints for Match History",
+          "description": "Design and implement database models for storing match history and statistics. Create RESTful API endpoints for retrieving match data with filtering capabilities.",
+          "dependencies": [],
+          "details": "1. Create/update database models for Match, MatchStatistics, and PlayerStatistics entities with appropriate relationships.\n2. Implement the GET /api/matches endpoint with query parameter support for all filter parameters (dateFrom, dateTo, players, teams, format, status).\n3. Implement the GET /api/matches/:id/statistics endpoint to retrieve detailed statistics for a specific match.\n4. Add pagination support for match listing endpoint.\n5. Include proper error handling and validation for all API endpoints.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for model validation and API endpoint functionality. Create integration tests that verify filtering works correctly with different parameter combinations."
+        },
+        {
+          "id": 2,
+          "title": "Implement Statistics Calculation Service",
+          "description": "Develop a service layer that calculates various statistics from match data, including player and team performance metrics.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a StatisticsService class with methods for calculating all required statistics (total goals, goals by row, timeout patterns, win/loss records, etc.).\n2. Implement the GET /api/players/statistics endpoint to retrieve aggregated player statistics across matches.\n3. Add caching mechanisms for frequently accessed statistics to improve performance.\n4. Ensure calculations handle edge cases (incomplete matches, forfeits, etc.).\n5. Design the service to be extensible for future statistics types.",
+          "status": "pending",
+          "testStrategy": "Create unit tests with mock match data to verify calculation accuracy. Test edge cases and ensure calculations remain performant with large datasets."
+        },
+        {
+          "id": 3,
+          "title": "Develop Match History UI Components",
+          "description": "Create UI components for browsing and filtering match history, including a filterable match list and detailed match view.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement a filterable match list component with controls for all filter parameters.\n2. Create a detailed match view component showing set-by-set breakdown of match data.\n3. Add pagination controls for the match list.\n4. Implement responsive design for mobile and desktop views.\n5. Add loading states and error handling for API requests.",
+          "status": "pending",
+          "testStrategy": "Write component tests to verify rendering and interaction. Test responsive behavior across different screen sizes."
+        },
+        {
+          "id": 4,
+          "title": "Implement Data Visualization for Statistics",
+          "description": "Create interactive data visualizations (charts, graphs) to display match and player statistics in an intuitive way.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "1. Select and integrate an appropriate charting library (e.g., Chart.js, D3.js).\n2. Implement visualizations for key statistics (win/loss records, goals per set, etc.).\n3. Create a dashboard layout to display multiple visualizations.\n4. Add interactive features (tooltips, filtering, drill-down capabilities).\n5. Ensure visualizations are accessible and responsive.",
+          "status": "pending",
+          "testStrategy": "Test visualization rendering with different data sets. Verify interactive features work correctly. Test accessibility compliance."
+        },
+        {
+          "id": 5,
+          "title": "Add Export Functionality for Reports",
+          "description": "Implement functionality to export match data and statistics in various formats (PDF, CSV).",
+          "dependencies": [
+            2,
+            4
+          ],
+          "details": "1. Implement the GET /api/export/match/:id endpoint to generate exportable data.\n2. Create service methods to format data for different export types (PDF, CSV).\n3. Add UI controls in the match detail view to trigger exports.\n4. Implement client-side or server-side export generation based on performance considerations.\n5. Include metadata and formatting in exports to improve readability.",
+          "status": "pending",
+          "testStrategy": "Test export functionality with various match data. Verify exported files contain correct information and are properly formatted. Test with large datasets to ensure performance."
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Implement Match Editing and Administration",
+      "description": "Develop functionality for administrators to edit historical match data, including scores, timeouts, and player information.",
+      "details": "1. Create API endpoints for match editing\n2. Implement validation for edited data\n3. Develop audit logging for all changes\n4. Create UI for match editing\n5. Implement confirmation workflows for significant changes\n6. Add match deletion with proper authorization\n\nAPI Endpoints:\n```\nPUT /api/matches/:id - Update match details\nPUT /api/matches/:id/sets/:setId - Update set details\nPUT /api/matches/:id/sets/:setId/goals/:goalId - Update goal details\nPUT /api/matches/:id/sets/:setId/timeouts/:timeoutId - Update timeout details\nDELETE /api/matches/:id - Delete match and all related data\n```\n\nEditable Fields:\n- Match: teams, player names, match format, timeout configuration\n- Set: scores, timeouts used, start/end times\n- Goal: team attribution, timestamp, scoring row\n- Timeout: team attribution, timestamp\n\nAudit Log Schema:\n```typescript\ninterface AuditLog {\n  _id: string;\n  userId: string;\n  action: 'create' | 'update' | 'delete';\n  entityType: 'match' | 'set' | 'goal' | 'timeout' | 'user';\n  entityId: string;\n  previousState: any;\n  newState: any;\n  timestamp: Date;\n  ipAddress: string;\n}\n```\n\nValidation Rules:\n- Scores must be non-negative integers\n- Set scores must be consistent with goals recorded\n- Timeouts used cannot exceed configured limit\n- Match format cannot be changed if sets have been played",
+      "testStrategy": "1. Test editing various match properties\n2. Verify that validation rules are enforced\n3. Test audit logging for all changes\n4. Verify that only administrators can edit matches\n5. Test confirmation workflows for destructive actions\n6. Verify that match deletion removes all related data\n7. Test the UI for match editing\n8. Verify that changes are reflected in statistics and reports\n9. Test edge cases like editing completed matches\n10. Verify that concurrent edits are handled properly",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        10
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create API endpoints for match editing and deletion",
+          "description": "Implement all required API endpoints for editing match details, sets, goals, timeouts, and match deletion with proper authorization checks.",
+          "dependencies": [],
+          "details": "Implement the following endpoints: PUT /api/matches/:id, PUT /api/matches/:id/sets/:setId, PUT /api/matches/:id/sets/:setId/goals/:goalId, PUT /api/matches/:id/sets/:setId/timeouts/:timeoutId, and DELETE /api/matches/:id. Each endpoint should verify user authentication and admin authorization before processing. Structure the controllers to handle the request validation, service calls, and appropriate response formatting.",
+          "status": "pending",
+          "testStrategy": "Write unit tests for each endpoint covering successful operations, validation failures, and authorization failures. Use mock services to isolate controller testing."
+        },
+        {
+          "id": 2,
+          "title": "Implement validation logic for match data edits",
+          "description": "Create a validation service that enforces all business rules for match data edits according to the specified validation rules.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop a validation service with methods for each entity type (match, set, goal, timeout). Implement validation rules: ensure scores are non-negative integers, verify set scores match recorded goals, check timeout counts against limits, and prevent match format changes for matches with existing sets. Return detailed validation errors that can be passed to the client.",
+          "status": "pending",
+          "testStrategy": "Create comprehensive unit tests for each validation rule with both valid and invalid test cases. Test edge cases like zero scores, maximum timeout usage, and format change attempts."
+        },
+        {
+          "id": 3,
+          "title": "Develop audit logging system for match changes",
+          "description": "Create a system to log all changes to match data according to the provided audit log schema, capturing previous and new states.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement an AuditLogService that records all create, update, and delete operations on match entities. Store the user ID, action type, entity type, entity ID, previous state, new state, timestamp, and IP address. Integrate this service with all API endpoints to automatically log changes. Ensure the service handles serialization of complex objects and properly sanitizes sensitive data.",
+          "status": "pending",
+          "testStrategy": "Test the audit logging system by verifying logs are created for each type of operation. Ensure the correct before/after states are captured and that all required fields are populated."
+        },
+        {
+          "id": 4,
+          "title": "Create admin UI for match editing",
+          "description": "Develop the user interface components for administrators to edit match details, sets, goals, and timeouts with appropriate forms and validation.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create React components for editing each entity type. Implement forms with validation for all editable fields: match details (teams, player names, match format, timeout configuration), set details (scores, timeouts, start/end times), goal details (team, timestamp, scoring row), and timeout details (team, timestamp). Add error handling to display validation errors from the API. Include confirmation dialogs for potentially destructive actions.",
+          "status": "pending",
+          "testStrategy": "Write component tests to verify form rendering, validation behavior, and submission handling. Test UI state management for loading, success, and error states."
+        },
+        {
+          "id": 5,
+          "title": "Implement confirmation workflows for significant changes",
+          "description": "Add confirmation dialogs and authorization workflows for significant or potentially destructive changes to match data.",
+          "dependencies": [
+            4
+          ],
+          "details": "Identify high-impact changes that require additional confirmation (e.g., match deletion, score changes that affect match outcome, changes to completed matches). Implement a multi-step confirmation process for these actions, potentially requiring secondary authorization for critical changes. For match deletion, require typing a confirmation phrase. Add clear warnings about the consequences of each action and provide cancel options at each step.",
+          "status": "pending",
+          "testStrategy": "Test the confirmation workflows with different user roles to ensure proper authorization enforcement. Verify that confirmations prevent accidental changes and that cancellation properly aborts operations."
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Implement Responsive UI for Commentators",
+      "description": "Develop a responsive, intuitive user interface for commentators to manage matches, with optimized controls for quick actions during fast-paced matches.",
+      "details": "1. Design and implement responsive layouts for all commentator screens\n2. Create optimized controls for scoring and timeouts\n3. Implement keyboard shortcuts for common actions\n4. Develop intuitive match creation workflow\n5. Create real-time feedback for user actions\n6. Implement dark mode support\n7. Optimize for tablet use during matches\n\nKey UI Components:\n\nMatch Management Dashboard:\n- Active match display\n- Quick access to recent and upcoming matches\n- Match creation button\n- Match history access\n\nActive Match Control Panel:\n- Prominent score buttons for both teams\n- Timeout buttons with remaining count display\n- Set control buttons (start new set, end match)\n- Undo buttons for recent actions\n- Real-time match status and statistics\n\nScoreboard Control Panel:\n- View selection controls\n- Banner text input\n- Scoreboard positioning controls\n- QR code and URL display for sharing\n\nKeyboard Shortcuts:\n- Team 1 Score: '1' or 'q'\n- Team 2 Score: '2' or 'p'\n- Team 1 Timeout: 'Shift+1' or 'Shift+q'\n- Team 2 Timeout: 'Shift+2' or 'Shift+p'\n- Undo: 'Ctrl+z' or 'Cmd+z'\n- New Set: 'n'\n- End Match: 'e'",
+      "testStrategy": "1. Test responsive behavior on various screen sizes\n2. Verify that controls are accessible and intuitive\n3. Test keyboard shortcuts for all actions\n4. Verify that real-time feedback is provided for user actions\n5. Test dark mode appearance\n6. Verify that the UI is optimized for touch input on tablets\n7. Test performance during rapid scoring sequences\n8. Verify that all UI components follow accessibility guidelines\n9. Test the UI with different browsers and devices\n10. Conduct usability testing with actual commentators",
+      "priority": "high",
+      "dependencies": [
+        4,
+        5,
+        6,
+        8
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Match Management Dashboard Layout",
+          "description": "Design and implement the responsive layout for the Match Management Dashboard, which serves as the main entry point for commentators.",
+          "dependencies": [],
+          "details": "Create a responsive grid layout with flexbox or CSS Grid that adapts to different screen sizes. Implement the active match display component, quick access section for recent/upcoming matches, prominent match creation button, and match history access. Use media queries to optimize the layout for tablet view. Ensure all interactive elements have appropriate touch targets for tablet use.",
+          "status": "pending",
+          "testStrategy": "Test responsiveness across different viewport sizes (desktop, tablet, mobile). Verify that all UI elements maintain proper spacing and alignment. Conduct usability testing with commentators to ensure intuitive navigation."
+        },
+        {
+          "id": 2,
+          "title": "Develop Active Match Control Panel with Scoring Controls",
+          "description": "Create the core match control interface with optimized controls for scoring, timeouts, and match flow management.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement large, touch-friendly score buttons for both teams with visual feedback on press. Create timeout buttons with remaining count displays. Add set control buttons (start new set, end match) with confirmation dialogs to prevent accidental triggers. Design and implement undo functionality for recent actions with a visible history of changes. Include real-time match status and statistics display that updates instantly after actions.",
+          "status": "pending",
+          "testStrategy": "Test rapid input scenarios to ensure the UI remains responsive during fast scoring. Verify that all state changes are reflected immediately in the UI. Test edge cases like maximum scores and timeout limits."
+        },
+        {
+          "id": 3,
+          "title": "Implement Keyboard Shortcuts System",
+          "description": "Create a comprehensive keyboard shortcuts system to allow commentators to perform common actions quickly without using the mouse or touchscreen.",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement the specified keyboard shortcuts: Team 1 Score ('1'/'q'), Team 2 Score ('2'/'p'), Team 1 Timeout ('Shift+1'/'Shift+q'), Team 2 Timeout ('Shift+2'/'Shift+p'), Undo ('Ctrl+z'/'Cmd+z'), New Set ('n'), End Match ('e'). Create a keyboard shortcut listener service that works across all commentator screens. Add visual indicators when shortcuts are pressed and implement a shortcuts help modal that can be triggered with '?' key. Ensure shortcuts don't interfere with text input fields.",
+          "status": "pending",
+          "testStrategy": "Test all shortcuts across different browsers and operating systems. Verify that shortcuts don't conflict with browser default shortcuts. Test keyboard accessibility for users who rely entirely on keyboard navigation."
+        },
+        {
+          "id": 4,
+          "title": "Create Scoreboard Control Panel",
+          "description": "Implement the interface for controlling the public-facing scoreboard display, including view selection, banner text, positioning controls, and sharing options.",
+          "dependencies": [
+            2
+          ],
+          "details": "Design and implement view selection controls with preview thumbnails. Create text input for banner messages with character count and validation. Implement scoreboard positioning controls with drag-and-drop functionality and preset positions. Generate and display QR codes and shortened URLs for easy scoreboard sharing. Add a preview mode that shows how the scoreboard appears to viewers. Implement settings persistence so user preferences are remembered.",
+          "status": "pending",
+          "testStrategy": "Test that all scoreboard controls correctly affect the public scoreboard view. Verify QR code generation and URL shortening functionality. Test across different screen sizes to ensure the control panel remains usable on smaller devices."
+        },
+        {
+          "id": 5,
+          "title": "Implement Dark Mode and Real-time Feedback System",
+          "description": "Add dark mode support across all commentator interfaces and implement a comprehensive real-time feedback system for user actions.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "Create a themeable CSS architecture using CSS variables for color schemes. Implement automatic dark mode detection based on system preferences and manual toggle option. Add smooth transitions between light/dark modes. For the feedback system, implement toast notifications for successful actions, error states with recovery options, loading indicators for async operations, and subtle animations for state changes. Ensure all feedback is accessible and not solely reliant on color.",
+          "status": "pending",
+          "testStrategy": "Test dark mode in different lighting conditions to ensure readability. Verify that all UI components have appropriate contrast in both light and dark modes. Test the feedback system with screen readers to ensure accessibility. Conduct user testing to verify that feedback is helpful and not distracting during fast-paced matches."
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Implement Security Measures and Data Protection",
+      "description": "Implement comprehensive security measures including authentication, authorization, input validation, and protection against common web vulnerabilities.",
+      "details": "1. Implement secure authentication with JWT\n2. Configure TLS for all network communication\n3. Implement CSRF protection\n4. Add input validation for all user-provided data\n5. Implement rate limiting for sensitive endpoints\n6. Configure secure HTTP headers\n7. Implement proper error handling to prevent information leakage\n8. Add audit logging for security events\n\nSecurity Measures:\n\nAuthentication Security:\n- Secure password hashing with bcrypt (cost factor 12+)\n- JWT with appropriate expiration (90 minutes)\n- Secure storage of tokens (HttpOnly cookies)\n- Account lockout after 5 failed attempts\n\nAPI Security:\n- Input validation using Joi or similar\n- Parameterized queries to prevent injection\n- Rate limiting using express-rate-limit\n- CORS configuration with appropriate origins\n\nHTTP Security Headers:\n- Content-Security-Policy\n- X-Content-Type-Options: nosniff\n- X-Frame-Options: DENY\n- Strict-Transport-Security\n- X-XSS-Protection\n\nAuthorization:\n- Role-based access control\n- Resource-based permissions\n- Principle of least privilege\n\nError Handling:\n- Custom error classes\n- Sanitized error responses\n- Detailed internal logging",
+      "testStrategy": "1. Perform security scanning with tools like OWASP ZAP\n2. Test authentication with various scenarios\n3. Verify that rate limiting prevents brute force attacks\n4. Test CSRF protection effectiveness\n5. Verify that input validation prevents injection attacks\n6. Test authorization controls for different user roles\n7. Verify that HTTP security headers are properly configured\n8. Test error handling to ensure no sensitive information is leaked\n9. Verify that audit logging captures security events\n10. Conduct penetration testing on the application",
+      "priority": "high",
+      "dependencies": [
+        1,
+        2
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Authentication System with JWT",
+          "description": "Set up secure authentication using JWT tokens with proper password hashing, secure storage, and account lockout mechanisms.",
+          "dependencies": [],
+          "details": "1. Implement password hashing using bcrypt with cost factor 12+\n2. Create JWT authentication middleware with 90-minute expiration\n3. Configure secure token storage using HttpOnly cookies\n4. Implement account lockout mechanism after 5 failed login attempts\n5. Create login, logout, and token refresh endpoints",
+          "status": "pending",
+          "testStrategy": "Unit tests for password hashing and JWT verification. Integration tests for login flow, account lockout, and token refresh. Security testing for cookie settings and token validation."
+        },
+        {
+          "id": 2,
+          "title": "Configure API Security and Input Validation",
+          "description": "Implement comprehensive input validation, parameterized queries, rate limiting, and CORS configuration to protect API endpoints.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Set up Joi or similar validation library for request validation\n2. Implement middleware for validating all user inputs\n3. Configure parameterized queries for database operations\n4. Set up rate limiting using express-rate-limit for sensitive endpoints\n5. Configure CORS with appropriate origins and headers",
+          "status": "pending",
+          "testStrategy": "Unit tests for validation schemas. Integration tests for rate limiting behavior. Security testing for injection vulnerabilities and CORS configuration."
+        },
+        {
+          "id": 3,
+          "title": "Implement Role-Based Authorization System",
+          "description": "Create a comprehensive authorization system with role-based access control and resource-based permissions.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Design and implement role and permission data models\n2. Create middleware for role-based access control\n3. Implement resource-based permission checks\n4. Apply principle of least privilege across all endpoints\n5. Create admin interfaces for role and permission management",
+          "status": "pending",
+          "testStrategy": "Unit tests for permission checking logic. Integration tests for role-based endpoint access. End-to-end tests for admin role management interfaces."
+        },
+        {
+          "id": 4,
+          "title": "Configure Secure HTTP Headers and TLS",
+          "description": "Set up secure HTTP headers and configure TLS for all network communications to protect against common web vulnerabilities.",
+          "dependencies": [],
+          "details": "1. Configure Content-Security-Policy headers\n2. Set up X-Content-Type-Options, X-Frame-Options, and X-XSS-Protection\n3. Implement Strict-Transport-Security (HSTS)\n4. Configure TLS with proper cipher suites and protocols\n5. Implement CSRF protection with tokens",
+          "status": "pending",
+          "testStrategy": "Automated tests to verify header presence and values. Security scanning with tools like OWASP ZAP. Manual testing with browser security tools."
+        },
+        {
+          "id": 5,
+          "title": "Implement Error Handling and Security Logging",
+          "description": "Create a robust error handling system and comprehensive security event logging to prevent information leakage and track security events.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Design and implement custom error classes\n2. Create middleware for sanitizing error responses\n3. Set up detailed internal error logging\n4. Implement audit logging for security events (login attempts, permission changes, etc.)\n5. Configure log rotation and secure storage for security logs",
+          "status": "pending",
+          "testStrategy": "Unit tests for error handling and sanitization. Integration tests for logging behavior. Manual review of logs for sensitive information."
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Implement Performance Optimization and Scalability",
+      "description": "Optimize application performance and implement scalability measures to handle concurrent users and growing datasets.",
+      "details": "1. Implement database query optimization\n2. Add caching for frequently accessed data\n3. Optimize WebSocket communication\n4. Implement pagination for large datasets\n5. Configure horizontal scaling capabilities\n6. Optimize frontend bundle size\n7. Implement lazy loading for components\n\nPerformance Optimizations:\n\nDatabase Optimization:\n- Create appropriate indexes for common queries\n- Implement query optimization techniques\n- Use projection to limit returned fields\n- Implement efficient aggregation pipelines\n\nCaching Strategy:\n- Use Redis for server-side caching\n- Implement browser caching for static assets\n- Cache frequently accessed match data\n- Implement cache invalidation strategies\n\nFrontend Optimization:\n- Code splitting and lazy loading\n- Tree shaking to reduce bundle size\n- Image optimization\n- Efficient state management\n\nScalability Measures:\n- Stateless API design for horizontal scaling\n- Database connection pooling\n- WebSocket clustering for multiple instances\n- Load balancing configuration",
+      "testStrategy": "1. Conduct performance testing with tools like k6 or JMeter\n2. Measure response times for critical API endpoints\n3. Test WebSocket performance with multiple concurrent connections\n4. Verify that caching improves response times\n5. Test pagination with large datasets\n6. Measure frontend load times and bundle sizes\n7. Verify that the application scales horizontally\n8. Test database query performance\n9. Measure memory usage under load\n10. Verify that the application meets performance requirements",
+      "priority": "medium",
+      "dependencies": [
+        3,
+        7,
+        10
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Database Query Optimization",
+          "description": "Optimize database queries to improve response times and reduce server load by creating appropriate indexes and refining query patterns.",
+          "dependencies": [],
+          "details": "1. Analyze slow queries using database profiling tools\n2. Create appropriate indexes for common query patterns\n3. Implement query projection to limit returned fields\n4. Refactor complex queries into more efficient aggregation pipelines\n5. Implement database connection pooling for better resource utilization\n6. Document optimization changes and performance improvements",
+          "status": "pending",
+          "testStrategy": "Benchmark query performance before and after optimization using representative datasets. Create performance tests that can be run in CI/CD pipeline to prevent regression."
+        },
+        {
+          "id": 2,
+          "title": "Implement Caching Strategy",
+          "description": "Develop and implement a comprehensive caching strategy to reduce database load and improve response times for frequently accessed data.",
+          "dependencies": [],
+          "details": "1. Set up Redis as the caching server\n2. Implement server-side caching for frequently accessed data\n3. Create cache invalidation strategies for data updates\n4. Configure browser caching for static assets with appropriate cache headers\n5. Implement memory caching for application-level data\n6. Add monitoring for cache hit/miss rates",
+          "status": "pending",
+          "testStrategy": "Test cache hit/miss scenarios, verify cache invalidation works correctly, and measure performance improvements with caching enabled vs. disabled."
+        },
+        {
+          "id": 3,
+          "title": "Optimize Frontend Performance",
+          "description": "Improve frontend performance through code splitting, lazy loading, and bundle size optimization to reduce initial load times and improve user experience.",
+          "dependencies": [],
+          "details": "1. Implement code splitting to reduce initial bundle size\n2. Add lazy loading for non-critical components and routes\n3. Configure tree shaking to eliminate unused code\n4. Optimize image loading with proper sizing and formats\n5. Implement efficient state management patterns\n6. Set up performance monitoring using Lighthouse or similar tools",
+          "status": "pending",
+          "testStrategy": "Measure bundle sizes before and after optimization. Use Lighthouse scores to track improvements. Test lazy loading behavior under various network conditions."
+        },
+        {
+          "id": 4,
+          "title": "Implement Pagination and Data Loading Optimizations",
+          "description": "Optimize data loading patterns by implementing pagination, infinite scrolling, and virtualization for large datasets to improve performance with growing data volumes.",
+          "dependencies": [],
+          "details": "1. Implement server-side pagination for all list endpoints\n2. Add cursor-based pagination for efficient data retrieval\n3. Implement virtualized lists for large datasets in the UI\n4. Add infinite scrolling with efficient data fetching\n5. Optimize WebSocket communication to reduce payload sizes\n6. Implement data compression for API responses",
+          "status": "pending",
+          "testStrategy": "Test with large datasets to verify pagination works correctly. Measure memory usage and rendering performance with virtualized lists vs. standard rendering."
+        },
+        {
+          "id": 5,
+          "title": "Configure Horizontal Scaling Capabilities",
+          "description": "Implement infrastructure and application changes to support horizontal scaling, enabling the system to handle increased load by adding more instances.",
+          "dependencies": [],
+          "details": "1. Refactor application to be stateless for horizontal scaling\n2. Configure load balancing for API servers\n3. Implement WebSocket clustering for multiple instances\n4. Set up auto-scaling rules based on CPU/memory usage\n5. Configure distributed session management if needed\n6. Implement health checks and graceful shutdown procedures\n7. Document scaling procedures and monitoring approaches",
+          "status": "pending",
+          "testStrategy": "Perform load testing with multiple application instances to verify proper load distribution. Test failover scenarios and session persistence across instances."
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Implement Comprehensive Testing and Documentation",
+      "description": "Develop comprehensive testing suite and documentation for the application, including unit tests, integration tests, end-to-end tests, and user documentation.",
+      "details": "1. Implement unit testing for all components and services\n2. Create integration tests for API endpoints\n3. Develop end-to-end tests for critical user flows\n4. Implement automated accessibility testing\n5. Create comprehensive API documentation\n6. Develop user guides for commentators\n7. Create system architecture documentation\n\nTesting Framework:\n- Jest for unit and integration testing\n- Cypress for end-to-end testing\n- Lighthouse for performance and accessibility testing\n- Storybook for component testing and documentation\n\nTest Coverage:\n- Aim for 80%+ code coverage for critical components\n- Test all API endpoints\n- Test all user flows\n- Test edge cases and error handling\n\nDocumentation:\n\nAPI Documentation:\n- OpenAPI/Swagger specification\n- Endpoint descriptions and examples\n- Authentication requirements\n- Error codes and handling\n\nUser Documentation:\n- Commentator guide with screenshots\n- Keyboard shortcut reference\n- Troubleshooting guide\n- FAQ section\n\nDeveloper Documentation:\n- System architecture overview\n- Component documentation\n- Database schema documentation\n- Development setup guide\n- Deployment instructions",
+      "testStrategy": "1. Verify that unit tests cover critical functionality\n2. Test that integration tests validate API behavior\n3. Verify that end-to-end tests cover all user flows\n4. Test accessibility compliance\n5. Verify that documentation is comprehensive and accurate\n6. Test that API documentation matches actual implementation\n7. Verify that user guides are clear and helpful\n8. Test that system architecture documentation is up-to-date\n9. Verify that test coverage meets targets\n10. Test that documentation is accessible to target audiences",
+      "priority": "medium",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Unit and Component Testing",
+          "description": "Set up Jest testing framework and implement unit tests for all components and services, ensuring proper code coverage and component isolation.",
+          "dependencies": [],
+          "details": "1. Configure Jest and testing utilities\n2. Create test files for each component and service\n3. Implement mocks for external dependencies\n4. Set up Storybook for component testing\n5. Write tests for edge cases and error handling\n6. Configure test coverage reporting to track the 80% coverage goal",
+          "status": "pending",
+          "testStrategy": "Use Jest snapshots for UI components, mock external dependencies, and focus on testing business logic thoroughly. Integrate with CI pipeline for automated test runs."
+        },
+        {
+          "id": 2,
+          "title": "Develop Integration and API Tests",
+          "description": "Create comprehensive integration tests for all API endpoints, ensuring proper data flow between components and correct API behavior.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Set up test database for integration testing\n2. Create test fixtures and seed data\n3. Implement tests for each API endpoint\n4. Test authentication and authorization flows\n5. Verify error handling and edge cases\n6. Test data validation and business rules",
+          "status": "pending",
+          "testStrategy": "Use supertest or similar library for API testing, create isolated test environments, and verify both successful and error responses for each endpoint."
+        },
+        {
+          "id": 3,
+          "title": "Implement End-to-End and Accessibility Testing",
+          "description": "Set up Cypress for end-to-end testing of critical user flows and implement automated accessibility testing using Lighthouse.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Configure Cypress testing environment\n2. Identify and implement tests for critical user flows\n3. Create test scenarios for different user roles\n4. Set up Lighthouse for accessibility testing\n5. Implement automated accessibility checks\n6. Create visual regression tests for UI components",
+          "status": "pending",
+          "testStrategy": "Record and replay user interactions with Cypress, test across different browsers, and automate accessibility checks to ensure WCAG compliance."
+        },
+        {
+          "id": 4,
+          "title": "Create API and Developer Documentation",
+          "description": "Develop comprehensive API documentation using OpenAPI/Swagger and create detailed developer documentation covering system architecture, setup, and deployment.",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Set up OpenAPI/Swagger for API documentation\n2. Document all endpoints with examples and response schemas\n3. Create system architecture diagrams\n4. Document database schema\n5. Write development setup guide\n6. Create deployment instructions\n7. Document component architecture and interactions",
+          "status": "pending",
+          "testStrategy": "Verify documentation accuracy by having developers follow setup instructions in a clean environment and validate API examples against actual endpoints."
+        },
+        {
+          "id": 5,
+          "title": "Develop User Documentation and Guides",
+          "description": "Create comprehensive user documentation including guides for commentators, keyboard shortcuts, troubleshooting information, and FAQs.",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "1. Create user guide with screenshots for common tasks\n2. Document all keyboard shortcuts\n3. Develop troubleshooting guide for common issues\n4. Create FAQ section based on anticipated user questions\n5. Implement in-app help system\n6. Create video tutorials for complex workflows\n7. Establish process for documentation updates",
+          "status": "pending",
+          "testStrategy": "Conduct user testing with the documentation to identify gaps or unclear instructions, and iterate based on feedback."
+        }
+      ]
+    }
+  ]
+}

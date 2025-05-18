@@ -1,0 +1,105 @@
+# Task ID: 2
+# Title: Implement User Authentication System
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Create a secure authentication system with login, registration, password recovery, and session management for commentators and administrators.
+# Details:
+1. Create MongoDB schema for users with fields: username, email, password (hashed), role, lastLogin, createdAt, updatedAt
+2. Implement password hashing using bcrypt
+3. Create authentication middleware for protected routes
+4. Implement JWT token generation and validation
+5. Create login endpoint with rate limiting
+6. Implement password recovery flow with secure email links
+7. Create account creation endpoint (admin only)
+8. Implement session timeout after 90 minutes of inactivity
+9. Create frontend login form with validation
+10. Implement password reset form
+
+User Schema:
+```typescript
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  password: string; // hashed
+  role: 'commentator' | 'administrator';
+  lastLogin: Date;
+  loginAttempts: number;
+  lockUntil: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+Authentication Flow:
+1. User submits credentials
+2. Server validates credentials and checks account status
+3. If valid, server generates JWT token
+4. Token is returned to client and stored
+5. Token is included in subsequent API requests
+6. Server validates token on protected routes
+
+# Test Strategy:
+1. Test user registration with valid and invalid data
+2. Verify login with correct and incorrect credentials
+3. Test password reset functionality
+4. Verify account lockout after 5 failed attempts
+5. Test session timeout after 90 minutes
+6. Verify that protected routes reject unauthorized access
+7. Test JWT token validation and expiration
+8. Verify that passwords are properly hashed in the database
+9. Test administrator ability to create new accounts
+10. Verify email notifications for account creation and password reset
+
+# Subtasks:
+## 1. Implement User Model and Authentication Utilities [pending]
+### Dependencies: None
+### Description: Create the MongoDB user schema and implement core authentication utilities including password hashing with bcrypt and JWT token generation/validation.
+### Details:
+1. Create MongoDB schema for User model with all required fields
+2. Implement password hashing and comparison functions using bcrypt
+3. Create JWT token generation function with appropriate payload and expiration
+4. Implement JWT token validation function
+5. Add utility functions for managing login attempts and account locking
+
+## 2. Create Authentication API Endpoints [pending]
+### Dependencies: 2.1
+### Description: Implement the core authentication API endpoints including login, logout, and token refresh with appropriate security measures.
+### Details:
+1. Create login endpoint with credential validation and rate limiting
+2. Implement logout endpoint that invalidates tokens
+3. Add token refresh endpoint to extend sessions
+4. Implement proper error handling and status codes
+5. Add request validation middleware for authentication requests
+
+## 3. Implement User Registration and Management [pending]
+### Dependencies: 2.1
+### Description: Create endpoints for user registration, account creation by administrators, and user profile management.
+### Details:
+1. Implement user registration endpoint with email verification
+2. Create admin-only endpoint for creating new user accounts
+3. Add endpoint for updating user profiles
+4. Implement email uniqueness validation
+5. Add role-based permission checks for user management operations
+
+## 4. Implement Password Recovery Flow [pending]
+### Dependencies: 2.1
+### Description: Create a secure password recovery system with time-limited reset tokens sent via email.
+### Details:
+1. Create endpoint to request password reset that generates a secure token
+2. Implement email sending functionality with reset links
+3. Create endpoint to validate reset tokens
+4. Implement password reset endpoint with new password validation
+5. Add token expiration handling (1 hour validity)
+
+## 5. Implement Authentication Middleware and Session Management [pending]
+### Dependencies: 2.1, 2.2
+### Description: Create middleware for protecting routes and implement session management with timeout after inactivity.
+### Details:
+1. Implement authentication middleware for protected routes
+2. Create role-based authorization middleware
+3. Add session timeout logic (90 minutes inactivity)
+4. Implement request logging for authentication events
+5. Add security headers and CSRF protection
+
