@@ -1,5 +1,5 @@
 export const CountryService = {
-    getData() {
+    getData(): { name: string, code: string }[] {
         return [
             { name: 'Afghanistan', code: 'AF' },
             { name: 'Albania', code: 'AL' },

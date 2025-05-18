@@ -1,5 +1,5 @@
 export const PhotoService = {
-    getData() {
+    getData(): Array<{itemImageSrc: string, thumbnailImageSrc: string, alt: string, title: string}> {
         return [
             {
                 itemImageSrc: 'https://primefaces.org/cdn/primevue/images/galleria/galleria1.jpg',

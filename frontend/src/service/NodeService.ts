@@ -1,5 +1,5 @@
 export const NodeService = {
-    getTreeNodesData() {
+    getTreeNodesData(): any[] {
         return [
             {
                 key: '0',
@@ -68,7 +68,7 @@ export const NodeService = {
         ];
     },
 
-    getTreeTableNodesData() {
+    getTreeTableNodesData(): any[] {
         return [
             {
                 key: '0',
@@ -421,11 +421,11 @@ export const NodeService = {
         ];
     },
 
-    getTreeTableNodes() {
+    getTreeTableNodes(): Promise<any[]> {
         return Promise.resolve(this.getTreeTableNodesData());
     },
 
-    getTreeNodes() {
+    getTreeNodes(): Promise<any[]> {
         return Promise.resolve(this.getTreeNodesData());
     }
 };

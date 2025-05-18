@@ -34,7 +34,7 @@ npm run dev</code></pre>
         <div class="font-semibold text-xl mb-4">Layout Composable</div>
         <p class="text-lg mb-4">
             The <span class="bg-highlight px-2 py-1 rounded-border not-italic text-base">src/layout/composables/layout.js</span> is a composable that manages the layout state changes including dark mode, PrimeVue theme, menu modes and states. If you
-            change the initial values like the preset or colors, make sure to apply them at PrimeVue config at main.js as well.
+            change the initial values like the preset or colors, make sure to apply them at PrimeVue config at main.ts as well.
         </p>
 
         <div class="font-semibold text-xl mb-4">Tailwind CSS</div>
