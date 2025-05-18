@@ -1,0 +1,595 @@
+<context>
+The application is called Foosballer and is a comprehensive system for managing table football (foosball) matches. Using a web-based UI the application handles match creation, scoring, timeout management, and maintains complete statistics throughout match progression.
+
+My Requirements:
+- The app should have a unified, responsive interface where logged in commentators can track statistics and manage the match.
+  - They should be able to log in 
+  - Create a new match
+  - Add players (1 vs 1 or 2 vs 2)
+    - assign them to teams and colors of the figures
+  - Start the match
+     - the match can be played in various modes:
+        - 1 set to 7 goals
+        - 2 winning sets to 5 goals each
+        - 5 winning sets to 5 goals each
+        - usually in the last set a team needs 2 goals mroe until maximum of 8 goals, but this can be deactivated on a per match basis
+      - 1 or 2 timeouts per set (2 default)
+  - Start a new set
+    - Track each goal scored in the current set
+    - Track timeouts within the set
+- The current match may be fetched from an external API
+  - The app should be able to fetch the current match from an external API, which provides the teams.
+- The app should have a dedicated site for viewing a scoreboard, where anyone can see the current score, timeouts, and other relevant statistics.
+  - This page should be accessible via a unique URL
+  - The scoreboard should update in real-time
+  - There should be different views which can be activated by the commentator:
+    - Default view: Name of the teams, current score of each time in the current set, timeouts left/used, sets won
+    - Detailed view: Shows the results of all sets played so far, including the score of each set, timeouts used, and any other relevant statistics.
+    - Banner that can be used to show a custom message between sets
+    - Others may be added later
+- The games should be stored in a database, and the commentator should be able to view and edit all games played in the past.
+  - The commentator should be able to filter games by date, players, and other relevant criteria.
+  - The commentator should be able to view detailed statistics for each game, including goals scored, timeouts used, and any other relevant information.
+- The app should have a user management system, allowing commentators to create accounts and log in securely.
+</context>
+<PRD>
+# Foosball Match Management System (FMMS) Product Requirements Document
+
+## 1. Introduction
+
+### 1.1 Purpose
+This Product Requirements Document (PRD) outlines the features, functionality, and technical specifications for the Foosball Match Management System (FMMS). The system aims to provide a comprehensive solution for managing foosball matches, including match setup, scoring, real-time scoreboard display, and match statistics tracking.
+
+### 1.2 Scope
+The FMMS will enable commentators to efficiently manage foosball matches, including 1v1 and 2v2 formats, with various match configurations. The system will provide real-time scoreboard displays, maintain match history, and integrate with external APIs for team and player data.
+
+### 1.3 Document conventions
+- Requirement IDs follow the format: [Feature Category]-[Number]
+- User stories follow the format: "As a [role], I want to [action] so that [benefit]"
+- Acceptance criteria are listed as testable conditions
+- Priority levels: Critical, High, Medium, Low
+
+## 2. Product overview
+
+### 2.1 Product description
+The Foosball Match Management System is a web-based application designed to streamline the management of foosball matches in competitive environments. The system allows commentators to configure matches, track scores and timeouts, display real-time scoreboards, and generate match statistics.
+
+### 2.2 Product context
+This application serves as a critical tool for foosball tournament organizers, commentators, and spectators. It addresses the need for a consistent, reliable system to track competitive play, enforce game rules, and display match progress in real-time.
+
+## 3. Goals and objectives
+
+### 3.1 Primary goals
+- Create an intuitive, efficient system for managing foosball matches
+- Provide real-time scoreboard displays for spectator engagement
+- Maintain accurate match statistics and history
+- Support various match formats and configurations
+- Ensure secure access control for system operators
+
+### 3.2 Success criteria
+- Successful deployment of the system within the specified timeframe
+- Positive feedback from commentators and tournament organizers
+- High user engagement with real-time scoreboards
+
+## 4. Target audience
+
+### 4.1 Primary users
+- Commentators: Responsible for managing matches, tracking scores, and controlling the scoreboard display
+- Tournament organizers: Oversee multiple matches and access match statistics
+- Players: View their match history and statistics
+- Spectators: View real-time scoreboards and match progress
+
+### 4.2 User characteristics
+- Commentators require an intuitive interface that allows quick actions during fast-paced matches
+- Tournament organizers need comprehensive statistics and match management tools
+- Spectators require clear, responsive scoreboard displays accessible on various devices
+
+## 5. Features and requirements
+
+### 5.1 User management
+
+#### 5.1.1 Authentication and authorization
+- Secure login system with username and password
+- Session management with appropriate timeout
+- Role-based access control (commentator, administrator)
+- Account creation with email verification
+- Password recovery via email
+- Password change functionality with appropriate security measures
+
+#### 5.1.2 Security requirements
+- Passwords must be stored with secure hashing (bcrypt)
+- Session tokens must be securely generated and validated
+- All sensitive data must be encrypted in transit and at rest
+- Rate limiting for login attempts to prevent brute force attacks
+- Security audit logging for authentication events
+
+### 5.2 Match configuration
+
+#### 5.2.1 Match creation
+- Create new matches with configurable parameters
+- Player setup options: 1v1 or 2v2 format
+- Team assignment with customizable team names
+- Figure color selection for teams
+- Match format selection according to the defined formats table
+- Timeout allowance configuration per set (1 or 2, default: 2)
+
+#### 5.2.2 Match format options
+| Format | Sets to Win | Goals per Set | Last‐Set 2-Goal Rule |
+|--------|-------------|---------------|----------------------|
+| Single set | 1 | 7 | Optional |
+| Best of 3 | 2 | 5 | Optional |
+| Best of 9 | 5 | 5 | Optional |
+
+#### 5.2.3 External integration for match setup
+- Import match data from external API
+- Fetch teams and match metadata
+- Map external data to internal match configuration
+- Handle validation and error cases
+
+### 5.3 Match and set lifecycle
+
+#### 5.3.1 Match and set control
+- Start match functionality to initialize the first set
+- Start new set on demand or automatically when the previous set ends
+- End match when winning condition is met
+- Record timestamps for match and set start/end events
+- Delete or abort match functionality with confirmation
+
+#### 5.3.2 Match state management
+- Maintain current state of active matches
+- Track set scores and overall match progress
+- Calculate and update winning conditions in real-time
+- Handle match interruptions and resumptions
+
+### 5.4 Scoring and timeouts
+
+#### 5.4.1 Goal management
+- Record goal events with timestamps
+- Attribute goals to teams
+- Optional tracking of which row scored (goalie/2-bar/5-bar/3-bar)
+- Undo/delete functionality for incorrect entries
+- Visual confirmation for goal registration
+
+#### 5.4.2 Timeout management
+- Record timeout events with timestamps
+- Attribute timeouts to respective teams
+- Enforce per-set timeout limits
+- Undo/delete functionality for timeout records
+- Visual indicators for remaining timeouts
+
+### 5.5 Real-time scoreboard
+
+#### 5.5.1 Scoreboard access and technology
+- Have a unique URL for the current commentation session (shows the views selected by the commentator).
+- Implement WebSocket for real-time updates
+- Fallback to polling for environments without WebSocket support
+- Responsive design for various display sizes and devices
+
+#### 5.5.2 Scoreboard views
+- Default view showing team names, current set score, timeouts left, sets won
+- Commentator control for scoreboard positioning on screen
+- Detailed view with all sets' scores, timeouts used, and additional statistics
+- Banner mode for custom messages between sets and games
+- Support for future custom view development
+
+### 5.6 Statistics and history
+
+#### 5.6.1 Data persistence
+- Store all match data including sets, goals, and timeouts
+- Implement proper database design for efficient querying
+- Regular backup procedures for match data
+
+#### 5.6.2 Historical data management
+- Filter and search functionality for past matches
+- Search criteria including date, players, teams, and match outcomes
+- Detailed view of historical match data
+- Editing capabilities for historical match records
+- Deletion with appropriate authorization
+
+#### 5.6.3 Reports and analytics
+- Generate match summary reports
+- Calculate statistics including total goals, sets won, timeouts used
+- Export functionality for reports (PDF, CSV)
+- Visual representations of match statistics
+
+### 5.7 External integration
+
+#### 5.7.1 API configuration
+- Configure external API endpoints
+- Store and manage API authentication credentials
+- Test connection functionality
+
+#### 5.7.2 Data synchronization
+- Fetch current match data (teams, players) from external sources
+- Synchronize data with internal system
+- Handle API errors, timeouts, and retries
+- Log synchronization activities
+
+## 6. User stories and acceptance criteria
+
+### 6.1 User management
+
+#### UM-101: User authentication
+**As a** commentator,  
+**I want to** securely log in to the system,  
+**So that** I can access match management features.
+
+*Acceptance Criteria:*
+1. System provides login form with username and password fields
+2. Valid credentials grant access to the system
+3. Invalid credentials display appropriate error message
+4. After 5 failed attempts, account is temporarily locked for 15 minutes
+5. User session expires after 90 minutes of inactivity
+6. Session can be manually terminated via logout
+
+#### UM-102: Account creation
+**As an** administrator,  
+**I want to** create new user accounts with specific roles,  
+**So that** new commentators can access the system.
+
+*Acceptance Criteria:*
+1. Administrator can access account creation form
+2. Form requires username, email, temporary password, and role selection
+3. System validates email format and password strength
+4. New user receives email notification with login instructions
+5. New users are prompted to change temporary password on first login
+6. Administrator receives confirmation of successful account creation
+
+#### UM-103: Password recovery
+**As a** commentator,  
+**I want to** recover my password if forgotten,  
+**So that** I can regain access to the system.
+
+*Acceptance Criteria:*
+1. System provides "Forgot Password" option on login screen
+2. User can request password reset via registered email
+3. System sends time-limited password reset link (valid for 1 hour)
+4. Link directs to secure password reset form
+5. New password must meet security requirements
+6. System confirms successful password change
+
+### 6.2 Match configuration
+
+#### MC-101: Create new match
+**As a** commentator,  
+**I want to** create a new match with specific settings,  
+**So that** I can start recording a foosball match.
+
+*Acceptance Criteria:*
+1. System provides match creation form with all required fields
+2. User can select match format (Single set, Best of 3, Best of 9)
+3. User can configure player setup (1v1 or 2v2)
+4. User can assign team names and colors
+5. User can set timeout allowance per set (1 or 2)
+6. System validates all inputs before creating match
+7. Match is created with initial state "Not Started"
+
+#### MC-102: Import match from API
+**As a** commentator,  
+**I want to** import match data from an external API,  
+**So that** I don't have to manually enter team information.
+
+*Acceptance Criteria:*
+1. System provides option to import match data
+2. User can select from available external sources
+3. System fetches and displays team and player information
+4. User can review and modify imported data before confirmation
+5. System handles API connection failures gracefully
+6. Import process can be canceled at any point
+7. Successful import creates a new match with all relevant data
+
+### 6.3 Match and set lifecycle
+
+#### ML-101: Start match
+**As a** commentator,  
+**I want to** start a configured match,  
+**So that** the first set begins and scoring can commence.
+
+*Acceptance Criteria:*
+1. System provides "Start Match" button for configured matches
+2. Starting a match initializes the first set
+3. System records start timestamp for match and first set
+4. Scoreboard updates to show active match status
+5. Match state changes to "In Progress"
+6. Scoring and timeout controls become available
+
+#### ML-102: Start new set
+**As a** commentator,  
+**I want to** start a new set when the previous one ends,  
+**So that** the match can continue according to the format rules.
+
+*Acceptance Criteria:*
+1. System enables "New Set" button when current set is complete
+2. Starting new set resets current set score to 0-0
+3. System records timestamp for set start
+4. Timeout counters reset according to configured allowance
+5. Previous set results are preserved and visible in history
+6. If match winning condition is met, system prompts to end match
+
+#### ML-103: End match
+**As a** commentator,  
+**I want to** end a match when the winning condition is met,  
+**So that** the final result is recorded and the match is completed.
+
+*Acceptance Criteria:*
+1. System prompts to end match when winning condition is met
+2. User can manually end match at any point
+3. System records match end timestamp
+4. Final match result is calculated and displayed
+5. Match state changes to "Completed"
+6. Match data is persisted to database
+7. Scoreboard updates to show final results
+
+#### ML-104: Delete/abort match
+**As a** commentator,  
+**I want to** delete or abort a match when necessary,  
+**So that** incorrect or incomplete matches don't appear in records.
+
+*Acceptance Criteria:*
+1. System provides option to delete/abort match
+2. User must confirm deletion with reason
+3. For matches in progress, system distinguishes between abort and delete
+4. Aborted matches are marked as "Aborted" but remain in database
+5. Deleted matches are completely removed from the system
+6. System provides confirmation of successful deletion/abortion
+
+### 6.4 Scoring and timeouts
+
+#### ST-101: Record goal
+**As a** commentator,  
+**I want to** record a goal for a specific team,  
+**So that** the score is accurately tracked.
+
+*Acceptance Criteria:*
+1. System provides clear buttons for recording goals for each team
+2. Goal increases team's score for current set
+3. System records timestamp for the goal
+4. Optional field allows recording which row scored
+5. Scoreboard updates immediately to reflect new score
+6. System checks if set/match winning condition is met after goal
+7. Visual and/or audio feedback confirms goal recording
+
+#### ST-102: Undo goal
+**As a** commentator,  
+**I want to** undo a wrongly recorded goal,  
+**So that** the score remains accurate.
+
+*Acceptance Criteria:*
+1. System provides undo option for recently recorded goals
+2. Undo decreases team's score for current set
+3. System marks the goal record as voided in database
+4. Scoreboard updates immediately to reflect corrected score
+5. Undo action is logged for audit purposes
+6. Multiple undos are possible if necessary
+
+#### ST-103: Record timeout
+**As a** commentator,  
+**I want to** record when a team calls a timeout,  
+**So that** timeout usage is tracked correctly.
+
+*Acceptance Criteria:*
+1. System provides timeout buttons for each team
+2. System prevents recording timeouts beyond the configured limit
+3. Timeout decreases team's remaining timeout count for current set
+4. System records timestamp for timeout
+5. Scoreboard updates to reflect remaining timeouts
+6. Visual indicator shows which team called timeout
+
+#### ST-104: Undo timeout
+**As a** commentator,  
+**I want to** undo a wrongly recorded timeout,  
+**So that** teams aren't penalized for commentator errors.
+
+*Acceptance Criteria:*
+1. System provides undo option for recorded timeouts
+2. Undo increases team's remaining timeout count
+3. System marks timeout record as voided in database
+4. Scoreboard updates to reflect corrected timeout count
+5. Undo action is logged for audit purposes
+
+### 6.5 Real-time scoreboard
+
+#### RS-101: Generate scoreboard URL
+**As a** commentator,  
+**I want to** generate a unique URL for the current session,  
+**So that** it can be displayed for spectators.
+
+*Acceptance Criteria:*
+1. System automatically generates unique URL for the current session
+2. URL is easily copyable with a single click
+3. URL remains valid throughout the current session
+4. System displays QR code version of URL for easy sharing
+
+#### RS-102: Switch scoreboard views
+**As a** commentator,  
+**I want to** switch between different scoreboard views,  
+**So that** appropriate information is displayed to spectators.
+
+*Acceptance Criteria:*
+1. System provides controls to switch between available views
+2. Default view shows team names, current score, timeouts, sets won
+3. Detailed view shows all sets' scores and additional statistics
+4. Banner mode allows entering custom text messages
+5. View changes are reflected immediately on the scoreboard
+6. Commentator can position scoreboard elements on screen
+
+#### RS-103: View scoreboard as spectator
+**As a** spectator,  
+**I want to** view the real-time scoreboard,  
+**So that** I can follow the matches progress.
+
+*Acceptance Criteria:*
+1. Scoreboard loads correctly on various devices and screen sizes
+2. Scoreboard updates in real-time without manual refresh
+3. Information is clearly visible and well-organized
+4. Scoreboard functions correctly on major browsers
+5. Connection interruptions are handled gracefully with automatic reconnection
+6. Page title shows current score for easy reference
+
+### 6.6 Statistics and history
+
+#### SH-101: View match history
+**As a** commentator,  
+**I want to** view the history of past matches,  
+**So that** I can access previous match data and statistics.
+
+*Acceptance Criteria:*
+1. System provides searchable list of completed matches
+2. List can be filtered by date, players, teams, and outcome
+3. Search results display key match information
+4. Selecting a match shows detailed match statistics
+5. Results can be sorted by various criteria
+6. Pagination supports browsing through large result sets
+
+#### SH-102: Edit historical match
+**As an** administrator,  
+**I want to** edit historical match data when necessary,  
+**So that** any recording errors can be corrected.
+
+*Acceptance Criteria:*
+1. System allows editing match details for administrators
+2. Editable fields include scores, timeouts, player/team names
+3. System maintains audit log of all changes to historical data
+4. Editing interface clearly indicates current and proposed values
+5. Changes require confirmation before saving
+6. System validates changes to prevent invalid data
+
+#### SH-103: Generate match report
+**As a** commentator,  
+**I want to** generate a summary report for a match,  
+**So that** I can share the results and statistics.
+
+*Acceptance Criteria:*
+1. System provides option to generate report for any completed match
+2. Report includes comprehensive match statistics
+3. Report can be viewed in browser and exported as PDF/CSV
+4. Report layout is optimized for readability
+5. Generated reports include appropriate timestamps and match identifiers
+6. System caches recent reports for quick access
+
+### 6.7 External integration
+
+#### EI-101: Configure API connection
+**As an** commentator,  
+**I want to** configure my external API connections,  
+**So that** the system can fetch match and team data.
+
+*Acceptance Criteria:*
+1. System provides interface for API configuration
+2. Configuration includes endpoint URLs, authentication details, and polling intervals
+3. Test connection feature verifies and validates API settings
+4. Configuration changes are logged for audit purposes
+5. Multiple API configurations can be saved and selected
+6. Sensitive API credentials are securely stored
+
+#### EI-102: Synchronize external data
+**As a** commentator,  
+**I want to** fetch current team and player data from external sources,  
+**So that** match setup is accurate and efficient.
+
+*Acceptance Criteria:*
+1. System provides option to synchronize data from configured APIs
+2. User can select which data types to synchronize
+3. System shows progress indicator during synchronization
+4. Errors during synchronization are clearly reported
+5. System handles partial synchronization failures gracefully
+6. Synchronized data is immediately available for match setup
+
+#### DB-101: Database schema design
+**As a** system developer,  
+**I want to** implement an efficient and normalized database schema,  
+**So that** the application can store and retrieve data optimally.
+
+*Acceptance Criteria:*
+1. Schema defines entities for users, matches, sets, goals, timeouts
+2. Appropriate relationships are established between entities
+3. Schema includes necessary indexes for query optimization
+4. Database supports the required transactions and constraints
+5. Schema documentation is complete and accurate
+6. Migration scripts are provided for schema updates
+
+## 7. Technical requirements
+
+### 7.1 Technology stack
+
+#### 7.1.1 Frontend technologies
+- Vue.js as the primary frontend framework
+- Vite for build tooling and development server
+- Volt (PrimeVue) Components for UI elements
+- Tailwind CSS 4 for styling
+- TypeScript for type safety
+
+#### 7.1.2 Backend technologies
+- Node.js runtime environment
+- Express framework for API development
+- MongoDB for data storage
+- TypeScript for type safety
+
+#### 7.1.3 Communication technologies
+- RESTful API for general communication
+- WebSockets for real-time updates
+- HTTP polling as fallback for environments without WebSocket support
+
+### 7.2 Performance requirements
+- Page load time under 2 seconds on standard connections
+- Real-time updates delivered within 500ms
+- System must support at least 100 concurrent scoreboard viewers
+- Database queries must complete within 100ms
+- API responses must complete within 200ms
+
+### 7.3 Security requirements
+- All network communication must be encrypted using TLS
+- Authentication using JWT with appropriate expiration
+- Protection against common web vulnerabilities (XSS, CSRF, injection)
+- Rate limiting on authentication endpoints
+- Input validation on all user-provided data
+- Secure storage of credentials and sensitive information
+
+### 7.4 Scalability and availability
+- System architecture must support horizontal scaling
+- Database design must accommodate growing dataset
+- 99.9% uptime target during operational hours
+- Automated backup procedures for data protection
+- Graceful degradation during partial system failures
+
+## 8. Design and user interface
+
+### 8.1 User interface requirements
+
+#### 8.1.1 Commentator interface
+- Clean, intuitive layout optimized for fast interactions
+- Primary controls (scoring, timeouts) must be easily accessible
+- Clear visual indication of current match state
+- Responsive design supporting desktop and tablet devices
+- Dark mode support for low-light environments
+- Keyboard shortcuts for common actions
+
+#### 8.1.2 Scoreboard interface
+- Minimalist design focused on readability
+- High contrast colors for maximum visibility
+- Responsive layout adapting to different screen dimensions
+- Appropriate font sizes for distance viewing
+- Smooth transitions for score updates
+- Optional thematic elements for tournament branding
+
+### 8.2 Accessibility requirements
+- WCAG 2.1 AA compliance for all interfaces
+- Keyboard navigation for all features
+- Screen reader compatibility
+- Sufficient color contrast ratios
+- Text alternatives for all non-text content
+- Appropriate ARIA attributes for dynamic content
+
+### 8.3 Localization
+- Initial support for English language
+- Architecture to support additional languages in future
+- Date and time formatting according to locale
+- Separation of UI text into resource files for translation
+
+### 8.4 Responsive design
+- Mobile-first approach for scoreboard display
+- Commentator interface optimized for tablets and desktops
+- Fluid layouts adapting to different screen sizes
+- Touch-friendly controls for mobile devices
+- Appropriate viewport settings
+</PRD>
