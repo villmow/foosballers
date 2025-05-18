@@ -1,7 +1,5 @@
 ---
-description: Comprehensive reference for Taskmaster MCP tools and CLI commands.
-globs: **/*
-alwaysApply: true
+applyTo: "**"
 ---
 # Taskmaster Tool & Command Reference
 

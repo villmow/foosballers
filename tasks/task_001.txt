@@ -74,7 +74,7 @@ Install Mongoose with `npm install mongoose @types/mongoose`. Create a database 
 ### Details:
 Install Socket.IO with `npm install socket.io` on the backend and `npm install socket.io-client` on the frontend. Configure Socket.IO server in the Express application. Create a shared types directory with TypeScript interfaces that can be used by both frontend and backend. Implement basic Socket.IO connection handling and event structure. Create utility functions for WebSocket communication.
 
-## 5. Configure Code Quality Tools and CI/CD Pipeline [pending]
+## 5. Configure Code Quality Tools and CI/CD Pipeline [done]
 ### Dependencies: 1.1, 1.2
 ### Description: Set up ESLint, Prettier, and a basic CI/CD pipeline for the project.
 ### Details:

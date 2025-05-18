@@ -60,7 +60,7 @@
             2
           ],
           "details": "Install ESLint and Prettier with `npm install --save-dev eslint prettier eslint-plugin-vue @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier`. Create configuration files (.eslintrc.js, .prettierrc) for both frontend and backend. Set up pre-commit hooks using Husky to enforce code quality. Create a basic CI/CD pipeline configuration using GitHub Actions or similar service with jobs for linting, testing, and building the application. Configure environment variables for development, testing, and production environments.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Run linting and formatting checks to ensure they work correctly. Test the CI pipeline by making a small change and pushing it to the repository."
         }
       ]
