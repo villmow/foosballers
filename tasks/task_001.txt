@@ -62,7 +62,7 @@ Run `npm create vite@latest client -- --template vue-ts` to initialize the Vue.j
 ### Details:
 Create a server directory and initialize a new Node.js project with `npm init -y`. Install Express and TypeScript with `npm install express typescript ts-node @types/express @types/node`. Configure tsconfig.json for the backend. Create the basic directory structure including controllers, models, routes, services, middleware, and config folders. Set up a basic Express server in app.ts with error handling middleware and CORS support.
 
-## 3. Configure MongoDB Connection and Basic Models [pending]
+## 3. Configure MongoDB Connection and Basic Models [done]
 ### Dependencies: 1.2
 ### Description: Set up MongoDB connection using Mongoose and create basic data models for the application.
 ### Details:

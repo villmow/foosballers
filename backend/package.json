@@ -15,9 +15,11 @@
   "type": "commonjs",
   "dependencies": {
     "@types/express": "^5.0.2",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^22.15.18",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "mongoose": "^8.15.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
