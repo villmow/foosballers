@@ -63,7 +63,7 @@ Authentication Flow:
 4. Implement JWT token validation function
 5. Add utility functions for managing login attempts and account locking
 
-## 2. Create Authentication API Endpoints [pending]
+## 2. Create Authentication API Endpoints [done]
 ### Dependencies: 2.1
 ### Description: Implement the core authentication API endpoints including login, logout, and token refresh with appropriate security measures.
 ### Details:

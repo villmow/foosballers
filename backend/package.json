@@ -14,9 +14,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.2",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^22.15.18",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "mongoose": "^8.15.0",
@@ -26,12 +28,14 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "supertest": "^7.1.1"
   }
 }

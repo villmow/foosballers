@@ -3,6 +3,9 @@ import express, { NextFunction, Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
+import authRoutes from './routes/authRoutes';
+import cookieParser from 'cookie-parser';
+import { authenticateJWT } from './middleware/authMiddleware';
 
 // Define the shared types inline for Docker build
 interface ChatMessage {
@@ -22,8 +25,13 @@ interface ClientToServerEvents {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
+app.use(authenticateJWT);
 
 // Connect to the database
 connectDB();
@@ -32,6 +40,9 @@ connectDB();
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
+
+// API routes
+app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
