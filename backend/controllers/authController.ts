@@ -147,16 +147,16 @@ export const logout = async (req: AuthRequest, res: Response): Promise<void> => 
  * Endpoint for requesting a password reset
  * Generates a password reset token and sends it to the user's email
  */
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
   try {
     const user: IUser | null = await UserModel.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     const token = generatePasswordResetToken((user._id as { toString: () => string }).toString());
-    
     user.passwordResetToken = token;
     user.passwordResetExpires = new Date(Date.now() + 3600000); // 1 hour from now
     await user.save();
@@ -170,7 +170,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.params;
   const { password } = req.body;
 
@@ -184,7 +184,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
+      res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
+      return;
     }
 
     // Set the new password
@@ -198,10 +199,12 @@ export const resetPassword = async (req: Request, res: Response) => {
 
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(400).json({ message: 'Invalid token.' });
+      res.status(400).json({ message: 'Invalid token.' });
+      return;
     }
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(400).json({ message: 'Token has expired.' });
+      res.status(400).json({ message: 'Token has expired.' });
+      return;
     }
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Server error' });

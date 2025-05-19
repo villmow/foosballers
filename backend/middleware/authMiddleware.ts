@@ -8,6 +8,7 @@ export interface AuthRequest extends Request {
     id: string;
     username: string;
     role: string;
+    lastActivity?: Date; // Add lastActivity for session timeout
   };
 }
 
@@ -49,8 +50,103 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   req.user = {
     id: decoded.id,
     username: decoded.username,
-    role: decoded.role
+    role: decoded.role,
+    lastActivity: new Date() // Set initial activity time
   };
 
+  next();
+};
+
+/**
+ * Middleware to protect routes that require authentication
+ * Must be used after authenticateJWT middleware
+ */
+export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  // Update last activity timestamp
+  req.user.lastActivity = new Date();
+  
+  next();
+};
+
+/**
+ * Middleware for role-based authorization
+ * @param allowedRoles - Array of roles allowed to access the route
+ */
+export const requireRole = (allowedRoles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    next();
+  };
+};
+
+/**
+ * Middleware to enforce session timeout after inactivity
+ * Checks if the last activity was within the allowed timeframe (90 minutes)
+ */
+export const sessionTimeout = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !req.user.lastActivity) {
+    return next();
+  }
+
+  const currentTime = new Date();
+  const lastActivity = new Date(req.user.lastActivity);
+  const inactivityTime = currentTime.getTime() - lastActivity.getTime();
+  
+  // 90 minutes in milliseconds
+  const timeoutDuration = 90 * 60 * 1000;
+
+  if (inactivityTime > timeoutDuration) {
+    // Session has timed out
+    return res.status(440).json({ error: 'Session expired', reason: 'inactivity' });
+  }
+
+  // Update last activity time
+  req.user.lastActivity = currentTime;
+  next();
+};
+
+/**
+ * Middleware to log authentication events
+ */
+export const logAuthEvents = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // Clone the response
+  const oldSend = res.send;
+  
+  res.send = function(data): Response {
+    // Log based on response status
+    const authEvent = {
+      timestamp: new Date(),
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      userId: req.user?.id || 'unauthenticated',
+      username: req.user?.username || 'unauthenticated',
+      statusCode: res.statusCode,
+    };
+    
+    // Log authentication events
+    if (req.path.includes('/auth/') || req.path.includes('/login') || req.path.includes('/logout')) {
+      console.log('AUTH EVENT:', authEvent);
+      
+      // In a production app, you would want to write this to a secure log file or service
+      // Example: authLogger.info('Authentication event', authEvent);
+    }
+    
+    // Call the original send function
+    return oldSend.call(this, data);
+  };
+  
   next();
 };
