@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { connectDB } from './config/database';
 import { authenticateJWT } from './middleware/authMiddleware';
 import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 // Define the shared types inline for Docker build
 interface ChatMessage {
@@ -44,6 +45,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

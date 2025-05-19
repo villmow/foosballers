@@ -14,3 +14,7 @@ export function verifyJWT(token: string): any {
     return null;
   }
 }
+
+export const generatePasswordResetToken = (userId: string): string => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET!, { expiresIn: '1h' }); // Token expires in 1 hour
+};

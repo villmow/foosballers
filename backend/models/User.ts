@@ -12,6 +12,8 @@ export interface IUser extends Document {
   lockUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
+  passwordResetToken?: string; // Add this line
+  passwordResetExpires?: Date; // Add this line
   comparePassword(candidate: string): Promise<boolean>;
   generateJWT(): string;
 }
@@ -26,6 +28,8 @@ const UserSchema = new Schema<IUser>({
   lockUntil: { type: Date },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  passwordResetToken: { type: String }, // Add this line
+  passwordResetExpires: { type: Date }, // Add this line
 });
 
 UserSchema.pre('save', async function (next) {

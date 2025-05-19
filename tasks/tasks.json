@@ -105,7 +105,7 @@
             1
           ],
           "details": "1. Implement user registration endpoint with email verification\n2. Create admin-only endpoint for creating new user accounts\n3. Add endpoint for updating user profiles\n4. Implement email uniqueness validation\n5. Add role-based permission checks for user management operations",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test registration with valid and invalid data. Verify admin-only routes are protected. Test email uniqueness constraints and validation rules."
         },
         {
@@ -116,7 +116,7 @@
             1
           ],
           "details": "1. Create endpoint to request password reset that generates a secure token\n2. Implement email sending functionality with reset links\n3. Create endpoint to validate reset tokens\n4. Implement password reset endpoint with new password validation\n5. Add token expiration handling (1 hour validity)",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the complete password reset flow. Verify token expiration works correctly. Test email delivery with a test email service. Ensure reset tokens are single-use only."
         },
         {
@@ -130,6 +130,68 @@
           "details": "1. Implement authentication middleware for protected routes\n2. Create role-based authorization middleware\n3. Add session timeout logic (90 minutes inactivity)\n4. Implement request logging for authentication events\n5. Add security headers and CSRF protection",
           "status": "pending",
           "testStrategy": "Test middleware with authenticated and unauthenticated requests. Verify session timeout works correctly. Test role-based access control with different user types."
+        },
+        {
+          "id": 6,
+          "title": "Create \"Forgot Password\" UI Component",
+          "description": "Implement a user-friendly form component for the \"Forgot Password\" functionality that takes an email address and submits it to the password recovery endpoint.",
+          "details": "1. Create a Vue component for the forgot password form with email input and validation\n2. Implement form submission logic with proper error handling\n3. Add loading state and success notifications\n4. Style the component according to the application design\n5. Include helpful instructions for users on the form\n6. Add rate limiting feedback in case of too many attempts",
+          "status": "pending",
+          "dependencies": [
+            4
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 7,
+          "title": "Implement \"Reset Password\" UI Component",
+          "description": "Create a secure \"Reset Password\" form component that accepts a new password, validates it, and handles the token from the URL to complete the password reset process.",
+          "details": "1. Create a Vue component for the reset password form with new password and confirmation inputs\n2. Implement robust password validation (strength requirements, matching confirmation)\n3. Extract and validate the reset token from the URL parameters\n4. Add form submission logic to reset password endpoint with proper error handling\n5. Implement success and error states with appropriate user feedback\n6. Add redirect to login page after successful password reset\n7. Handle expired or invalid token scenarios with clear user guidance",
+          "status": "pending",
+          "dependencies": [
+            4
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 8,
+          "title": "Integrate Frontend Forms with Backend Password Reset API",
+          "description": "Connect the frontend password reset components to the backend API endpoints ensuring seamless integration and proper error handling throughout the flow.",
+          "details": "1. Create frontend service functions for calling password reset API endpoints\n2. Integrate the forgot password form with the request password reset endpoint\n3. Connect the reset password form with the password reset validation and update endpoints\n4. Implement proper error handling for all API calls\n5. Add loading states during API requests to improve UX\n6. Ensure consistent error messaging between frontend and backend\n7. Handle network errors gracefully with retry options\n8. Add client-side validation that matches server-side requirements",
+          "status": "pending",
+          "dependencies": [
+            4,
+            6,
+            7
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 9,
+          "title": "Implement End-to-End Tests for Password Reset Flow",
+          "description": "Create comprehensive tests for the password reset flow including both frontend and backend testing to ensure the entire system works correctly.",
+          "details": "1. Create unit tests for password reset API endpoints\n2. Implement integration tests for the complete password reset flow\n3. Add frontend component tests for the forgot password and reset forms\n4. Test token generation, validation, and expiration logic\n5. Implement email delivery tests (using a test/mock email service)\n6. Test password update functionality with valid and invalid tokens\n7. Create end-to-end tests for the complete user flow\n8. Add test cases for security aspects like rate limiting\n9. Test token invalidation after successful password reset\n10. Ensure error cases and edge conditions are thoroughly tested",
+          "status": "pending",
+          "dependencies": [
+            4,
+            6,
+            7,
+            8
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 10,
+          "title": "Security Review and Hardening of Password Reset Flow",
+          "description": "Conduct a security review of the password reset implementation to identify and address potential vulnerabilities and ensure industry best practices are followed.",
+          "details": "1. Review token generation for sufficient entropy and security\n2. Ensure tokens are properly stored and managed in the database\n3. Implement and test rate limiting on password reset requests\n4. Verify that tokens expire after an appropriate time (typically 1 hour)\n5. Check that reset tokens are single-use only\n6. Review password validation rules for compliance with security standards\n7. Audit the logging of password reset events (ensuring no sensitive data is logged)\n8. Verify that email templates don't leak sensitive information\n9. Ensure proper HTTPS usage throughout the password reset flow\n10. Implement protection against timing attacks in token validation\n11. Review frontend-backend communication for security vulnerabilities",
+          "status": "pending",
+          "dependencies": [
+            4,
+            8,
+            9
+          ],
+          "parentTaskId": 2
         }
       ]
     },
