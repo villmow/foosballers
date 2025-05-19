@@ -16,7 +16,7 @@ export interface AuthRequest extends Request {
  * Gets token from authorization header or cookie
  * Verifies token validity and adds user data to request
  */
-export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunction): void {
+export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction) => {
   // Get token from authorization header or cookie
   let token: string | undefined;
   

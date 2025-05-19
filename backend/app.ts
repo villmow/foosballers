@@ -31,7 +31,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(authenticateJWT);
+// Cast the middleware to avoid TypeScript errors with custom request types
+app.use(authenticateJWT as express.RequestHandler);
 
 // Connect to the database
 connectDB();
