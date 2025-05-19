@@ -7,12 +7,14 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
-      return res.status(400).json({ error: 'All fields are required' });
+      res.status(400).json({ error: 'All fields are required' });
+      return;
     }
     // Check for unique email
     const existing = await UserModel.findOne({ email });
     if (existing) {
-      return res.status(409).json({ error: 'Email already in use' });
+      res.status(409).json({ error: 'Email already in use' });
+      return;
     }
     // Create user (default role: commentator)
     const user = new UserModel({ username, email, password, role: 'commentator' });
@@ -29,16 +31,19 @@ export const createUser = async (req: AuthRequest, res: Response) => {
   try {
     const { username, email, password, role } = req.body;
     if (!username || !email || !password || !role) {
-      return res.status(400).json({ error: 'All fields are required' });
+      res.status(400).json({ error: 'All fields are required' });
+      return;
     }
     // Only admin can create
     if (!req.user || req.user.role !== 'administrator') {
-      return res.status(403).json({ error: 'Forbidden' });
+      res.status(403).json({ error: 'Forbidden' });
+      return;
     }
     // Check for unique email
     const existing = await UserModel.findOne({ email });
     if (existing) {
-      return res.status(409).json({ error: 'Email already in use' });
+      res.status(409).json({ error: 'Email already in use' });
+      return;
     }
     const user = new UserModel({ username, email, password, role });
     await user.save();
@@ -53,12 +58,14 @@ export const createUser = async (req: AuthRequest, res: Response) => {
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
     const { username, email } = req.body;
     const user = await UserModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
+      return;
     }
     if (username) user.username = username;
     if (email) user.email = email;

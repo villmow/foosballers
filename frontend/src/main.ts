@@ -8,7 +8,6 @@ import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 
 import '@/assets/styles.scss';
-import { sendMessage, socket } from './service/socket';
 
 const app = createApp(App);
 
@@ -24,8 +23,8 @@ app.use(PrimeVue, {
 app.use(ToastService);
 app.use(ConfirmationService);
 
-socket.on('connect', () => {
-  sendMessage({ user: 'system', message: 'Hello from frontend!', timestamp: Date.now() });
-});
+// socket.on('connect', () => {
+//   sendMessage({ user: 'system', message: 'Hello from frontend!', timestamp: Date.now() });
+// });
 
 app.mount('#app');

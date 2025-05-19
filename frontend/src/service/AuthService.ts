@@ -35,20 +35,39 @@ export const AuthService = {
   },
   
   async login(email: string, password: string): Promise<{ user: any; token: string }> {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+    console.log('AuthService: Sending login request to /api/auth/login');
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Include cookies in the request
+      });
+      
+      console.log('AuthService: Login response status:', response.status);
+      
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+          throw new Error(`Login failed with status: ${response.status}`);
+        }
+        
+        console.error('Login error data:', errorData);
+        throw new Error(errorData.message || `Login failed with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('AuthService: Login successful');
+      return data;
+    } catch (error) {
+      console.error('AuthService login error:', error);
+      throw error;
     }
-    
-    return await response.json();
   },
   
   async logout(): Promise<{ message: string }> {

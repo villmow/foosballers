@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Backend API service overrides for development
   backend:
@@ -15,6 +13,7 @@ services:
   frontend:
     environment:
       - VITE_BACKEND_URL=http://localhost:4000
+      - DOCKER_ENV=true
     volumes:
       - ./frontend:/app
       - /app/node_modules

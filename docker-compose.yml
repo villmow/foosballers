@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB database service
   mongodb:
@@ -32,6 +30,7 @@ services:
       - PORT=4000
       - MONGODB_URI=mongodb://mongodb:27017/foosball
       - NODE_ENV=development
+      - JWT_SECRET=your_jwt_secret
     volumes:
       - ./backend:/app
       - /app/node_modules

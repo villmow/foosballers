@@ -20,7 +20,9 @@ const login = async () => {
 
   try {
     loading.value = true;
+    console.log('Attempting login with:', { email: email.value });
     const response = await AuthService.login(email.value, password.value);
+    console.log('Login response:', response);
     
     // Store the token in localStorage or sessionStorage based on "Remember me"
     if (checked.value) {
@@ -33,6 +35,7 @@ const login = async () => {
     router.push('/');
     
   } catch (error) {
+    console.error('Login error:', error);
     let errorMessage = 'Failed to login. Please check your credentials.';
     
     if (error.message) {
