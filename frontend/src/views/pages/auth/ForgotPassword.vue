@@ -92,7 +92,6 @@ const handleSubmit = async () => {
                   :class="{ 'p-invalid': email === '' }"
                   aria-describedby="email-help" 
                 />
-                <small id="email-help" class="text-muted-color">Enter the email address you used during registration.</small>
               </div>
 
               <Button 

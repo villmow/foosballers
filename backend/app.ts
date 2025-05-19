@@ -40,7 +40,7 @@ app.use(cookieParser());
 app.use(authenticateJWT as express.RequestHandler);
 
 // Connect to the database
-connectDB();
+connectDB();    
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
