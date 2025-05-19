@@ -76,7 +76,7 @@ Testing this task will involve multiple verification steps:
 The task will be considered complete when all team members can successfully set up, use, and reset the development environment following the provided documentation.
 
 # Subtasks:
-## 1. Create Docker Compose Configuration for All Services [pending]
+## 1. Create Docker Compose Configuration for All Services [done]
 ### Dependencies: None
 ### Description: Set up a docker-compose.yml file that defines and configures all required services (MongoDB, frontend, and backend) with proper networking, volume mappings, and environment variables.
 ### Details:
