@@ -4,7 +4,8 @@ import express, { NextFunction, Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
-import { authenticateJWT } from './middleware/authMiddleware';
+import { authenticateJWT, logAuthEvents, sessionTimeout } from './middleware/authMiddleware';
+import { csrfProtection, generateCsrfToken, securityHeaders } from './middleware/securityMiddleware';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 
@@ -26,6 +27,9 @@ interface ClientToServerEvents {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Apply security headers to all responses
+app.use(securityHeaders);
+
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -36,8 +40,15 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-// Cast the middleware to avoid TypeScript errors with custom request types
+
+// Authentication middleware
 app.use(authenticateJWT as express.RequestHandler);
+app.use(sessionTimeout as express.RequestHandler);
+app.use(logAuthEvents as express.RequestHandler);
+
+// CSRF protection 
+app.use(generateCsrfToken as express.RequestHandler);
+app.use(csrfProtection as express.RequestHandler);
 
 // Connect to the database
 connectDB();    
