@@ -1,9 +1,7 @@
-import { Request, Response } from 'express';
-import { UserModel } from '../models/User';
+import { Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { blacklistToken } from '../services/tokenBlacklistService';
-import { verifyJWT } from '../utils/jwtUtils';
-import jwt from 'jsonwebtoken';
 
 // Controller for handling user authentication
 

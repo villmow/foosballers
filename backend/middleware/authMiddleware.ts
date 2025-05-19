@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { verifyJWT } from '../utils/jwtUtils';
 import { isTokenBlacklisted } from '../services/tokenBlacklistService';
+import { verifyJWT } from '../utils/jwtUtils';
 
 // Define interface for the request with user property
 export interface AuthRequest extends Request {

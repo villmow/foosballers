@@ -1,8 +1,8 @@
-import request from 'supertest';
-import express, { Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
+import express from 'express';
+import request from 'supertest';
 import { logout } from '../controllers/authController';
-import { isTokenBlacklisted, blacklistToken } from '../services/tokenBlacklistService';
+import { blacklistToken } from '../services/tokenBlacklistService';
 
 // Mock the token blacklist service
 jest.mock('../services/tokenBlacklistService', () => ({

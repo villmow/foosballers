@@ -1,11 +1,11 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
-import authRoutes from './routes/authRoutes';
-import cookieParser from 'cookie-parser';
 import { authenticateJWT } from './middleware/authMiddleware';
+import authRoutes from './routes/authRoutes';
 
 // Define the shared types inline for Docker build
 interface ChatMessage {
