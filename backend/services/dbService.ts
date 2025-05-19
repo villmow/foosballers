@@ -1,3 +1,3 @@
-import { connectDB } from '../../config/database';
+import { connectDB } from '../config/database';
 
 export default connectDB;

@@ -1,0 +1,137 @@
+# Task ID: 16
+# Title: Task #16: Create Containerized Development Environment with Reset Capability
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Establish a containerized development environment using Docker for all services (MongoDB, frontend, and backend) with the ability to easily reset to a clean state, complete with database seeding and environment-specific configurations.
+# Details:
+This task involves several key components:
+
+1. Docker Configuration:
+   - Create a `docker-compose.yml` file that defines all services (MongoDB, frontend, backend)
+   - Configure appropriate networking between containers
+   - Set up volume mappings for persistent data
+   - Define environment variables for each service
+   - Implement health checks to ensure services start in the correct order
+
+2. Database Seeding:
+   - Develop MongoDB seeding scripts to populate the database with test data
+   - Create different data sets for various testing scenarios
+   - Implement idempotent seeding to prevent duplicate data
+   - Add option for minimal vs. comprehensive test data sets
+
+3. Environment Configuration:
+   - Create environment-specific configuration files (.env files)
+   - Implement configuration for development, testing, and staging environments
+   - Document all environment variables and their purposes
+   - Ensure sensitive information is not committed to version control
+
+4. Reset Scripts:
+   - Develop shell scripts to reset the entire environment
+   - Include options for partial resets (e.g., database only, specific services)
+   - Add safeguards to prevent accidental resets in production
+   - Implement logging for reset operations
+
+5. Documentation:
+   - Create comprehensive README with setup instructions
+   - Document all commands for starting, stopping, and resetting the environment
+   - Include troubleshooting section for common issues
+   - Add diagrams showing the architecture of the containerized environment
+
+The implementation should prioritize developer experience, ensuring that new team members can quickly set up and understand the development environment.
+
+# Test Strategy:
+Testing this task will involve multiple verification steps:
+
+1. Environment Setup Verification:
+   - Have multiple team members follow the documentation to set up the environment from scratch
+   - Verify all services start correctly with `docker-compose up`
+   - Confirm proper networking between containers by accessing services from each other
+   - Validate that environment variables are correctly passed to each service
+
+2. Database Seeding Tests:
+   - Execute seeding scripts and verify data is correctly populated
+   - Run seeding multiple times to ensure idempotency
+   - Validate different data sets are correctly implemented
+   - Check that database indexes and constraints are properly applied
+
+3. Reset Functionality Testing:
+   - Test the reset script from various starting states
+   - Verify partial reset options work as expected
+   - Confirm that reset operations are properly logged
+   - Ensure reset doesn't affect any production environments
+
+4. Integration with Development Workflow:
+   - Verify that local code changes are reflected in the containerized environment
+   - Test the development workflow including code changes, database migrations, and resets
+   - Confirm that debugging tools work correctly with the containerized services
+   - Validate that test suites can run against the containerized environment
+
+5. Documentation Review:
+   - Have a new team member follow the documentation without assistance
+   - Collect feedback on clarity and completeness of instructions
+   - Verify all commands listed in documentation work as expected
+   - Ensure troubleshooting section addresses common issues
+
+The task will be considered complete when all team members can successfully set up, use, and reset the development environment following the provided documentation.
+
+# Subtasks:
+## 1. Create Docker Compose Configuration for All Services [pending]
+### Dependencies: None
+### Description: Set up a docker-compose.yml file that defines and configures all required services (MongoDB, frontend, and backend) with proper networking, volume mappings, and environment variables.
+### Details:
+Create a docker-compose.yml file in the project root with the following services:
+1. MongoDB service with persistent volume mapping
+2. Backend service with appropriate port mappings and environment variables
+3. Frontend service with appropriate port mappings and environment variables
+4. Configure proper networking between services
+5. Implement health checks to ensure services start in the correct order
+6. Set up volume mappings for code and data persistence
+
+## 2. Implement MongoDB Seeding Mechanism [pending]
+### Dependencies: 16.1
+### Description: Develop a robust database seeding system that can populate MongoDB with test data for different scenarios while preventing duplicate entries.
+### Details:
+1. Create a 'seeds' directory with JSON or JavaScript seed files
+2. Develop a seeding script that connects to MongoDB and inserts seed data
+3. Implement idempotent seeding logic using unique identifiers
+4. Create different data sets (minimal and comprehensive)
+5. Add command-line options to select which data sets to seed
+6. Integrate seeding into container startup process
+
+## 3. Configure Environment-Specific Settings [pending]
+### Dependencies: 16.1
+### Description: Create environment configuration files for different deployment scenarios (development, testing, staging) with appropriate variable definitions and security measures.
+### Details:
+1. Create template .env files for each environment (.env.development, .env.testing, .env.staging)
+2. Define all required environment variables with documentation comments
+3. Implement a mechanism to load the correct environment file based on NODE_ENV
+4. Create a .env.example file with dummy values for documentation
+5. Add .env files to .gitignore to prevent committing sensitive information
+6. Document the purpose and expected values for each environment variable
+
+## 4. Develop Environment Reset Scripts [pending]
+### Dependencies: 16.1, 16.2, 16.3
+### Description: Create shell scripts that allow developers to reset the entire environment or specific components to a clean state with appropriate safeguards.
+### Details:
+1. Create a main reset.sh script in the project root
+2. Implement options for full reset or partial resets (--all, --db-only, --frontend, --backend)
+3. Add confirmation prompts to prevent accidental resets
+4. Include environment detection to block execution in production
+5. Implement logging of reset operations with timestamps
+6. Add database backup option before reset
+7. Ensure scripts work on both Unix and Windows environments (using Docker commands)
+
+## 5. Create Comprehensive Documentation [pending]
+### Dependencies: 16.1, 16.2, 16.3, 16.4
+### Description: Develop detailed documentation covering setup, usage, troubleshooting, and architecture of the containerized development environment.
+### Details:
+1. Create a detailed README.md in the project root
+2. Document step-by-step setup instructions for new developers
+3. List and explain all available commands for managing the environment
+4. Create a troubleshooting section with solutions to common issues
+5. Add architecture diagrams showing container relationships
+6. Include documentation on how to extend the environment with new services
+7. Document the seeding process and available data sets
+8. Add examples of common development workflows
+

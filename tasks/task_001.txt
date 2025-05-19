@@ -1,6 +1,6 @@
 # Task ID: 1
 # Title: Setup Project Structure and Development Environment
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Initialize the project repository with Vue.js frontend and Node.js/Express backend, configure build tools, and set up the development environment.
@@ -68,7 +68,7 @@ Create a server directory and initialize a new Node.js project with `npm init -y
 ### Details:
 Install Mongoose with `npm install mongoose @types/mongoose`. Create a database configuration file in the server/src/config directory. Implement connection handling with proper error handling and reconnection logic. Set up a basic schema and model structure. Create a connection utility that can be imported by other parts of the application.
 
-## 4. Implement WebSocket Support and Shared Types [pending]
+## 4. Implement WebSocket Support and Shared Types [done]
 ### Dependencies: 1.1, 1.2
 ### Description: Set up WebSocket support using Socket.IO and create shared type definitions between frontend and backend.
 ### Details:

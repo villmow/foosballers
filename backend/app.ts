@@ -2,8 +2,22 @@ import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { ChatMessage, ClientToServerEvents, ServerToClientEvents } from '../shared-types';
 import { connectDB } from './config/database';
+
+// Define the shared types inline for Docker build
+interface ChatMessage {
+  user: string;
+  message: string;
+  timestamp: number;
+}
+
+interface ServerToClientEvents {
+  message: (msg: ChatMessage) => void;
+}
+
+interface ClientToServerEvents {
+  message: (msg: ChatMessage) => void;
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;

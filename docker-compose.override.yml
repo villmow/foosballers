@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  # Backend API service overrides for development
+  backend:
+    environment:
+      - DEBUG=app:*
+      - NODE_ENV=development
+    command: ["nodemon", "--watch", ".", "--ext", "ts", "--exec", "ts-node", "app.ts"]
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Frontend service overrides for development
+  frontend:
+    environment:
+      - VITE_BACKEND_URL=http://localhost:4000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

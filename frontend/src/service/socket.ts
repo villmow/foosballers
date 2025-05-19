@@ -1,8 +1,22 @@
 // WebSocket client for demo (can be imported in a component)
 import { io, Socket } from 'socket.io-client';
-import type { ChatMessage, ClientToServerEvents, ServerToClientEvents } from '../../../shared-types';
 
-const URL = 'http://localhost:4000';
+// Define shared types inline
+interface ChatMessage {
+  user: string;
+  message: string;
+  timestamp: number;
+}
+
+interface ServerToClientEvents {
+  message: (msg: ChatMessage) => void;
+}
+
+interface ClientToServerEvents {
+  message: (msg: ChatMessage) => void;
+}
+
+const URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(URL);
 

@@ -41,6 +41,8 @@ declare module 'vue' {
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
     TopbarWidget: typeof import('./src/components/landing/TopbarWidget.vue')['default']
+    Tree: typeof import('primevue/tree')['default']
+    TreeTable: typeof import('primevue/treetable')['default']
   }
   export interface ComponentCustomProperties {
     StyleClass: typeof import('primevue/styleclass')['default']
