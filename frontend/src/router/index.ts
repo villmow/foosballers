@@ -103,6 +103,12 @@ const router = createRouter({
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/pages/Documentation.vue')
+                },
+                {
+                    path: '/admin/create-user',
+                    name: 'admin-user-create',
+                    meta: { requiresAuth: true, requiresAdmin: true },
+                    component: () => import('@/views/admin/AdminUserCreate.vue')
                 }
             ]
         },
@@ -143,6 +149,17 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/ResetPassword.vue')
         }
     ]
+});
+
+// Add global navigation guard for admin routes
+router.beforeEach((to, _from, next) => {
+    if (to.meta && to.meta.requiresAdmin) {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user || user.role !== 'administrator') {
+            return next({ name: 'accessDenied' });
+        }
+    }
+    next();
 });
 
 export default router;

@@ -28,6 +28,7 @@ export const register = async (req: Request, res: Response) => {
 
 // POST /api/users/create (admin only)
 export const createUser = async (req: AuthRequest, res: Response) => {
+  console.log('DEBUG createUser req.user:', req.user); // Debug log
   try {
     const { username, email, password, role } = req.body;
     if (!username || !email || !password || !role) {
@@ -49,8 +50,9 @@ export const createUser = async (req: AuthRequest, res: Response) => {
     await user.save();
     // TODO: Send notification email to new user
     res.status(201).json({ message: 'User created successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'User creation failed' });
+  } catch (err: any) { // Added :any to type err for logging
+    console.error('ERROR in createUser:', err); // More detailed error logging
+    res.status(500).json({ error: 'User creation failed', details: err.message || err.toString() }); // Optionally send details to client
   }
 };
 

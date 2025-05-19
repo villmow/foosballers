@@ -145,6 +145,22 @@ const model = ref([
                 target: '_blank'
             }
         ]
+    },
+    {
+        label: 'Admin',
+        icon: 'pi pi-fw pi-cog',
+        items: [
+            {
+                label: 'Create User',
+                icon: 'pi pi-fw pi-user-plus',
+                to: '/admin/create-user',
+                visible: () => {
+                    // Only show for admin users
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    return user && user.role === 'admin';
+                }
+            }
+        ]
     }
 ]);
 </script>

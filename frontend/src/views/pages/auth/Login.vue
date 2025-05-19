@@ -30,7 +30,8 @@ const login = async () => {
     } else {
       sessionStorage.setItem('token', response.token);
     }
-    
+    // Always store user info in localStorage for role-based checks
+    localStorage.setItem('user', JSON.stringify(response.user));
     // Redirect to dashboard
     router.push('/');
     

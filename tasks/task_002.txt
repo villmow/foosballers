@@ -93,7 +93,7 @@ Authentication Flow:
 4. Implement password reset endpoint with new password validation
 5. Add token expiration handling (1 hour validity)
 
-## 5. Implement Authentication Middleware and Session Management [pending]
+## 5. Implement Authentication Middleware and Session Management [done]
 ### Dependencies: 2.1, 2.2
 ### Description: Create middleware for protecting routes and implement session management with timeout after inactivity.
 ### Details:

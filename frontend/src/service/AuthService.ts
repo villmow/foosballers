@@ -177,5 +177,19 @@ export const AuthService = {
     }
     
     return await response.json();
+  },
+  
+  async createUser(user: { username: string; email: string; password: string; role: string }): Promise<{ message: string }> {
+    const response = await fetch('/api/users/create', {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify(user),
+      credentials: 'include'
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to create user');
+    }
+    return await response.json();
   }
 };
