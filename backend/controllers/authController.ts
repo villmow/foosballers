@@ -5,8 +5,94 @@ import { IUser, UserModel } from '../models/User'; // Corrected: UserModel is th
 import { sendPasswordResetEmail } from '../services/emailService';
 import { blacklistToken } from '../services/tokenBlacklistService';
 import { generatePasswordResetToken } from '../utils/jwtUtils';
+import { comparePassword } from '../utils/passwordUtils';
 
 // Controller for handling user authentication
+
+/**
+ * Endpoint for user login
+ * Authenticates user credentials and returns a JWT token
+ */
+export const login = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      res.status(400).json({ message: 'Email and password are required' });
+      return;
+    }
+
+    // Find user by email
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
+    }
+
+    // Check if account is locked
+    if (user.loginAttempts >= 5 && user.lockUntil && user.lockUntil > new Date()) {
+      res.status(401).json({
+        message: 'Account is locked. Try again later or reset your password.',
+        lockUntil: user.lockUntil
+      });
+      return;
+    }
+
+    // Check password
+    const isValid = await comparePassword(password, user.password);
+    if (!isValid) {
+      // Increment login attempts on failed login
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      
+      // Lock account after 5 failed attempts
+      if (user.loginAttempts >= 5) {
+        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // Lock for 30 minutes
+      }
+      
+      await user.save();
+      
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
+    }
+
+    // Reset login attempts on successful login
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '90m' } // 90 minutes token expiry
+    );
+
+    // Set cookie with the token
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 90 * 60 * 1000 // 90 minutes in milliseconds
+    });
+
+    // Send response
+    res.status(200).json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Internal server error during login' });
+  }
+};
 
 /**
  * Endpoint for user logout

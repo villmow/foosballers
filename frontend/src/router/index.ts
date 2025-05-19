@@ -131,6 +131,16 @@ const router = createRouter({
             path: '/auth/error',
             name: 'error',
             component: () => import('@/views/pages/auth/Error.vue')
+        },
+        {
+            path: '/auth/forgot-password',
+            name: 'forgotPassword',
+            component: () => import('@/views/pages/auth/ForgotPassword.vue')
+        },
+        {
+            path: '/auth/reset-password',
+            name: 'resetPassword',
+            component: () => import('@/views/pages/auth/ResetPassword.vue')
         }
     ]
 });

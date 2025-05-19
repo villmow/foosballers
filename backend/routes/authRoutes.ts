@@ -1,7 +1,10 @@
 import express, { RequestHandler } from 'express'; // Import RequestHandler
-import { forgotPassword, logout, resetPassword } from '../controllers/authController'; // Add forgotPassword and resetPassword
+import { forgotPassword, login, logout, resetPassword } from '../controllers/authController'; // Add login, forgotPassword and resetPassword
 
 const router = express.Router();
+
+// Route for user login
+router.post('/login', login as RequestHandler); // Cast to RequestHandler
 
 // Route for user logout
 router.post('/logout', logout as RequestHandler); // Cast to RequestHandler

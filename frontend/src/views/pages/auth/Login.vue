@@ -1,13 +1,53 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
+import { AuthService } from '@/service/AuthService';
+import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const email = ref('');
 const password = ref('');
 const checked = ref(false);
+const loading = ref(false);
+const toast = useToast();
+const router = useRouter();
+
+const login = async () => {
+  if (!email.value || !password.value) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Please enter both email and password', life: 3000 });
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const response = await AuthService.login(email.value, password.value);
+    
+    // Store the token in localStorage or sessionStorage based on "Remember me"
+    if (checked.value) {
+      localStorage.setItem('token', response.token);
+    } else {
+      sessionStorage.setItem('token', response.token);
+    }
+    
+    // Redirect to dashboard
+    router.push('/');
+    
+  } catch (error) {
+    let errorMessage = 'Failed to login. Please check your credentials.';
+    
+    if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.add({ severity: 'error', summary: 'Login Failed', detail: errorMessage, life: 3000 });
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
+    <Toast />
     <FloatingConfigurator />
     <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
         <div class="flex flex-col items-center justify-center">
@@ -47,9 +87,9 @@ const checked = ref(false);
                                 <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
                                 <label for="rememberme1">Remember me</label>
                             </div>
-                            <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
+                            <router-link to="/auth/forgot-password" class="font-medium no-underline ml-2 text-right text-primary">Forgot password?</router-link>
                         </div>
-                        <Button label="Sign In" class="w-full" as="router-link" to="/"></Button>
+                        <Button label="Sign In" class="w-full" @click="login" :loading="loading" :disabled="loading"></Button>
                     </div>
                 </div>
             </div>
