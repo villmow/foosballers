@@ -53,7 +53,7 @@ Authentication Flow:
 10. Verify email notifications for account creation and password reset
 
 # Subtasks:
-## 1. Implement User Model and Authentication Utilities [pending]
+## 1. Implement User Model and Authentication Utilities [done]
 ### Dependencies: None
 ### Description: Create the MongoDB user schema and implement core authentication utilities including password hashing with bcrypt and JWT token generation/validation.
 ### Details:

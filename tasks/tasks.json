@@ -83,7 +83,7 @@
           "description": "Create the MongoDB user schema and implement core authentication utilities including password hashing with bcrypt and JWT token generation/validation.",
           "dependencies": [],
           "details": "1. Create MongoDB schema for User model with all required fields\n2. Implement password hashing and comparison functions using bcrypt\n3. Create JWT token generation function with appropriate payload and expiration\n4. Implement JWT token validation function\n5. Add utility functions for managing login attempts and account locking",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test password hashing, JWT generation/validation, and account locking logic with mock data. Ensure password hashing is one-way and JWT tokens contain correct claims."
         },
         {
