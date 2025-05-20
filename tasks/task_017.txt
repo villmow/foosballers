@@ -88,13 +88,13 @@ Testing for this authentication UI workflow should include:
 Documentation of test results should include screenshots of the UI at each step of the workflow and detailed reports of any issues found during testing.
 
 # Subtasks:
-## 1. Implement Landing Page with Login Prompt [pending]
+## 1. Implement Landing Page with Login Prompt [done]
 ### Dependencies: None
 ### Description: Modify the landing page to include a prominent login button and ensure unauthenticated users are directed to the login page.
 ### Details:
 Create a responsive login prompt component that follows the existing design system. Add conditional rendering to display different content for authenticated vs. unauthenticated users. Implement a redirect mechanism that checks authentication status and directs unauthenticated users to the login page when attempting to access protected routes.
 
-## 2. Create Login Form Component with Validation [pending]
+## 2. Create Login Form Component with Validation [done]
 ### Dependencies: None
 ### Description: Develop a clean, accessible login form with proper validation, error handling, and additional functionality like 'Remember me' and 'Forgot password'.
 ### Details:
@@ -106,13 +106,13 @@ Build a form component with username/email and password fields. Implement client
 ### Details:
 Create a user icon component that conditionally renders based on authentication status. Display user avatar if available or default icon. Implement a dropdown menu that appears on click with smooth animations. Include menu items for Profile and Logout. Ensure the component is responsive and works across all authenticated pages. Position the icon consistently in the navigation bar.
 
-## 4. Develop User Profile Settings Page [pending]
+## 4. Develop User Profile Settings Page [in-progress]
 ### Dependencies: None
 ### Description: Create a comprehensive profile settings page where users can view and edit their personal information, with appropriate validation and feedback mechanisms.
 ### Details:
 Build a profile page with form fields for name, email, password change, and other relevant settings. Implement form validation for all editable fields. Add success/error notifications for form submissions. Fetch user data from the API and populate form fields. Handle form submission to update user information. Ensure the page is responsive and follows the design system.
 
-## 5. Implement Authentication State Management and Logout Flow [pending]
+## 5. Implement Authentication State Management and Logout Flow [done]
 ### Dependencies: None
 ### Description: Set up comprehensive state management for authentication status across the application and implement a secure logout functionality.
 ### Details:
