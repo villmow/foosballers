@@ -1,8 +1,62 @@
-    <script setup>
+<script setup>
 import { useLayout } from '@/layout/composables/layout';
-import AppConfigurator from './AppConfigurator.vue';
+import Button from 'primevue/button';
+import Menu from 'primevue/menu';
+import { onMounted, ref } from 'vue';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+
+const username = ref('User');
+const nestedMenuitems = ref([]);
+const menu = ref();
+const items = ref([
+    {
+        label: 'Settings',
+        icon: 'pi pi-fw pi-cog',
+    },
+    {
+        label: 'Logout',
+        icon: 'pi pi-fw pi-file',
+        command: () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login';
+        }
+    },
+]);
+
+function toggle(event) {
+    menu.value.toggle(event);
+}
+
+onMounted(() => {
+    // Get the user's name from local storage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    username.value = user.name || user.username || 'User';
+    
+    // Update the menu items with the user's name
+    nestedMenuitems.value = [
+        {
+            label: 'Settings',
+            icon: 'pi pi-fw pi-cog',
+            command: () => {
+                // Handle settings click
+            }
+        },
+        {
+            label: 'Logout',
+            icon: 'pi pi-fw pi-file',
+            command: () => {
+                // Remove user from local storage
+                localStorage.removeItem('user');
+                // Optionally remove token if stored separately
+                localStorage.removeItem('token');
+                // Redirect to login page
+                window.location.href = '/login';
+            }
+        }
+    ];
+});
 </script>
 
 <template>
@@ -17,45 +71,63 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
         </div>
 
         <div class="layout-topbar-actions">
-            <div class="layout-config-menu">
+            <div class="layout-config-menu flex items-center">
                 <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
-                <div class="relative">
-                    <button
-                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
-                        type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <AppConfigurator />
-                </div>
             </div>
-
-            <button
-                class="layout-topbar-menu-button layout-topbar-action"
-                v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
-            >
-                <i class="pi pi-ellipsis-v"></i>
-            </button>
-
-            <div class="layout-topbar-menu hidden lg:block">
+            <div class="layout-topbar-menu hidden lg:block flex items-center">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                    <Button 
+                        icon="pi pi-user" 
+                        severity="secondary"
+                        rounded 
+                        outlined 
+                        aria-label="User" 
+                        @click="toggle" 
+                        aria-haspopup="true" 
+                        aria-controls="overlay_menu" 
+                    />
+                    <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
                 </div>
             </div>
-        </div>
+        </div>  
     </div>
 </template>
+
+<style lang="scss" scoped>
+:deep(.p-menubar) {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+:deep(.p-menubar-root-list) {
+    background: transparent;
+
+}
+
+:deep(.p-menu) {
+    /* Right-align only the dropdown popup */
+    position: absolute;
+    right: 0;
+    left: auto;
+    inset-inline-end: 0;
+}
+
+.layout-topbar-actions {
+    display: flex;
+    align-items: center;
+}
+
+.layout-topbar-menu,
+.layout-config-menu {
+    display: flex;
+    align-items: center;
+}
+
+.layout-topbar-menu-content {
+    position: relative;
+}
+
+</style>

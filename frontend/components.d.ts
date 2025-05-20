@@ -92,6 +92,7 @@ declare module 'vue' {
     UserIconDropdown: typeof import('./src/components/UserIconDropdown.vue')['default']
   }
   export interface ComponentCustomProperties {
+    Ripple: typeof import('primevue/ripple')['default']
     StyleClass: typeof import('primevue/styleclass')['default']
     Tooltip: typeof import('primevue/tooltip')['default']
   }
