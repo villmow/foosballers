@@ -83,7 +83,7 @@
           "description": "Create the MongoDB user schema and implement core authentication utilities including password hashing with bcrypt and JWT token generation/validation.",
           "dependencies": [],
           "details": "1. Create MongoDB schema for User model with all required fields\n2. Implement password hashing and comparison functions using bcrypt\n3. Create JWT token generation function with appropriate payload and expiration\n4. Implement JWT token validation function\n5. Add utility functions for managing login attempts and account locking",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test password hashing, JWT generation/validation, and account locking logic with mock data. Ensure password hashing is one-way and JWT tokens contain correct claims."
         },
         {
@@ -94,7 +94,7 @@
             1
           ],
           "details": "1. Create login endpoint with credential validation and rate limiting\n2. Implement logout endpoint that invalidates tokens\n3. Add token refresh endpoint to extend sessions\n4. Implement proper error handling and status codes\n5. Add request validation middleware for authentication requests",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Integration test each endpoint with valid and invalid credentials. Test rate limiting by simulating multiple failed login attempts. Verify token invalidation on logout."
         },
         {
@@ -105,7 +105,7 @@
             1
           ],
           "details": "1. Implement user registration endpoint with email verification\n2. Create admin-only endpoint for creating new user accounts\n3. Add endpoint for updating user profiles\n4. Implement email uniqueness validation\n5. Add role-based permission checks for user management operations",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test registration with valid and invalid data. Verify admin-only routes are protected. Test email uniqueness constraints and validation rules."
         },
         {
@@ -116,7 +116,7 @@
             1
           ],
           "details": "1. Create endpoint to request password reset that generates a secure token\n2. Implement email sending functionality with reset links\n3. Create endpoint to validate reset tokens\n4. Implement password reset endpoint with new password validation\n5. Add token expiration handling (1 hour validity)",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the complete password reset flow. Verify token expiration works correctly. Test email delivery with a test email service. Ensure reset tokens are single-use only."
         },
         {
@@ -128,8 +128,82 @@
             2
           ],
           "details": "1. Implement authentication middleware for protected routes\n2. Create role-based authorization middleware\n3. Add session timeout logic (90 minutes inactivity)\n4. Implement request logging for authentication events\n5. Add security headers and CSRF protection",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test middleware with authenticated and unauthenticated requests. Verify session timeout works correctly. Test role-based access control with different user types."
+        },
+        {
+          "id": 6,
+          "title": "Create \"Forgot Password\" UI Component",
+          "description": "Implement a user-friendly form component for the \"Forgot Password\" functionality that takes an email address and submits it to the password recovery endpoint.",
+          "details": "1. Create a Vue component for the forgot password form with email input and validation\n2. Implement form submission logic with proper error handling\n3. Add loading state and success notifications\n4. Style the component according to the application design\n5. Include helpful instructions for users on the form\n6. Add rate limiting feedback in case of too many attempts",
+          "status": "pending",
+          "dependencies": [
+            4
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 7,
+          "title": "Implement \"Reset Password\" UI Component",
+          "description": "Create a secure \"Reset Password\" form component that accepts a new password, validates it, and handles the token from the URL to complete the password reset process.",
+          "details": "1. Create a Vue component for the reset password form with new password and confirmation inputs\n2. Implement robust password validation (strength requirements, matching confirmation)\n3. Extract and validate the reset token from the URL parameters\n4. Add form submission logic to reset password endpoint with proper error handling\n5. Implement success and error states with appropriate user feedback\n6. Add redirect to login page after successful password reset\n7. Handle expired or invalid token scenarios with clear user guidance",
+          "status": "pending",
+          "dependencies": [
+            4
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 8,
+          "title": "Integrate Frontend Forms with Backend Password Reset API",
+          "description": "Connect the frontend password reset components to the backend API endpoints ensuring seamless integration and proper error handling throughout the flow.",
+          "details": "1. Create frontend service functions for calling password reset API endpoints\n2. Integrate the forgot password form with the request password reset endpoint\n3. Connect the reset password form with the password reset validation and update endpoints\n4. Implement proper error handling for all API calls\n5. Add loading states during API requests to improve UX\n6. Ensure consistent error messaging between frontend and backend\n7. Handle network errors gracefully with retry options\n8. Add client-side validation that matches server-side requirements",
+          "status": "pending",
+          "dependencies": [
+            4,
+            6,
+            7
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 9,
+          "title": "Implement End-to-End Tests for Password Reset Flow",
+          "description": "Create comprehensive tests for the password reset flow including both frontend and backend testing to ensure the entire system works correctly.",
+          "details": "1. Create unit tests for password reset API endpoints\n2. Implement integration tests for the complete password reset flow\n3. Add frontend component tests for the forgot password and reset forms\n4. Test token generation, validation, and expiration logic\n5. Implement email delivery tests (using a test/mock email service)\n6. Test password update functionality with valid and invalid tokens\n7. Create end-to-end tests for the complete user flow\n8. Add test cases for security aspects like rate limiting\n9. Test token invalidation after successful password reset\n10. Ensure error cases and edge conditions are thoroughly tested",
+          "status": "pending",
+          "dependencies": [
+            4,
+            6,
+            7,
+            8
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 10,
+          "title": "Security Review and Hardening of Password Reset Flow",
+          "description": "Conduct a security review of the password reset implementation to identify and address potential vulnerabilities and ensure industry best practices are followed.",
+          "details": "1. Review token generation for sufficient entropy and security\n2. Ensure tokens are properly stored and managed in the database\n3. Implement and test rate limiting on password reset requests\n4. Verify that tokens expire after an appropriate time (typically 1 hour)\n5. Check that reset tokens are single-use only\n6. Review password validation rules for compliance with security standards\n7. Audit the logging of password reset events (ensuring no sensitive data is logged)\n8. Verify that email templates don't leak sensitive information\n9. Ensure proper HTTPS usage throughout the password reset flow\n10. Implement protection against timing attacks in token validation\n11. Review frontend-backend communication for security vulnerabilities",
+          "status": "pending",
+          "dependencies": [
+            4,
+            8,
+            9
+          ],
+          "parentTaskId": 2
+        },
+        {
+          "id": 11,
+          "title": "Implement Admin User Creation Page",
+          "description": "Create a secure admin-only page that allows administrators to create new user accounts with specified roles.",
+          "details": "1. Create a Vue component for the user creation form with fields for username, email, password, and role selection\n2. Implement form validation for all input fields\n3. Create a service function to call the backend API endpoint\n4. Add proper error handling and success notifications\n5. Implement role-based access control to restrict access to administrators only\n6. Add the new route to the router configuration\n7. Style the component according to the application design system\n8. Add loading state indication during form submission\n9. Implement user feedback for successful user creation\n10. Add the component to the admin dashboard navigation",
+          "status": "pending",
+          "dependencies": [
+            "2.3",
+            "2.5"
+          ],
+          "parentTaskId": 2
         }
       ]
     },
@@ -1041,6 +1115,76 @@
       "description": "Establish a containerized development environment using Docker for all services (MongoDB, frontend, and backend) with the ability to easily reset to a clean state, complete with database seeding and environment-specific configurations.",
       "details": "This task involves several key components:\n\n1. Docker Configuration:\n   - Create a `docker-compose.yml` file that defines all services (MongoDB, frontend, backend)\n   - Configure appropriate networking between containers\n   - Set up volume mappings for persistent data\n   - Define environment variables for each service\n   - Implement health checks to ensure services start in the correct order\n\n2. Database Seeding:\n   - Develop MongoDB seeding scripts to populate the database with test data\n   - Create different data sets for various testing scenarios\n   - Implement idempotent seeding to prevent duplicate data\n   - Add option for minimal vs. comprehensive test data sets\n\n3. Environment Configuration:\n   - Create environment-specific configuration files (.env files)\n   - Implement configuration for development, testing, and staging environments\n   - Document all environment variables and their purposes\n   - Ensure sensitive information is not committed to version control\n\n4. Reset Scripts:\n   - Develop shell scripts to reset the entire environment\n   - Include options for partial resets (e.g., database only, specific services)\n   - Add safeguards to prevent accidental resets in production\n   - Implement logging for reset operations\n\n5. Documentation:\n   - Create comprehensive README with setup instructions\n   - Document all commands for starting, stopping, and resetting the environment\n   - Include troubleshooting section for common issues\n   - Add diagrams showing the architecture of the containerized environment\n\nThe implementation should prioritize developer experience, ensuring that new team members can quickly set up and understand the development environment.",
       "testStrategy": "Testing this task will involve multiple verification steps:\n\n1. Environment Setup Verification:\n   - Have multiple team members follow the documentation to set up the environment from scratch\n   - Verify all services start correctly with `docker-compose up`\n   - Confirm proper networking between containers by accessing services from each other\n   - Validate that environment variables are correctly passed to each service\n\n2. Database Seeding Tests:\n   - Execute seeding scripts and verify data is correctly populated\n   - Run seeding multiple times to ensure idempotency\n   - Validate different data sets are correctly implemented\n   - Check that database indexes and constraints are properly applied\n\n3. Reset Functionality Testing:\n   - Test the reset script from various starting states\n   - Verify partial reset options work as expected\n   - Confirm that reset operations are properly logged\n   - Ensure reset doesn't affect any production environments\n\n4. Integration with Development Workflow:\n   - Verify that local code changes are reflected in the containerized environment\n   - Test the development workflow including code changes, database migrations, and resets\n   - Confirm that debugging tools work correctly with the containerized services\n   - Validate that test suites can run against the containerized environment\n\n5. Documentation Review:\n   - Have a new team member follow the documentation without assistance\n   - Collect feedback on clarity and completeness of instructions\n   - Verify all commands listed in documentation work as expected\n   - Ensure troubleshooting section addresses common issues\n\nThe task will be considered complete when all team members can successfully set up, use, and reset the development environment following the provided documentation.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Docker Compose Configuration for All Services",
+          "description": "Set up a docker-compose.yml file that defines and configures all required services (MongoDB, frontend, and backend) with proper networking, volume mappings, and environment variables.",
+          "dependencies": [],
+          "details": "Create a docker-compose.yml file in the project root with the following services:\n1. MongoDB service with persistent volume mapping\n2. Backend service with appropriate port mappings and environment variables\n3. Frontend service with appropriate port mappings and environment variables\n4. Configure proper networking between services\n5. Implement health checks to ensure services start in the correct order\n6. Set up volume mappings for code and data persistence",
+          "status": "done",
+          "testStrategy": "Verify that all containers start successfully with `docker-compose up` and that services can communicate with each other. Test network connectivity between containers."
+        },
+        {
+          "id": 2,
+          "title": "Implement MongoDB Seeding Mechanism",
+          "description": "Develop a robust database seeding system that can populate MongoDB with test data for different scenarios while preventing duplicate entries.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create a 'seeds' directory with JSON or JavaScript seed files\n2. Develop a seeding script that connects to MongoDB and inserts seed data\n3. Implement idempotent seeding logic using unique identifiers\n4. Create different data sets (minimal and comprehensive)\n5. Add command-line options to select which data sets to seed\n6. Integrate seeding into container startup process",
+          "status": "pending",
+          "testStrategy": "Test seeding with empty database and with existing data to verify idempotency. Verify all collections are properly populated with expected data."
+        },
+        {
+          "id": 3,
+          "title": "Configure Environment-Specific Settings",
+          "description": "Create environment configuration files for different deployment scenarios (development, testing, staging) with appropriate variable definitions and security measures.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create template .env files for each environment (.env.development, .env.testing, .env.staging)\n2. Define all required environment variables with documentation comments\n3. Implement a mechanism to load the correct environment file based on NODE_ENV\n4. Create a .env.example file with dummy values for documentation\n5. Add .env files to .gitignore to prevent committing sensitive information\n6. Document the purpose and expected values for each environment variable",
+          "status": "pending",
+          "testStrategy": "Test application startup with different environment configurations to ensure proper variable loading."
+        },
+        {
+          "id": 4,
+          "title": "Develop Environment Reset Scripts",
+          "description": "Create shell scripts that allow developers to reset the entire environment or specific components to a clean state with appropriate safeguards.",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "1. Create a main reset.sh script in the project root\n2. Implement options for full reset or partial resets (--all, --db-only, --frontend, --backend)\n3. Add confirmation prompts to prevent accidental resets\n4. Include environment detection to block execution in production\n5. Implement logging of reset operations with timestamps\n6. Add database backup option before reset\n7. Ensure scripts work on both Unix and Windows environments (using Docker commands)",
+          "status": "pending",
+          "testStrategy": "Test each reset option to verify it correctly resets only the intended components. Verify safeguards prevent accidental resets."
+        },
+        {
+          "id": 5,
+          "title": "Create Comprehensive Documentation",
+          "description": "Develop detailed documentation covering setup, usage, troubleshooting, and architecture of the containerized development environment.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Create a detailed README.md in the project root\n2. Document step-by-step setup instructions for new developers\n3. List and explain all available commands for managing the environment\n4. Create a troubleshooting section with solutions to common issues\n5. Add architecture diagrams showing container relationships\n6. Include documentation on how to extend the environment with new services\n7. Document the seeding process and available data sets\n8. Add examples of common development workflows",
+          "status": "pending",
+          "testStrategy": "Have a team member follow the documentation to set up the environment from scratch to verify completeness and accuracy."
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Task #17: Implement User Authentication UI Workflow",
+      "description": "Design and implement a complete user authentication UI workflow that guides users from the landing page to login, and provides a dropdown menu from the user icon for logout and profile access.",
+      "details": "This task involves creating a seamless authentication flow with the following components:\n\n1. Landing Page Modifications:\n   - Add a prominent login prompt/button on the landing page\n   - Ensure unauthenticated users are directed to login\n   - Design should be responsive and follow existing design system\n\n2. Login Component:\n   - Create a clean, accessible login form with username/email and password fields\n   - Implement form validation with clear error messages\n   - Add \"Remember me\" functionality\n   - Include \"Forgot password\" link\n   - Ensure secure handling of credentials\n\n3. User Icon and Dropdown Menu:\n   - Add a user icon in the top-right corner of all authenticated pages\n   - Icon should display user avatar if available or default icon\n   - Implement a dropdown menu that appears on click\n   - Menu should include at minimum: Profile link and Logout option\n   - Add subtle animations for dropdown open/close\n\n4. Profile Settings Page:\n   - Create a page where users can view and edit their profile information\n   - Include fields for name, email, password change, and other relevant settings\n   - Implement form validation and success/error notifications\n\n5. Logout Functionality:\n   - Implement secure logout that clears session data\n   - Redirect to landing page after logout\n   - Show confirmation of successful logout\n\n6. State Management:\n   - Ensure proper state management for authentication status\n   - Handle session persistence appropriately\n   - Implement route guards for authenticated routes\n\nThe implementation should follow best practices for UI/UX design, accessibility standards (WCAG 2.1), and security considerations for authentication workflows.",
+      "testStrategy": "Testing for this authentication UI workflow should include:\n\n1. Unit Tests:\n   - Test individual components (login form, dropdown menu, profile form)\n   - Validate form validation logic\n   - Test state management for authentication\n\n2. Integration Tests:\n   - Verify the login flow works end-to-end\n   - Test dropdown menu functionality\n   - Confirm profile page loads and saves correctly\n   - Verify logout process works as expected\n\n3. End-to-End Tests:\n   - Create Cypress or similar E2E tests for the complete user journey\n   - Test from landing page → login → accessing dropdown → logout\n   - Test from landing page → login → accessing dropdown → profile → making changes\n\n4. Cross-browser Testing:\n   - Verify functionality in Chrome, Firefox, Safari, and Edge\n   - Test responsive behavior on different screen sizes\n\n5. Accessibility Testing:\n   - Run automated accessibility tests (Lighthouse, axe)\n   - Perform keyboard navigation testing\n   - Test with screen readers\n\n6. Security Testing:\n   - Verify authentication tokens are properly handled\n   - Test for common security issues (XSS, CSRF)\n   - Ensure sensitive data is not exposed in the UI\n\n7. User Testing:\n   - Conduct usability testing with 3-5 users\n   - Gather feedback on the authentication flow\n   - Make adjustments based on user feedback\n\n8. Performance Testing:\n   - Measure and optimize load times for authentication components\n   - Test performance on lower-end devices\n\nDocumentation of test results should include screenshots of the UI at each step of the workflow and detailed reports of any issues found during testing.",
       "status": "pending",
       "dependencies": [],
       "priority": "medium",
