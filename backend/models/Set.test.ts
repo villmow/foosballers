@@ -1,7 +1,20 @@
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { GoalModel } from './Goal';
 import { SetModel } from './Set';
 import { TimeoutModel } from './Timeout';
+
+let mongoServer: MongoMemoryServer;
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri());
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
+});
 
 describe('Set Model', () => {
   it('should create and save a set successfully', async () => {
@@ -78,6 +91,37 @@ describe('Goal Model', () => {
     }
     expect(err).toBeDefined();
     expect(err.errors['teamIndex']).toBeDefined();
+  });
+
+  it('should update parent Set scores and goals array via post-save hook', async () => {
+    // Create a Set
+    const set = new SetModel({
+      matchId: new mongoose.Types.ObjectId(),
+      setNumber: 1,
+      scores: [0, 0],
+      timeoutsUsed: [0, 0],
+      goals: [],
+      timeouts: [],
+      status: 'inProgress',
+    });
+    const savedSet = await set.save();
+
+    // Create a Goal for team 1
+    const goal = new GoalModel({
+      matchId: savedSet.matchId,
+      setId: savedSet._id,
+      teamIndex: 1,
+      timestamp: new Date(),
+      scoringRow: '3-bar',
+      voided: false,
+    });
+    await goal.save();
+
+    // Fetch the set again and check updates
+    const updatedSet = await SetModel.findById(savedSet._id);
+    expect(updatedSet).toBeDefined();
+    expect(updatedSet!.scores[1]).toBe(1);
+    expect(updatedSet!.goals).toContainEqual(goal._id);
   });
 });
 

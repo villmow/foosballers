@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
 import { authenticateJWT, logAuthEvents, sessionTimeout } from './middleware/authMiddleware';
+import { mongoErrorHandler } from './middleware/mongoErrorHandler';
 import { securityHeaders } from './middleware/securityMiddleware';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
@@ -59,6 +60,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 // Error handling middleware
+app.use(mongoErrorHandler);
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
