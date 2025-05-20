@@ -225,7 +225,7 @@
           "description": "Create the MongoDB schema and Mongoose model for users with authentication-related fields and validation rules.",
           "dependencies": [],
           "details": "Implement the User schema with fields for authentication (email, password hash, salt), profile information (name, avatar), roles/permissions, and account status. Include proper validation for all fields, password hashing functionality, and methods for authentication. Set up appropriate indexes for email and username fields for faster lookups during authentication.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests to verify schema validation rules, password hashing, and authentication methods. Test edge cases like duplicate emails and invalid password formats."
         },
         {
@@ -236,7 +236,7 @@
             1
           ],
           "details": "Implement the Match schema as defined in the specification, ensuring proper validation for all fields. Add methods for match creation, status updates, and team management. Define virtual properties for derived data like match duration and winner. Create indexes for efficient querying by status, player IDs, and date ranges. Implement proper references to User schema for the createdBy field.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test match creation with various formats and player setups. Verify validation rules for required fields and enum values. Test methods for updating match status and calculating match statistics."
         },
         {
@@ -247,7 +247,7 @@
             2
           ],
           "details": "Implement the Set schema with proper validation and references to the Match schema. Add methods for set creation, score updates, and winner determination. Implement virtual properties for set duration and current score. Create indexes for efficient querying by matchId and status. Add pre/post hooks to update the parent Match document when a Set is updated (e.g., incrementing setsWon when a set is completed).",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test set creation within matches of different formats. Verify score update methods and winner determination logic. Test the cascading updates to the parent Match document when sets are completed."
         },
         {
@@ -258,7 +258,7 @@
             3
           ],
           "details": "Implement the Goal and Timeout schemas with proper validation and references to both Match and Set schemas. Add methods for creating, voiding, and querying goals/timeouts. Implement hooks to update the parent Set document's scores and timeoutsUsed arrays when goals/timeouts are created or voided. Create indexes for efficient querying by matchId, setId, and timestamp.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test goal and timeout creation, including validation rules. Verify that parent Set documents are properly updated when goals/timeouts are created or voided. Test querying goals/timeouts by various criteria."
         },
         {

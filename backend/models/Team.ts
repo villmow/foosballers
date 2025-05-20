@@ -1,3 +1,6 @@
+// Team model is now an embedded subdocument in the Match schema.
+// This file is kept for reference but is not used directly.
+
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITeam extends Document {

@@ -99,25 +99,25 @@ interface Timeout {
 8. Test error handling for database operations
 
 # Subtasks:
-## 1. Define User Schema and Authentication Models [pending]
+## 1. Define User Schema and Authentication Models [done]
 ### Dependencies: None
 ### Description: Create the MongoDB schema and Mongoose model for users with authentication-related fields and validation rules.
 ### Details:
 Implement the User schema with fields for authentication (email, password hash, salt), profile information (name, avatar), roles/permissions, and account status. Include proper validation for all fields, password hashing functionality, and methods for authentication. Set up appropriate indexes for email and username fields for faster lookups during authentication.
 
-## 2. Implement Match and Team Schema Models [pending]
+## 2. Implement Match and Team Schema Models [done]
 ### Dependencies: 3.1
 ### Description: Create the MongoDB schemas and Mongoose models for matches and team structures with proper validation and relationships.
 ### Details:
 Implement the Match schema as defined in the specification, ensuring proper validation for all fields. Add methods for match creation, status updates, and team management. Define virtual properties for derived data like match duration and winner. Create indexes for efficient querying by status, player IDs, and date ranges. Implement proper references to User schema for the createdBy field.
 
-## 3. Implement Set and Scoring Models [pending]
+## 3. Implement Set and Scoring Models [done]
 ### Dependencies: 3.2
 ### Description: Create the MongoDB schemas and Mongoose models for sets with proper validation, scoring logic, and relationships to matches.
 ### Details:
 Implement the Set schema with proper validation and references to the Match schema. Add methods for set creation, score updates, and winner determination. Implement virtual properties for set duration and current score. Create indexes for efficient querying by matchId and status. Add pre/post hooks to update the parent Match document when a Set is updated (e.g., incrementing setsWon when a set is completed).
 
-## 4. Implement Goal and Timeout Models [pending]
+## 4. Implement Goal and Timeout Models [done]
 ### Dependencies: 3.3
 ### Description: Create the MongoDB schemas and Mongoose models for goals and timeouts with proper validation and relationships to sets and matches.
 ### Details:
