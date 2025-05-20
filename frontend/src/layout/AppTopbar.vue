@@ -11,8 +11,12 @@ const nestedMenuitems = ref([]);
 const menu = ref();
 const items = ref([
     {
-        label: 'Settings',
-        icon: 'pi pi-fw pi-cog',
+        label: 'Profile',
+        icon: 'pi pi-fw pi-user',
+        command: () => {
+            // Handle settings click
+            window.location.href = '/profile';
+        }
     },
     {
         label: 'Logout',
@@ -75,8 +79,6 @@ onMounted(() => {
                 <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
-            </div>
-            <div class="layout-topbar-menu hidden lg:block flex items-center">
                 <div class="layout-topbar-menu-content">
                     <Button 
                         icon="pi pi-user" 
@@ -96,24 +98,6 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-:deep(.p-menubar) {
-    border: none;
-    background: transparent;
-    box-shadow: none;
-}
-
-:deep(.p-menubar-root-list) {
-    background: transparent;
-
-}
-
-:deep(.p-menu) {
-    /* Right-align only the dropdown popup */
-    position: absolute;
-    right: 0;
-    left: auto;
-    inset-inline-end: 0;
-}
 
 .layout-topbar-actions {
     display: flex;
