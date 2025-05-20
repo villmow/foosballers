@@ -57,14 +57,13 @@ const MatchSchema = new Schema({
     enum: ['notStarted', 'inProgress', 'completed', 'aborted'],
     default: 'notStarted',
     required: true,
-    index: true,
   },
   startTime: { type: Date },
   endTime: { type: Date },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true},
   sets: [{ type: Schema.Types.ObjectId, ref: 'Set' }],
   currentSet: { type: Schema.Types.ObjectId, ref: 'Set' },
-  createdAt: { type: Date, default: Date.now, index: true },
+  createdAt: { type: Date, default: Date.now},
   updatedAt: { type: Date, default: Date.now },
 });
 

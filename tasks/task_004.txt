@@ -48,7 +48,7 @@ Validation Rules:
 9. Test the UI form for usability and error handling
 
 # Subtasks:
-## 1. Create Match API Endpoints [pending]
+## 1. Create Match API Endpoints [done]
 ### Dependencies: None
 ### Description: Implement the backend API endpoints for match creation, retrieval, updating, and deletion.
 ### Details:

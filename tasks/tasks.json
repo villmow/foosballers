@@ -296,7 +296,7 @@
           "description": "Implement the backend API endpoints for match creation, retrieval, updating, and deletion.",
           "dependencies": [],
           "details": "Create RESTful API endpoints for match operations: POST /api/matches for creation, GET /api/matches/:id for retrieval, PUT /api/matches/:id for updates, and DELETE /api/matches/:id for deletion. Implement proper request handling, response formatting, and error handling. Define the Match model with all required fields including match format, player setup, team names, player names, team colors, timeout settings, and last-set rule toggle.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests for each endpoint using a testing framework like Jest. Test successful operations and error cases including validation failures. Use mock database for testing."
         },
         {

@@ -11,8 +11,8 @@ export interface ITimeout extends Document {
 }
 
 const TimeoutSchema = new Schema({
-  matchId: { type: Schema.Types.ObjectId, ref: 'Match', required: true, index: true },
-  setId: { type: Schema.Types.ObjectId, ref: 'Set', required: true, index: true },
+  matchId: { type: Schema.Types.ObjectId, ref: 'Match', required: true },
+  setId: { type: Schema.Types.ObjectId, ref: 'Set', required: true },
   teamIndex: { type: Number, required: true, min: 0, max: 1 },
   timestamp: { type: Date, required: true },
   voided: { type: Boolean, default: false },

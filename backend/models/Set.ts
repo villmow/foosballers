@@ -16,7 +16,7 @@ export interface ISet extends Document {
 }
 
 const SetSchema = new Schema({
-  matchId: { type: Schema.Types.ObjectId, ref: 'Match', required: true, index: true },
+  matchId: { type: Schema.Types.ObjectId, ref: 'Match', required: true},
   setNumber: { type: Number, required: true },
   scores: { type: [Number], required: true, validate: [(v: number[]) => v.length === 2, 'Scores must be an array of two numbers'] },
   timeoutsUsed: { type: [Number], required: true, default: [0, 0], validate: [(v: number[]) => v.length === 2, 'TimeoutsUsed must be an array of two numbers'] },

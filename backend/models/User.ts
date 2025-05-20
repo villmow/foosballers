@@ -112,9 +112,9 @@ const UserSchema = new Schema<IUser>({
 });
 
 // Add indexes for performance optimization
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
-UserSchema.index({ createdAt: -1 });
+// UserSchema.index({ email: 1 });
+// UserSchema.index({ username: 1 });
+// UserSchema.index({ createdAt: -1 });
 
 // Set up updatedAt timestamp on save
 UserSchema.pre('save', function(next) {
