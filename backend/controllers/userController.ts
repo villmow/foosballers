@@ -63,7 +63,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    const { username, email } = req.body;
+    const { username, email, password } = req.body;
     const user = await UserModel.findById(req.user.id);
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -71,6 +71,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     }
     if (username) user.username = username;
     if (email) user.email = email;
+    if (password) user.password = password; // Will be hashed by pre-save hook
     await user.save();
     res.status(200).json({ message: 'Profile updated' });
   } catch (err) {

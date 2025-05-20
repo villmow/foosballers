@@ -1,6 +1,7 @@
 import express from 'express';
 import { forgotPassword, login, logout, resetPassword } from '../controllers/authController';
 import { AuthRequest, logAuthEvents, requireAuth } from '../middleware/authMiddleware';
+// import { getCsrfToken } from '../middleware/securityMiddleware';
 
 const router = express.Router();
 
@@ -33,5 +34,8 @@ router.get('/verify-token', requireAuth as express.RequestHandler, function (req
   const user = (req as any).user;
   res.status(200).json({ valid: true, user });
 });
+
+// // Endpoint for front-end to fetch a fresh CSRF token cookie
+// router.get('/csrf-token', getCsrfToken);
 
 export default router;

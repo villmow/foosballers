@@ -1,11 +1,3 @@
-// Authentication and user-related API services
-
-// Helper to get CSRF token from cookies
-const getCsrfToken = (): string => {
-  const match = document.cookie.match('(^|;)\\s*XSRF-TOKEN\\s*=\\s*([^;]+)');
-  return match ? match[2] : '';
-};
-
 // Session timeout handler
 let sessionTimeoutId: number | null = null;
 
@@ -32,12 +24,10 @@ const startActivityMonitoring = (): void => {
   });
 };
 
-// Create headers with CSRF token
+// Create headers with token
 const createHeaders = (additionalHeaders = {}): HeadersInit => {
-  const csrfToken = getCsrfToken();
   return {
     'Content-Type': 'application/json',
-    ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {}),
     ...additionalHeaders
   };
 };
@@ -189,6 +179,20 @@ export const AuthService = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || error.message || 'Failed to create user');
+    }
+    return await response.json();
+  },
+
+  async updateUserProfile(profile: { username: string; email: string; password?: string }): Promise<{ message: string }> {
+    const response = await fetch('/api/users/profile', {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(profile),
+      credentials: 'include'
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to update profile');
     }
     return await response.json();
   }

@@ -1,4 +1,5 @@
 // composable for authentication state
+import { AuthService } from '@/service/AuthService';
 import { computed, ref } from 'vue';
 
 const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
@@ -21,10 +22,20 @@ window.addEventListener('storage', () => {
 });
 
 export function useAuth() {
+  async function updateUserProfile({ name, email, password }: { name: string; email: string; password?: string }) {
+    // Map 'name' to 'username' for backend compatibility
+    const payload: any = { username: name, email };
+    if (password) payload.password = password;
+    const result = await AuthService.updateUserProfile(payload);
+    // Update local user state if successful
+    setUser({ ...user.value, name, email });
+    return result;
+  }
   return {
     user,
     setUser,
-    isAuthenticated: computed(isAuthenticated)
+    isAuthenticated: computed(isAuthenticated),
+    updateUserProfile
   };
 }
 

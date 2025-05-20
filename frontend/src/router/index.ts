@@ -109,6 +109,12 @@ const router = createRouter({
                     name: 'admin-user-create',
                     meta: { requiresAuth: true, requiresAdmin: true },
                     component: () => import('@/views/admin/AdminUserCreate.vue')
+                },
+                {
+                    path: '/profile',
+                    name: 'profile',
+                    component: () => import('@/views/pages/ProfileSettings.vue'),
+                    meta: { requiresAuth: true }
                 }
             ]
         },

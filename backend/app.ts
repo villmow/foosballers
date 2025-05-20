@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
 import { authenticateJWT, logAuthEvents, sessionTimeout } from './middleware/authMiddleware';
-import { csrfProtection, generateCsrfToken, securityHeaders } from './middleware/securityMiddleware';
+import { securityHeaders } from './middleware/securityMiddleware';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 
@@ -45,10 +45,6 @@ app.use(cookieParser());
 app.use(authenticateJWT as express.RequestHandler);
 app.use(sessionTimeout as express.RequestHandler);
 app.use(logAuthEvents as express.RequestHandler);
-
-// CSRF protection 
-app.use(generateCsrfToken as express.RequestHandler);
-app.use(csrfProtection as express.RequestHandler);
 
 // Connect to the database
 connectDB();    
