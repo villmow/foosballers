@@ -100,7 +100,7 @@ Create a responsive login prompt component that follows the existing design syst
 ### Details:
 Build a form component with username/email and password fields. Implement client-side validation with clear error messages for invalid inputs. Add 'Remember me' checkbox that stores credentials securely. Include 'Forgot password' link. Style according to design system. Ensure the form handles submission states (loading, success, error) appropriately and securely transmits credentials to the authentication API.
 
-## 3. Implement User Icon and Dropdown Menu [pending]
+## 3. Implement User Icon and Dropdown Menu [done]
 ### Dependencies: None
 ### Description: Add a user icon in the top-right corner of authenticated pages that displays the user's avatar or a default icon, with a dropdown menu containing profile and logout options.
 ### Details:

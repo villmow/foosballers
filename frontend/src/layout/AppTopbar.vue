@@ -80,7 +80,7 @@ onMounted(() => {
                 <div class="layout-topbar-menu-content">
                     <Button 
                         icon="pi pi-user" 
-                        severity="secondary"
+                        severity="contrast"
                         rounded 
                         outlined 
                         aria-label="User" 
