@@ -9,13 +9,39 @@ const timeoutsPerSet = ref(2);
 const draw = ref(false);
 const twoAhead = ref(false);
 
-function resetForm() {
-    playerSetup.value = '2v2';
+function qualification() {
+    numGoalsToWin.value = 7;
+    numSetsToWin.value = 1;
+    timeoutsPerSet.value = 2;
+    draw.value = false;
+    twoAhead.value = false;
+}
+function bestOf3() {
     numGoalsToWin.value = 5;
     numSetsToWin.value = 2;
     timeoutsPerSet.value = 2;
     draw.value = false;
-    twoAhead.value = false;
+    twoAhead.value = true;
+}
+function bestOf5() {
+    numGoalsToWin.value = 5;
+    numSetsToWin.value = 3;
+    timeoutsPerSet.value = 2;
+    draw.value = false;
+    twoAhead.value = true;
+}
+
+const presetOptions = [
+  { label: 'Qualification', value: 'qualification' },
+  { label: 'Best of 3', value: 'bestof3' },
+  { label: 'Best of 5', value: 'bestof5' }
+];
+const selectedPreset = ref(null);
+
+function onPresetChange(value) {
+  if (value === 'qualification') qualification();
+  else if (value === 'bestof3') bestOf3();
+  else if (value === 'bestof5') bestOf5();
 }
 </script>
 
@@ -23,6 +49,10 @@ function resetForm() {
   <div class="card flex flex-col gap-6 w-full max-w-2xl mx-auto">
     <div class="font-semibold text-2xl mb-2">Match Configuration</div>
     <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold mb-1">Preset</label>
+        <Select v-model="selectedPreset" :options="presetOptions" optionLabel="label" optionValue="value" placeholder="Select Preset" @update:modelValue="onPresetChange" />
+      </div>
       <div class="flex flex-col gap-2">
         <label class="font-semibold mb-1">Player Setup</label>
         <div class="flex flex-row gap-6">
@@ -55,10 +85,6 @@ function resetForm() {
       <div class="flex flex-col gap-2">
         <label class="mb-1">Draw Allowed</label>
         <ToggleSwitch v-model="draw" />
-      </div>
-      <div class="flex flex-row gap-4 mt-4">
-        <Button label="Create Match" class="w-full md:w-auto" />
-        <Button label="Reset" class="w-full md:w-auto" severity="secondary" @click="resetForm" />
       </div>
     </div>
   </div>
