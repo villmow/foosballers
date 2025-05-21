@@ -36,6 +36,15 @@ export interface IMatch extends Document {
   // Add virtual properties
   duration?: number;
   winner?: number | null;
+
+  // Match configuration fields
+  numGoalsToWin: number;
+  numSetsToWin: number;
+  twoAhead: boolean;
+  name?: string;
+  draw?: boolean;
+  timeoutsPerSet?: number;
+  playerSetup: '1v1' | '2v2';
 }
 
 const MatchSchema = new Schema({
