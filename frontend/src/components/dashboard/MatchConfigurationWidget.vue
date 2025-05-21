@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 // Form state
 const playerSetup = ref('2v2');
@@ -43,12 +43,41 @@ function onPresetChange(value) {
   else if (value === 'bestof3') bestOf3();
   else if (value === 'bestof5') bestOf5();
 }
+
+// Responsive layout logic
+const containerRef = ref(null);
+const containerWidth = ref(0);
+const NARROW_WIDTH = 500; // px, adjust as needed
+
+const isNarrow = computed(() => containerWidth.value < NARROW_WIDTH);
+
+let resizeObserver;
+
+onMounted(() => {
+  if (containerRef.value) {
+    resizeObserver = new window.ResizeObserver(entries => {
+      for (const entry of entries) {
+        containerWidth.value = entry.contentRect.width;
+      }
+    });
+    resizeObserver.observe(containerRef.value);
+    // Set initial width
+    containerWidth.value = containerRef.value.offsetWidth;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver && containerRef.value) {
+    resizeObserver.unobserve(containerRef.value);
+  }
+});
 </script>
 
 <template>
-  <div class="card flex flex-col gap-6 w-full max-w-2xl mx-auto">
+  <div ref="containerRef" class="card flex flex-col gap-6 w-full max-w-2xl mx-auto">
     <div class="font-semibold text-2xl mb-2">Match Configuration</div>
-    <div class="flex flex-col gap-4">
+    <div v-if="isNarrow" class="flex flex-col gap-4">
+      <!-- Vertical layout (original) -->
       <div class="flex flex-col gap-2">
         <label class="font-semibold mb-1">Preset</label>
         <Select v-model="selectedPreset" :options="presetOptions" optionLabel="label" optionValue="value" placeholder="Select Preset" @update:modelValue="onPresetChange" />
@@ -85,6 +114,58 @@ function onPresetChange(value) {
       <div class="flex flex-col gap-2">
         <label class="mb-1">Draw Allowed</label>
         <ToggleSwitch v-model="draw" />
+      </div>
+    </div>
+    <div v-else class="flex flex-col gap-4">
+      <!-- Horizontal layout (from FormLayout.vue) -->
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="font-semibold col-span-12 md:col-span-3 mb-1 md:mb-0">Preset</label>
+        <div class="col-span-12 md:col-span-9">
+          <Select v-model="selectedPreset" :options="presetOptions" optionLabel="label" optionValue="value" placeholder="Select Preset" @update:modelValue="onPresetChange" />
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="font-semibold col-span-12 md:col-span-3 mb-1 md:mb-0">Player Setup</label>
+        <div class="col-span-12 md:col-span-9 flex flex-row gap-6">
+          <div class="flex items-center">
+            <RadioButton id="setup-1v1" name="playerSetup" value="1v1" v-model="playerSetup" />
+            <label for="setup-1v1" class="ml-2">1 vs 1</label>
+          </div>
+          <div class="flex items-center">
+            <RadioButton id="setup-2v2" name="playerSetup" value="2v2" v-model="playerSetup" />
+            <label for="setup-2v2" class="ml-2">2 vs 2</label>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Goals to Win a Set</label>
+        <div class="col-span-12 md:col-span-9">
+          <InputNumber v-model="numGoalsToWin" :min="1" :max="20" />
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Sets to Win Match</label>
+        <div class="col-span-12 md:col-span-9">
+          <InputNumber v-model="numSetsToWin" :min="1" :max="10" />
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Timeouts per Set</label>
+        <div class="col-span-12 md:col-span-9">
+          <InputNumber v-model="timeoutsPerSet" :min="0" :max="5" />
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">2 Goals Ahead Rule</label>
+        <div class="col-span-12 md:col-span-9">
+          <ToggleSwitch v-model="twoAhead" />
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Draw Allowed</label>
+        <div class="col-span-12 md:col-span-9">
+          <ToggleSwitch v-model="draw" />
+        </div>
       </div>
     </div>
   </div>
