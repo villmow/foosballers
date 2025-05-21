@@ -288,7 +288,7 @@
         2,
         3
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -305,7 +305,7 @@
           "description": "Create validation logic for match configuration to ensure all required fields are present and valid.",
           "dependencies": [],
           "details": "Implement server-side validation for match configuration that enforces: unique team names, required player names, valid match format selection (Single set, Best of 3, Best of 9), and timeout count validation (must be 1 or 2). Create reusable validation functions that can be used by both API endpoints and potentially frontend validation. Return appropriate error messages for validation failures.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Create unit tests for each validation rule with both valid and invalid inputs. Test edge cases like empty strings, duplicate names, and invalid format selections."
         },
         {
@@ -314,7 +314,7 @@
           "description": "Create the frontend form interface for match creation and configuration with all required input fields.",
           "dependencies": [],
           "details": "Build a multi-step or single-page form with fields for: match format selection (radio buttons or dropdown), player setup selection (1v1 or 2v2), team name inputs, player name inputs (dynamically showing 1 or 2 per team based on setup), team color pickers, timeout count selector, and last-set 2-goal rule toggle. Include appropriate labels, placeholders, and help text. Implement responsive design for mobile and desktop views.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Perform component testing to verify form rendering and behavior. Test form responsiveness across different screen sizes. Conduct usability testing to ensure the form is intuitive."
         },
         {
@@ -323,7 +323,7 @@
           "description": "Add client-side validation to the match creation form and connect it to the backend API.",
           "dependencies": [],
           "details": "Implement client-side validation that mirrors server-side rules: unique team names, required player names, valid match format, and valid timeout count. Show inline validation errors. Create form submission handler that collects form data, validates it, and sends it to the backend API. Handle API responses including success and error cases. Implement loading states during submission and redirect to the match view on successful creation.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test form validation with various input combinations. Test form submission with mock API responses. Verify error handling and success flows."
         },
         {
@@ -332,7 +332,7 @@
           "description": "Implement a preview component that shows the match configuration before final submission.",
           "dependencies": [],
           "details": "Create a visual preview component that displays the complete match configuration including: teams with their colors, players, match format, timeout settings, and other rules. This should update in real-time as the user changes form values. Add a confirmation step before final submission where users can review their configuration. Include the ability to go back and edit before confirming.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test the preview component with different configuration combinations. Verify that changes in the form are reflected in the preview. Test the edit and confirm workflow."
         }
       ]

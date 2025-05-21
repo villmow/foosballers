@@ -1,8 +1,16 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 // Form state
-const playerSetup = ref('2v2');
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '2v2',
+  },
+});
+const emit = defineEmits(['update:modelValue']);
+
+const playerSetup = ref(props.modelValue);
 const numGoalsToWin = ref(5);
 const numSetsToWin = ref(2);
 const timeoutsPerSet = ref(2);
@@ -70,6 +78,13 @@ onBeforeUnmount(() => {
   if (resizeObserver && containerRef.value) {
     resizeObserver.unobserve(containerRef.value);
   }
+});
+
+watch(() => props.modelValue, (val) => {
+  if (val !== playerSetup.value) playerSetup.value = val;
+});
+watch(playerSetup, (val) => {
+  emit('update:modelValue', val);
 });
 </script>
 

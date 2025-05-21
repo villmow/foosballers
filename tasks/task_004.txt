@@ -1,6 +1,6 @@
 # Task ID: 4
 # Title: Implement Match Creation and Configuration
-# Status: pending
+# Status: done
 # Dependencies: 2, 3
 # Priority: high
 # Description: Develop the functionality to create and configure new matches, including team setup, match format selection, and timeout configuration.
@@ -54,25 +54,25 @@ Validation Rules:
 ### Details:
 Create RESTful API endpoints for match operations: POST /api/matches for creation, GET /api/matches/:id for retrieval, PUT /api/matches/:id for updates, and DELETE /api/matches/:id for deletion. Implement proper request handling, response formatting, and error handling. Define the Match model with all required fields including match format, player setup, team names, player names, team colors, timeout settings, and last-set rule toggle.
 
-## 2. Implement Match Configuration Validation [pending]
+## 2. Implement Match Configuration Validation [done]
 ### Dependencies: None
 ### Description: Create validation logic for match configuration to ensure all required fields are present and valid.
 ### Details:
 Implement server-side validation for match configuration that enforces: unique team names, required player names, valid match format selection (Single set, Best of 3, Best of 9), and timeout count validation (must be 1 or 2). Create reusable validation functions that can be used by both API endpoints and potentially frontend validation. Return appropriate error messages for validation failures.
 
-## 3. Develop Match Creation Form UI [pending]
+## 3. Develop Match Creation Form UI [done]
 ### Dependencies: None
 ### Description: Create the frontend form interface for match creation and configuration with all required input fields.
 ### Details:
 Build a multi-step or single-page form with fields for: match format selection (radio buttons or dropdown), player setup selection (1v1 or 2v2), team name inputs, player name inputs (dynamically showing 1 or 2 per team based on setup), team color pickers, timeout count selector, and last-set 2-goal rule toggle. Include appropriate labels, placeholders, and help text. Implement responsive design for mobile and desktop views.
 
-## 4. Implement Form Validation and Submission [pending]
+## 4. Implement Form Validation and Submission [done]
 ### Dependencies: None
 ### Description: Add client-side validation to the match creation form and connect it to the backend API.
 ### Details:
 Implement client-side validation that mirrors server-side rules: unique team names, required player names, valid match format, and valid timeout count. Show inline validation errors. Create form submission handler that collects form data, validates it, and sends it to the backend API. Handle API responses including success and error cases. Implement loading states during submission and redirect to the match view on successful creation.
 
-## 5. Create Match Configuration Preview [pending]
+## 5. Create Match Configuration Preview [done]
 ### Dependencies: None
 ### Description: Implement a preview component that shows the match configuration before final submission.
 ### Details:

@@ -49,6 +49,7 @@ declare module 'vue' {
     Listbox: typeof import('primevue/listbox')['default']
     MatchConfigurationWidget: typeof import('./src/components/dashboard/MatchConfigurationWidget.vue')['default']
     MatchCreationWidget: typeof import('./src/components/dashboard/MatchConfigurationWidget.vue')['default']
+    MatchWidget: typeof import('./src/components/dashboard/MatchWidget.vue')['default']
     MegaMenu: typeof import('primevue/megamenu')['default']
     Menu: typeof import('primevue/menu')['default']
     Menubar: typeof import('primevue/menubar')['default']
