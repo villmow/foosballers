@@ -72,11 +72,33 @@ SetSchema.post('save', async function (doc) {
         return;
       }
       
-      // Only increment if not already counted
-      if (match.teams[doc.winner].setsWon < match.numSetsToWin) {
-        match.teams[doc.winner].setsWon += 1;
-        await match.save();
+      // Count completed sets to ensure setsWon is accurate
+      // Note: this query might not include the current document being saved
+      const otherCompletedSets = await SetModel.find({ 
+        matchId: doc.matchId, 
+        _id: { $ne: doc._id }, // Exclude current document
+        status: 'completed',
+        winner: { $exists: true, $ne: null, $type: 'number' }
+      });
+      
+      // Reset and recalculate setsWon based on completed sets
+      match.teams[0].setsWon = 0;
+      match.teams[1].setsWon = 0;
+      
+      // Count other completed sets
+      for (const set of otherCompletedSets) {
+        if (typeof set.winner === 'number' && set.winner >= 0 && set.winner <= 1) {
+          match.teams[set.winner].setsWon += 1;
+        }
       }
+      
+      // Add current set if it's completed
+      if (doc.status === 'completed' && typeof doc.winner === 'number' && doc.winner >= 0 && doc.winner <= 1) {
+        match.teams[doc.winner].setsWon += 1;
+      }
+      
+      await match.save();
+      
       // Automatic set progression logic
       // Count sets won for each team (fix implicit any)
       const setsWon = match.teams.map((t: any) => t.setsWon);
