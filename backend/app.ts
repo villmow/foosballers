@@ -8,7 +8,9 @@ import { authenticateJWT, logAuthEvents, sessionTimeout } from './middleware/aut
 import { mongoErrorHandler } from './middleware/mongoErrorHandler';
 import { securityHeaders } from './middleware/securityMiddleware';
 import authRoutes from './routes/authRoutes';
+import goalRoutes from './routes/goalRoutes';
 import matchRoutes from './routes/matchRoutes';
+import timeoutRoutes from './routes/timeoutRoutes';
 import userRoutes from './routes/userRoutes';
 
 // Define the shared types inline for Docker build
@@ -58,8 +60,10 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/timeouts', timeoutRoutes);
 
 // Error handling middleware
 app.use(mongoErrorHandler);
