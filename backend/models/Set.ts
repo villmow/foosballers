@@ -64,12 +64,48 @@ SetSchema.pre('save', function (this: any, next) {
 SetSchema.post('save', async function (doc) {
   if (doc.status === 'completed' && typeof doc.winner === 'number') {
     const MatchModel = require('./Match').MatchModel;
+    const SetModel = require('./Set').SetModel;
     const match = await MatchModel.findById(doc.matchId);
     if (match && match.teams && match.teams.length === 2) {
+      // Skip processing if match is already completed
+      if (match.status === 'completed') {
+        return;
+      }
+      
       // Only increment if not already counted
       if (match.teams[doc.winner].setsWon < match.numSetsToWin) {
         match.teams[doc.winner].setsWon += 1;
         await match.save();
+      }
+      // Automatic set progression logic
+      // Count sets won for each team (fix implicit any)
+      const setsWon = match.teams.map((t: any) => t.setsWon);
+      const maxSets = Math.max(...setsWon);
+      if (maxSets >= match.numSetsToWin) {
+        // End match if winning condition met
+        match.status = 'completed';
+        match.endTime = new Date();
+        await match.save();
+      } else {
+        // Start new set automatically - use database query to get correct set number
+        const existingSets = await SetModel.find({ matchId: match._id }).sort({ setNumber: -1 }).limit(1);
+        const nextSetNumber = existingSets.length > 0 ? existingSets[0].setNumber + 1 : 1;
+        
+        // Check if a set with this number already exists to prevent duplicates
+        const existingSet = await SetModel.findOne({ matchId: match._id, setNumber: nextSetNumber });
+        if (!existingSet) {
+          const newSet = new SetModel({
+            matchId: match._id,
+            setNumber: nextSetNumber,
+            scores: [0, 0],
+            timeoutsUsed: [0, 0],
+            status: 'notStarted',
+          });
+          await newSet.save();
+          match.sets.push(newSet._id);
+          match.currentSet = newSet._id;
+          await match.save();
+        }
       }
     }
   }

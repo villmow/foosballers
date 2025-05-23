@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import { GoalModel } from '../models/Goal';
 import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
-import { TeamModel } from '../models/Team';
 import { TimeoutModel } from '../models/Timeout';
 import { UserModel } from '../models/User';
 
@@ -21,7 +20,6 @@ async function initializeDatabase() {
     SetModel.ensureIndexes(),
     GoalModel.ensureIndexes(),
     TimeoutModel.ensureIndexes(),
-    TeamModel.ensureIndexes(),
   ]);
   console.log('Database indexes ensured.');
 }

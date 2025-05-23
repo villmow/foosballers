@@ -49,25 +49,25 @@ Set Lifecycle:
 10. Test the UI controls for match and set management
 
 # Subtasks:
-## 1. Implement Match State Machine [pending]
+## 1. Implement Match State Machine [done]
 ### Dependencies: None
 ### Description: Create a state machine to manage match states (notStarted, inProgress, completed, aborted) with appropriate transition methods and validation.
 ### Details:
 Create a MatchStateMachine class that encapsulates the match state logic. Implement methods for each transition (startMatch, endMatch, abortMatch) with validation to prevent invalid transitions. Include timestamp recording for all state changes. The state machine should be the single source of truth for match state.
 
-## 2. Implement Set Lifecycle Management [pending]
+## 2. Implement Set Lifecycle Management [done]
 ### Dependencies: 5.1
 ### Description: Create functionality to manage set states (notStarted, inProgress, completed) with transitions and winning condition checks.
 ### Details:
 Develop a SetManager class that handles set creation, state transitions, and winning condition evaluation. Implement methods to start a set, record goals, check winning conditions, and complete sets. Ensure sets can only be started when a match is inProgress. Include timestamp recording for all set state changes.
 
-## 3. Create API Endpoints for Match and Set Lifecycle [pending]
+## 3. Create API Endpoints for Match and Set Lifecycle [in-progress]
 ### Dependencies: 5.1, 5.2
 ### Description: Implement the REST API endpoints for managing match and set lifecycle actions.
 ### Details:
 Create controllers and routes for the specified endpoints: start match, start new set, end match, and abort match. Each endpoint should validate the request, use the appropriate state machine methods, and return meaningful success/error responses. Implement proper error handling for invalid state transitions.
 
-## 4. Implement Automatic Set Progression [pending]
+## 4. Implement Automatic Set Progression [in-progress]
 ### Dependencies: 5.2, 5.3
 ### Description: Develop functionality to automatically progress from one set to the next based on winning conditions.
 ### Details:

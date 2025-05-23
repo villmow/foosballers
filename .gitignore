@@ -9,6 +9,7 @@ coverage
 
 # Dependency directories
 node_modules/
+dist
 
 # Environment variables
 .env

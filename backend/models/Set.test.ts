@@ -1,6 +1,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { GoalModel } from './Goal';
+import { MatchModel } from './Match';
 import { SetModel } from './Set';
 import { TimeoutModel } from './Timeout';
 
@@ -156,5 +157,129 @@ describe('Timeout Model', () => {
     }
     expect(err).toBeDefined();
     expect(err.errors['teamIndex']).toBeDefined();
+  });
+});
+
+describe('Set Model - Automatic Set Progression', () => {
+  let matchId: mongoose.Types.ObjectId;
+  let match: any;
+
+  beforeAll(async () => {
+    // Connect to in-memory MongoDB or test DB
+    // await mongoose.connect('mongodb://localhost:27017/test');
+  });
+
+  beforeEach(async () => {
+    match = new MatchModel({
+      teams: [
+        { name: 'A', color: 'red', players: [{ name: 'P1', playerId: null }], setsWon: 0 },
+        { name: 'B', color: 'blue', players: [{ name: 'P2', playerId: null }], setsWon: 0 }
+      ],
+      numGoalsToWin: 2,
+      numSetsToWin: 2,
+      twoAhead: false,
+      playerSetup: '1v1',
+      createdBy: new mongoose.Types.ObjectId(),
+      sets: [],
+      status: 'inProgress',
+    });
+    await match.save();
+    matchId = match._id;
+
+    // Create and add the first set to the match
+    const initialSet = new SetModel({
+      matchId,
+      setNumber: 1,
+      scores: [0, 0],
+      timeoutsUsed: [0, 0],
+      status: 'notStarted',
+    });
+    await initialSet.save();
+    match.sets.push(initialSet._id);
+    match.currentSet = initialSet._id;
+    await match.save();
+  });
+
+  afterEach(async () => {
+    await SetModel.deleteMany({});
+    await MatchModel.deleteMany({});
+  });
+
+  afterAll(async () => {
+    // await mongoose.disconnect();
+  });
+
+  it('should automatically start a new set if match is not won', async () => {
+    // Update the first set to completed with team 0 winning
+    const firstSet = await SetModel.findOne({ matchId, setNumber: 1 });
+    if (firstSet) {
+      firstSet.scores = [2, 0];
+      firstSet.status = 'completed';
+      firstSet.winner = 0;
+      await firstSet.save();
+    }
+    
+    const updatedMatch = await MatchModel.findById(matchId);
+    expect(updatedMatch?.teams[0].setsWon).toBe(1);
+    expect(updatedMatch?.status).toBe('inProgress');
+    // Should have a new set created
+    expect(updatedMatch?.sets.length).toBe(2); // original + new
+    const newSetId = updatedMatch?.sets[1];
+    const newSet = await SetModel.findById(newSetId);
+    expect(newSet).toBeTruthy();
+    expect(newSet?.setNumber).toBe(2);
+    expect(newSet?.status).toBe('notStarted');
+  });
+
+  it('should end the match if a team reaches numSetsToWin', async () => {
+    // First set win - update the existing set
+    const firstSet = await SetModel.findOne({ matchId, setNumber: 1 });
+    if (firstSet) {
+      firstSet.scores = [2, 0];
+      firstSet.status = 'completed';
+      firstSet.winner = 0;
+      await firstSet.save();
+    }
+    
+    // Second set win - should be automatically created, so find and complete it
+    let updatedMatch = await MatchModel.findById(matchId);
+    expect(updatedMatch?.sets.length).toBe(2); // first + auto-created second
+    
+    const secondSetId = updatedMatch?.sets[1];
+    const secondSet = await SetModel.findById(secondSetId);
+    if (secondSet) {
+      secondSet.scores = [2, 0];
+      secondSet.status = 'completed';
+      secondSet.winner = 0;
+      await secondSet.save();
+    }
+    
+    updatedMatch = await MatchModel.findById(matchId);
+    expect(updatedMatch?.teams[0].setsWon).toBe(2);
+    expect(updatedMatch?.status).toBe('completed');
+    expect(updatedMatch?.endTime).toBeInstanceOf(Date);
+  });
+
+  it('should not start a new set if match is completed', async () => {
+    // Simulate team 0 already at numSetsToWin
+    match.teams[0].setsWon = 2;
+    match.status = 'completed';
+    await match.save();
+    
+    // Try to complete another set - this should not trigger auto-creation
+    const additionalSet = new SetModel({
+      matchId,
+      setNumber: 3,
+      scores: [2, 0],
+      timeoutsUsed: [0, 0],
+      status: 'completed',
+      winner: 0,
+    });
+    await additionalSet.save();
+    
+    const updatedMatch = await MatchModel.findById(matchId);
+    // Should still only have the original set plus the additional one we manually created
+    // No new set should be auto-created because match is already completed
+    expect(updatedMatch?.sets.length).toBe(1); // Only the initial set from beforeEach
   });
 });

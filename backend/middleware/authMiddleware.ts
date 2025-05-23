@@ -17,7 +17,7 @@ export interface AuthRequest extends Request {
  * Gets token from authorization header or cookie
  * Verifies token validity and adds user data to request
  */
-export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction): void => {
   // Get token from authorization header or cookie
   let token: string | undefined;
   
@@ -37,13 +37,15 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
 
   // Check if token is blacklisted
   if (isTokenBlacklisted(token)) {
-    return res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Invalid token' });
+    return;
   }
 
   // Verify token
   const decoded = verifyJWT(token);
   if (!decoded) {
-    return res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'Invalid token' });
+    return;
   }
 
   // Add user data to request
@@ -61,9 +63,10 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
  * Middleware to protect routes that require authentication
  * Must be used after authenticateJWT middleware
  */
-export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (!req.user) {
-    return res.status(401).json({ error: 'Authentication required' });
+    res.status(401).json({ error: 'Authentication required' });
+    return;
   }
   
   // Update last activity timestamp
@@ -77,13 +80,15 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
  * @param allowedRoles - Array of roles allowed to access the route
  */
 export const requireRole = (allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      res.status(401).json({ error: 'Authentication required' });
+      return;
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
     }
 
     next();
@@ -94,7 +99,7 @@ export const requireRole = (allowedRoles: string[]) => {
  * Middleware to enforce session timeout after inactivity
  * Checks if the last activity was within the allowed timeframe (90 minutes)
  */
-export const sessionTimeout = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const sessionTimeout = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (!req.user || !req.user.lastActivity) {
     return next();
   }
@@ -108,7 +113,8 @@ export const sessionTimeout = (req: AuthRequest, res: Response, next: NextFuncti
 
   if (inactivityTime > timeoutDuration) {
     // Session has timed out
-    return res.status(440).json({ error: 'Session expired', reason: 'inactivity' });
+    res.status(440).json({ error: 'Session expired', reason: 'inactivity' });
+    return;
   }
 
   // Update last activity time
@@ -119,7 +125,7 @@ export const sessionTimeout = (req: AuthRequest, res: Response, next: NextFuncti
 /**
  * Middleware to log authentication events
  */
-export const logAuthEvents = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const logAuthEvents = (req: AuthRequest, res: Response, next: NextFunction): void => {
   // Clone the response
   const oldSend = res.send;
   

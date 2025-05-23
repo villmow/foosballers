@@ -356,7 +356,7 @@
           "description": "Create a state machine to manage match states (notStarted, inProgress, completed, aborted) with appropriate transition methods and validation.",
           "dependencies": [],
           "details": "Create a MatchStateMachine class that encapsulates the match state logic. Implement methods for each transition (startMatch, endMatch, abortMatch) with validation to prevent invalid transitions. Include timestamp recording for all state changes. The state machine should be the single source of truth for match state.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test each transition with valid and invalid state changes. Verify timestamps are recorded correctly and that invalid transitions throw appropriate errors."
         },
         {
@@ -367,7 +367,7 @@
             1
           ],
           "details": "Develop a SetManager class that handles set creation, state transitions, and winning condition evaluation. Implement methods to start a set, record goals, check winning conditions, and complete sets. Ensure sets can only be started when a match is inProgress. Include timestamp recording for all set state changes.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Unit test set creation, state transitions, and winning condition logic. Test integration with the match state machine to verify proper coordination."
         },
         {
@@ -379,7 +379,7 @@
             2
           ],
           "details": "Create controllers and routes for the specified endpoints: start match, start new set, end match, and abort match. Each endpoint should validate the request, use the appropriate state machine methods, and return meaningful success/error responses. Implement proper error handling for invalid state transitions.",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Write API tests for each endpoint covering successful operations and error cases. Test the complete lifecycle flow from match creation through completion."
         },
         {
@@ -391,7 +391,7 @@
             3
           ],
           "details": "Extend the SetManager to automatically trigger the next set when a set is completed if the match winning condition isn't met. Implement logic to determine when a match should be completed based on set results (e.g., best of 3 sets). Add event listeners or hooks to detect set completion and trigger the appropriate next actions.",
-          "status": "pending",
+          "status": "in-progress",
           "testStrategy": "Test automatic progression through multiple sets. Verify match completion occurs correctly after the appropriate number of sets are won by a player."
         },
         {
