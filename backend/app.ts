@@ -10,6 +10,7 @@ import { securityHeaders } from './middleware/securityMiddleware';
 import authRoutes from './routes/authRoutes';
 import goalRoutes from './routes/goalRoutes';
 import matchRoutes from './routes/matchRoutes';
+import setRoutes from './routes/setRoutes';
 import timeoutRoutes from './routes/timeoutRoutes';
 import userRoutes from './routes/userRoutes';
 
@@ -58,10 +59,11 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// API routes
+// API routes - Resource-first approach
 app.use('/api/auth', authRoutes);
-app.use('/api/matches', matchRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/matches', matchRoutes);
+app.use('/api/sets', setRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/timeouts', timeoutRoutes);
 

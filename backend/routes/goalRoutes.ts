@@ -3,8 +3,6 @@ import {
     createGoal,
     deleteGoal,
     getGoal,
-    getMatchGoals,
-    getSetGoals,
     unvoidGoal,
     updateGoal,
     voidGoal
@@ -25,9 +23,5 @@ router.delete('/:goalId', deleteGoal);
 // Goal voiding operations
 router.post('/:goalId/void', voidGoal);
 router.post('/:goalId/unvoid', unvoidGoal);
-
-// Get goals by match or set
-router.get('/match/:matchId', getMatchGoals);
-router.get('/set/:setId', getSetGoals);
 
 export default router;
