@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
 import { TimeoutModel } from '../models/Timeout';
+import { GameProgressionService } from '../services/gameProgressionService';
 
 // Create a new timeout
 export const createTimeout = async (req: Request, res: Response): Promise<void> => {
@@ -71,12 +72,26 @@ export const createTimeout = async (req: Request, res: Response): Promise<void> 
 
     await timeout.save();
     
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processTimeoutProgression(timeout);
+    
     // Populate the timeout with match and set data for response
     const populatedTimeout = await TimeoutModel.findById(timeout._id)
       .populate('matchId')
       .populate('setId');
 
-    res.status(201).json(populatedTimeout);
+    // Return the timeout along with updated set and match information
+    res.status(201).json({
+      timeout: populatedTimeout,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }
@@ -241,7 +256,21 @@ export const voidTimeout = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    res.json(timeout);
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processTimeoutVoidingProgression(timeout);
+
+    // Return the timeout along with updated set and match information
+    res.json({
+      timeout,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }
@@ -263,7 +292,21 @@ export const unvoidTimeout = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    res.json(timeout);
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processTimeoutVoidingProgression(timeout);
+
+    // Return the timeout along with updated set and match information
+    res.json({
+      timeout,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }

@@ -8,9 +8,9 @@ export interface ISet extends Document {
   goals: mongoose.Types.ObjectId[];
   timeouts: mongoose.Types.ObjectId[];
   startTime: Date;
-  endTime: Date;
+  endTime?: Date;
   status: 'notStarted' | 'inProgress' | 'completed';
-  winner: number;
+  winner?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,77 +60,7 @@ SetSchema.pre('save', function (this: any, next) {
   next();
 });
 
-// Post-save hook to update parent Match setsWon when set is completed
-SetSchema.post('save', async function (doc) {
-  if (doc.status === 'completed' && typeof doc.winner === 'number') {
-    const MatchModel = require('./Match').MatchModel;
-    const SetModel = require('./Set').SetModel;
-    const match = await MatchModel.findById(doc.matchId);
-    if (match && match.teams && match.teams.length === 2) {
-      // Skip processing if match is already completed
-      if (match.status === 'completed') {
-        return;
-      }
-      
-      // Count completed sets to ensure setsWon is accurate
-      // Note: this query might not include the current document being saved
-      const otherCompletedSets = await SetModel.find({ 
-        matchId: doc.matchId, 
-        _id: { $ne: doc._id }, // Exclude current document
-        status: 'completed',
-        winner: { $exists: true, $ne: null, $type: 'number' }
-      });
-      
-      // Reset and recalculate setsWon based on completed sets
-      match.teams[0].setsWon = 0;
-      match.teams[1].setsWon = 0;
-      
-      // Count other completed sets
-      for (const set of otherCompletedSets) {
-        if (typeof set.winner === 'number' && set.winner >= 0 && set.winner <= 1) {
-          match.teams[set.winner].setsWon += 1;
-        }
-      }
-      
-      // Add current set if it's completed
-      if (doc.status === 'completed' && typeof doc.winner === 'number' && doc.winner >= 0 && doc.winner <= 1) {
-        match.teams[doc.winner].setsWon += 1;
-      }
-      
-      await match.save();
-      
-      // Automatic set progression logic
-      // Count sets won for each team (fix implicit any)
-      const setsWon = match.teams.map((t: any) => t.setsWon);
-      const maxSets = Math.max(...setsWon);
-      if (maxSets >= match.numSetsToWin) {
-        // End match if winning condition met
-        match.status = 'completed';
-        match.endTime = new Date();
-        await match.save();
-      } else {
-        // Start new set automatically - use database query to get correct set number
-        const existingSets = await SetModel.find({ matchId: match._id }).sort({ setNumber: -1 }).limit(1);
-        const nextSetNumber = existingSets.length > 0 ? existingSets[0].setNumber + 1 : 1;
-        
-        // Check if a set with this number already exists to prevent duplicates
-        const existingSet = await SetModel.findOne({ matchId: match._id, setNumber: nextSetNumber });
-        if (!existingSet) {
-          const newSet = new SetModel({
-            matchId: match._id,
-            setNumber: nextSetNumber,
-            scores: [0, 0],
-            timeoutsUsed: [0, 0],
-            status: 'notStarted',
-          });
-          await newSet.save();
-          match.sets.push(newSet._id);
-          match.currentSet = newSet._id;
-          await match.save();
-        }
-      }
-    }
-  }
-});
+// Note: Progression logic (match progression, automatic set creation) has been moved to GameProgressionService
+// Controllers now explicitly call GameProgressionService methods instead of relying on hooks
 
 export const SetModel = mongoose.model<ISet>('Set', SetSchema);

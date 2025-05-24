@@ -26,57 +26,7 @@ TimeoutSchema.pre('save', function (this: any, next) {
   next();
 });
 
-// Post-save hook to update parent Set's timeoutsUsed and timeouts array
-TimeoutSchema.post('save', async function (doc) {
-  const SetModel = require('./Set').SetModel;
-  const MatchModel = require('./Match').MatchModel;
-  
-  const set = await SetModel.findById(doc.setId);
-  if (!set) return;
-  
-  // Always recalculate timeoutsUsed and timeouts based on non-voided timeouts
-  const TimeoutModel = require('./Timeout').TimeoutModel;
-  const allTimeouts = await TimeoutModel.find({ setId: doc.setId, voided: false }).sort({ timestamp: 1 });
-  
-  // Reset timeoutsUsed and timeouts array
-  set.timeoutsUsed = [0, 0];
-  set.timeouts = [];
-  
-  // Recalculate from all non-voided timeouts
-  for (const timeout of allTimeouts) {
-    set.timeoutsUsed[timeout.teamIndex] = (set.timeoutsUsed[timeout.teamIndex] || 0) + 1;
-    set.timeouts.push(timeout._id);
-  }
-  
-  // Check for automatic set progression (start set if not started and has timeouts)
-  if (set.status === 'notStarted' && set.timeouts.length > 0) {
-    set.status = 'inProgress';
-    set.startTime = new Date();
-  }
-  
-  await set.save();
-});
-
-// Post-update hook to handle voiding/unvoiding
-TimeoutSchema.post('findOneAndUpdate', async function (doc) {
-  if (!doc) return;
-  const SetModel = require('./Set').SetModel;
-  const set = await SetModel.findById(doc.setId);
-  if (!set) return;
-  
-  // Recalculate timeoutsUsed based on non-voided timeouts
-  const TimeoutModel = require('./Timeout').TimeoutModel;
-  const timeouts = await TimeoutModel.find({ setId: doc.setId, voided: false }).sort({ timestamp: 1 });
-  
-  set.timeoutsUsed = [0, 0];
-  set.timeouts = [];
-  
-  for (const timeout of timeouts) {
-    set.timeoutsUsed[timeout.teamIndex] = (set.timeoutsUsed[timeout.teamIndex] || 0) + 1;
-    set.timeouts.push(timeout._id);
-  }
-  
-  await set.save();
-});
+// Note: Progression logic (set progression, timeout tracking) has been moved to GameProgressionService
+// Controllers now explicitly call GameProgressionService methods instead of relying on hooks
 
 export const TimeoutModel = mongoose.model<ITimeout>('Timeout', TimeoutSchema);

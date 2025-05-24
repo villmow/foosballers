@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { GoalModel } from '../models/Goal';
 import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
+import { GameProgressionService } from '../services/gameProgressionService';
 
 // Create a new goal
 export const createGoal = async (req: Request, res: Response): Promise<void> => {
@@ -56,12 +57,26 @@ export const createGoal = async (req: Request, res: Response): Promise<void> => 
 
     await goal.save();
     
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processGoalProgression(goal);
+    
     // Populate the goal with match and set data for response
     const populatedGoal = await GoalModel.findById(goal._id)
       .populate('matchId')
       .populate('setId');
 
-    res.status(201).json(populatedGoal);
+    // Return the goal along with updated set and match information
+    res.status(201).json({
+      goal: populatedGoal,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }
@@ -184,7 +199,21 @@ export const voidGoal = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.json(goal);
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processGoalVoidingProgression(goal);
+
+    // Return the goal along with updated set and match information
+    res.json({
+      goal,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }
@@ -206,7 +235,21 @@ export const unvoidGoal = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    res.json(goal);
+    // Process game progression explicitly
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processGoalVoidingProgression(goal);
+
+    // Return the goal along with updated set and match information
+    res.json({
+      goal,
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }

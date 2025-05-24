@@ -3,6 +3,7 @@ import { GoalModel } from '../models/Goal';
 import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
 import { TimeoutModel } from '../models/Timeout';
+import { GameProgressionService } from '../services/gameProgressionService';
 
 // Create a new set
 export const createSet = async (req: Request, res: Response): Promise<void> => {
@@ -154,27 +155,20 @@ export const completeSet = async (req: Request, res: Response): Promise<void> =>
     const { setId } = req.params;
     const { winner } = req.body;
     
-    const set = await SetModel.findById(setId);
-    if (!set) {
-      res.status(404).json({ error: 'Set not found' });
-      return;
-    }
-    if (set.status !== 'inProgress') {
-      res.status(400).json({ error: 'Set must be in progress to complete' });
-      return;
-    }
+    // Process game progression explicitly using the service
+    const progressionService = new GameProgressionService();
+    const progressionResult = await progressionService.processManualSetCompletion(setId, winner);
     
-    if (typeof winner !== 'number' || (winner !== 0 && winner !== 1)) {
-      res.status(400).json({ error: 'Winner must be 0 or 1' });
-      return;
-    }
-    
-    set.status = 'completed';
-    set.endTime = new Date();
-    set.winner = winner;
-    await set.save();
-    
-    res.json(set);
+    // Return the set along with updated match information
+    res.json({
+      set: progressionResult.set,
+      match: progressionResult.match,
+      progression: {
+        setCompleted: progressionResult.setCompleted,
+        matchCompleted: progressionResult.matchCompleted,
+        newSetCreated: progressionResult.newSetCreated
+      }
+    });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }
