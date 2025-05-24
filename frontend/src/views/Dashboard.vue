@@ -1,6 +1,6 @@
 <script setup>
-import MatchCreationWidget from '@/components/dashboard/MatchConfigurationWidget.vue';
-import MatchWidget from '@/components/dashboard/MatchWidget.vue';
+import MatchCreationWidget from '@/components/match/MatchConfigurationWidget.vue';
+import MatchWidget from '@/components/match/MatchWidget.vue';
 import { ref } from 'vue';
 
 const playerSetup = ref('2v2');
