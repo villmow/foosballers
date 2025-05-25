@@ -1,7 +1,9 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
+import helmet from 'helmet'; // Ensure helmet is imported
 import { createServer } from 'http';
+import morgan from 'morgan'; // Import morgan
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
 import { authenticateJWT, logAuthEvents, sessionTimeout } from './middleware/authMiddleware';
@@ -30,10 +32,17 @@ interface ClientToServerEvents {
 }
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// Apply security headers to all responses
+// Define PORT
+const PORT = process.env.PORT || 3000;
+
+// Security Middleware
 app.use(securityHeaders);
+app.use(helmet()); // Apply helmet first for security headers
+
+// Request Logging Middleware
+app.use(morgan('dev')); // Use morgan for logging. 'dev' format is good for development.
+// You can customize the format or use other predefined formats like 'combined' for more detail.
 
 app.use(cors({
   origin: [

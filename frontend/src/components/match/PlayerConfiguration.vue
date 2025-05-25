@@ -134,13 +134,20 @@ async function startMatch() {
     
     const matchData = {
       playerSetup: props.playerSetup,
-      teamAName: teamNames.value[0],
-      teamBName: teamNames.value[1],
-      teamAColor: teamAColor.value,
-      teamBColor: teamBColor.value,
-      teamAPlayers: team1Players.map(p => p.name),
-      teamBPlayers: team2Players.map(p => p.name),
+      teams: [
+        {
+          name: teamNames.value[0],
+          color: teamAColor.value,
+          players: team1Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
+        },
+        {
+          name: teamNames.value[1],
+          color: teamBColor.value,
+          players: team2Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
+        },
+      ],
       ...matchConfig, // Spread the match configuration
+      // Get user ID from context or store
     };
     
     console.log('Creating match with data:', matchData);

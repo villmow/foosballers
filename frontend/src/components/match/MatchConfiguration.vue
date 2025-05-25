@@ -78,15 +78,29 @@ async function loadPresets() {
 }
 
 // Expose configuration data for parent components
-const getConfiguration = () => ({
-  numGoalsToWin: numGoalsToWin.value,
-  numSetsToWin: numSetsToWin.value,
-  timeoutsPerSet: timeoutsPerSet.value,
-  draw: draw.value,
-  twoAhead: twoAhead.value,
-  twoAheadUpUntil: twoAheadUpUntil.value,
-  playerSetup: playerSetup.value,
-});
+const getConfiguration = () => {
+  let userId = null;
+  const userString = localStorage.getItem('user');
+  if (userString) {
+    try {
+      const user = JSON.parse(userString);
+      userId = user && user.id ? user.id : null;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      // userId remains null
+    }
+  }
+  return {
+    numGoalsToWin: numGoalsToWin.value,
+    numSetsToWin: numSetsToWin.value,
+    timeoutsPerSet: timeoutsPerSet.value,
+    draw: draw.value,
+    twoAhead: twoAhead.value,
+    twoAheadUpUntil: twoAheadUpUntil.value,
+    playerSetup: playerSetup.value,
+    createdBy: userId,
+  };
+};
 
 // Make getConfiguration available to parent
 defineExpose({ getConfiguration });
