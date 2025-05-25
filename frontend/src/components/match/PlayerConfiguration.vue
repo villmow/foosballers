@@ -7,7 +7,13 @@ const props = defineProps({
     type: String,
     default: '2v2',
   },
+  getMatchConfiguration: {
+    type: Function,
+    required: true,
+  },
 });
+
+const emit = defineEmits(['update:modelValue', 'match-started']);
 
 // State for player names
 const teamAPlayers = ref([
@@ -38,29 +44,160 @@ const teamNames = ref(['Team A', 'Team B']);
 // State for team colors
 const teamAColor = ref('#65bc7b');
 const teamBColor = ref('#000000');
+const isLoadingAPI = ref(false);
 
 function resetPlayerNames() {
   teamAPlayers.value.forEach((player) => (player.name = ''));
   teamBPlayers.value.forEach((player) => (player.name = ''));
+  teamNames.value = ['Team A', 'Team B'];
 }
 
 function swapTeams() {
   const tempPlayers = JSON.parse(JSON.stringify(teamAPlayers.value));
   teamAPlayers.value = JSON.parse(JSON.stringify(teamBPlayers.value));
   teamBPlayers.value = tempPlayers;
+  
+  // Also swap team names and colors
+  const tempNames = [...teamNames.value];
+  teamNames.value = [tempNames[1], tempNames[0]];
+  
+  const tempColor = teamAColor.value;
+  teamAColor.value = teamBColor.value;
+  teamBColor.value = tempColor;
+}
+
+async function fetchPlayersFromAPI() {
+  try {
+    isLoadingAPI.value = true;
+    // Simulate API call with default/example players
+    // In a real implementation, this would call: GET /api/players/recent or similar
+    console.log('Fetching players from API...');
+    
+    // Default player names based on current setup
+    const defaultPlayers = {
+      '1v1': {
+        teamA: [{ name: 'Alice' }],
+        teamB: [{ name: 'Bob' }],
+        teamNames: ['Red Team', 'Blue Team']
+      },
+      '2v2': {
+        teamA: [{ name: 'Alice' }, { name: 'Charlie' }],
+        teamB: [{ name: 'Bob' }, { name: 'Diana' }],
+        teamNames: ['Red Team', 'Blue Team']
+      }
+    };
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const currentSetup = props.playerSetup;
+    const defaults = defaultPlayers[currentSetup];
+    
+    if (defaults) {
+      teamAPlayers.value = [...defaults.teamA];
+      teamBPlayers.value = [...defaults.teamB];
+      teamNames.value = [...defaults.teamNames];
+      
+      // // Also set some default colors
+      // teamAColor.value = '#e74c3c'; // Red
+      // teamBColor.value = '#3498db'; // Blue
+    }
+    
+    console.log('Players populated from API');
+  } catch (error) {
+    console.error('Failed to fetch players from API:', error);
+  } finally {
+    isLoadingAPI.value = false;
+  }
+}
+
+async function startMatch() {
+  // Validate that all required fields are filled
+  const team1Players = teamAPlayers.value.filter(p => p.name.trim() !== '');
+  const team2Players = teamBPlayers.value.filter(p => p.name.trim() !== '');
+  
+  const requiredPlayersPerTeam = props.playerSetup === '1v1' ? 1 : 2;
+  
+  if (team1Players.length < requiredPlayersPerTeam || team2Players.length < requiredPlayersPerTeam) {
+    alert('Please fill in all player names before starting the match.');
+    return;
+  }
+  
+  if (!teamNames.value[0].trim() || !teamNames.value[1].trim()) {
+    alert('Please provide team names before starting the match.');
+    return;
+  }
+  
+  try {
+    // Get match configuration from parent component
+    const matchConfig = props.getMatchConfiguration();
+    
+    const matchData = {
+      playerSetup: props.playerSetup,
+      teamAName: teamNames.value[0],
+      teamBName: teamNames.value[1],
+      teamAColor: teamAColor.value,
+      teamBColor: teamBColor.value,
+      teamAPlayers: team1Players.map(p => p.name),
+      teamBPlayers: team2Players.map(p => p.name),
+      ...matchConfig, // Spread the match configuration
+    };
+    
+    console.log('Creating match with data:', matchData);
+    
+    // TODO: Call API to create match
+    const response = await fetch('/api/matches', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(matchData),
+    });
+    
+    if (response.ok) {
+      const match = await response.json();
+      
+      // Start the match
+      const startResponse = await fetch(`/api/matches/${match.id}/start`, {
+        method: 'POST',
+      });
+      
+      if (startResponse.ok) {
+        emit('match-started', match.id);
+      } else {
+        console.error('Failed to start match');
+      }
+    } else {
+      console.error('Failed to create match');
+    }
+  } catch (error) {
+    console.error('Error starting match:', error);
+    alert('Failed to start match. Please try again.');
+  }
+}
+
+function cancelMatch() {
+  // Reset form or navigate back to dashboard
+  resetPlayerNames();
 }
 </script>
 
 <template>
   <div class="card flex flex-col gap-6 w-full max-w-xl mx-auto">
     <div class="flex items-center gap-6 font-semibold text-2xl mb-2">
-        <span>Players</span>
+        <span>Setup New Match</span>
         <Button
-            label="API"
-            icon="pi pi-refresh"
+            :label="isLoadingAPI ? 'Loading...' : 'Fetch from API'"
+            :icon="isLoadingAPI ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+            :disabled="isLoadingAPI"
             severity="secondary"
             text
+            @click="fetchPlayersFromAPI"
         />
+    </div>
+
+    <div class="text-sm text-gray-600">
+      Mode: {{ props.playerSetup === '1v1' ? 'Singles' : 'Doubles' }}
     </div>
 
     <div class="flex flex-col gap-4">
@@ -70,7 +207,14 @@ function swapTeams() {
         class="flex flex-col gap-2"
       >
         <div class="flex items-center gap-4">
-          <div class="font-semibold text-lg">{{ teamNames[tIdx] }}</div>
+          <div class="flex items-center gap-2">
+            <input
+              v-model="teamNames[tIdx]"
+              type="text"
+              class="font-semibold text-lg border-b border-gray-300 bg-transparent focus:outline-none focus:border-blue-500"
+              :placeholder="`Team ${tIdx + 1}`"
+            />
+          </div>
           <div class="flex items-center gap-2">
             <ColorPicker
               v-if="tIdx === 0"
@@ -105,7 +249,8 @@ function swapTeams() {
       </div>
     </div>
     <div class="flex gap-4 mt-4">
-      <Button label="Start" icon="pi pi-play" severity="primary" />
+      <Button label="Start Match" icon="pi pi-play" severity="primary" @click="startMatch" />
+      <Button label="Cancel" icon="pi pi-times" severity="secondary" outlined @click="cancelMatch" />
       <Button
         label="Reset"
         icon="pi pi-refresh"

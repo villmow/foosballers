@@ -16,6 +16,7 @@ const numSetsToWin = ref(2);
 const timeoutsPerSet = ref(2);
 const draw = ref(false);
 const twoAhead = ref(false);
+const twoAheadUpUntil = ref(8);
 
 function qualification() {
     numGoalsToWin.value = 7;
@@ -23,6 +24,7 @@ function qualification() {
     timeoutsPerSet.value = 2;
     draw.value = false;
     twoAhead.value = false;
+    twoAheadUpUntil.value = 8;
 }
 function bestOf3() {
     numGoalsToWin.value = 5;
@@ -30,6 +32,7 @@ function bestOf3() {
     timeoutsPerSet.value = 2;
     draw.value = false;
     twoAhead.value = true;
+    twoAheadUpUntil.value = 8;
 }
 function bestOf5() {
     numGoalsToWin.value = 5;
@@ -37,6 +40,7 @@ function bestOf5() {
     timeoutsPerSet.value = 2;
     draw.value = false;
     twoAhead.value = true;
+    twoAheadUpUntil.value = 8;
 }
 
 const presetOptions = [
@@ -51,6 +55,41 @@ function onPresetChange(value) {
   else if (value === 'bestof3') bestOf3();
   else if (value === 'bestof5') bestOf5();
 }
+
+async function saveAsPreset() {
+  // TODO: Implement API call to save current configuration as preset
+  const presetData = {
+    numGoalsToWin: numGoalsToWin.value,
+    numSetsToWin: numSetsToWin.value,
+    timeoutsPerSet: timeoutsPerSet.value,
+    draw: draw.value,
+    twoAhead: twoAhead.value,
+    twoAheadUpUntil: twoAheadUpUntil.value,
+    playerSetup: playerSetup.value,
+  };
+  
+  console.log('Saving preset:', presetData);
+  // This would save to user profile or local storage
+}
+
+async function loadPresets() {
+  // TODO: Implement API call to load user's saved presets
+  console.log('Loading user presets...');
+}
+
+// Expose configuration data for parent components
+const getConfiguration = () => ({
+  numGoalsToWin: numGoalsToWin.value,
+  numSetsToWin: numSetsToWin.value,
+  timeoutsPerSet: timeoutsPerSet.value,
+  draw: draw.value,
+  twoAhead: twoAhead.value,
+  twoAheadUpUntil: twoAheadUpUntil.value,
+  playerSetup: playerSetup.value,
+});
+
+// Make getConfiguration available to parent
+defineExpose({ getConfiguration });
 
 // Responsive layout logic
 const containerRef = ref(null);
@@ -126,9 +165,31 @@ watch(playerSetup, (val) => {
         <label class="mb-1">2 Goals Ahead Rule</label>
         <ToggleSwitch v-model="twoAhead" />
       </div>
+      <div v-if="twoAhead" class="flex flex-col gap-2">
+        <label class="mb-1">Win by Two Applies Up To Goal</label>
+        <InputNumber v-model="twoAheadUpUntil" :min="1" :max="20" />
+      </div>
       <div class="flex flex-col gap-2">
         <label class="mb-1">Draw Allowed</label>
         <ToggleSwitch v-model="draw" />
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex gap-2 mt-4">
+        <Button 
+          label="Save Settings as Preset" 
+          icon="pi pi-save" 
+          severity="secondary" 
+          outlined
+          @click="saveAsPreset"
+        />
+        <Button 
+          label="Load Presets" 
+          icon="pi pi-folder-open" 
+          severity="secondary" 
+          outlined
+          @click="loadPresets"
+        />
       </div>
     </div>
     <div v-else class="flex flex-col gap-4">
@@ -176,10 +237,37 @@ watch(playerSetup, (val) => {
           <ToggleSwitch v-model="twoAhead" />
         </div>
       </div>
+      <div v-if="twoAhead" class="grid grid-cols-12 gap-2 items-center">
+        <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Win by Two Applies Up To Goal</label>
+        <div class="col-span-12 md:col-span-9">
+          <InputNumber v-model="twoAheadUpUntil" :min="1" :max="20" />
+        </div>
+      </div>
       <div class="grid grid-cols-12 gap-2 items-center">
         <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Draw Allowed</label>
         <div class="col-span-12 md:col-span-9">
           <ToggleSwitch v-model="draw" />
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <div class="col-span-12 md:col-span-3"></div>
+        <div class="col-span-12 md:col-span-9 flex gap-2">
+          <Button 
+            label="Save Settings as Preset" 
+            icon="pi pi-save" 
+            severity="secondary" 
+            outlined
+            @click="saveAsPreset"
+          />
+          <Button 
+            label="Load Presets" 
+            icon="pi pi-folder-open" 
+            severity="secondary" 
+            outlined
+            @click="loadPresets"
+          />
         </div>
       </div>
     </div>

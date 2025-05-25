@@ -1,14 +1,47 @@
 <script setup>
 import MatchConfiguration from '@/components/match/MatchConfiguration.vue';
+import MatchLoggingWidget from '@/components/match/MatchLoggingWidget.vue';
 import PlayerConfiguration from '@/components/match/PlayerConfiguration.vue';
 import { ref } from 'vue';
 
 const playerSetup = ref('2v2');
+const activeMatchId = ref(null);
+const matchConfigRef = ref(null);
+
+function onMatchStarted(matchId) {
+  activeMatchId.value = matchId;
+}
+
+function onMatchEnded() {
+  activeMatchId.value = null;
+}
+
+function getMatchConfiguration() {
+  return matchConfigRef.value?.getConfiguration();
+}
 </script>
 
 <template>
-  <div class="flex flex-row justify-center items-start gap-8 min-h-[60vh]">
-    <MatchConfiguration :playerSetup="playerSetup" />
-    <PlayerConfiguration v-model="playerSetup" />
+  <div class="flex flex-col gap-8 min-h-[60vh]">
+    <!-- Configuration Section -->
+    <div class="flex flex-row justify-center items-start gap-8">
+      <PlayerConfiguration 
+        :playerSetup="playerSetup" 
+        :get-match-configuration="getMatchConfiguration"
+        @match-started="onMatchStarted"
+      />
+      <MatchConfiguration 
+        ref="matchConfigRef"
+        v-model="playerSetup" 
+      />
+    </div>
+    
+    <!-- Active Match Section -->
+    <div v-if="activeMatchId" class="flex justify-center">
+      <MatchLoggingWidget 
+        :match-id="activeMatchId"
+        @match-ended="onMatchEnded"
+      />
+    </div>
   </div>
 </template>

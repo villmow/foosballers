@@ -1,4 +1,4 @@
-
+# Foosball Match Logging Application UI Functional Requirements
 
 ## Overall Application Structure & Navigation
 
