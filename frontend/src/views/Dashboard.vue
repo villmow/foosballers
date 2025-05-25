@@ -8,7 +8,8 @@ const playerSetup = ref('2v2');
 const activeMatchId = ref(null);
 const matchConfigRef = ref(null);
 
-function onMatchStarted(matchId) {
+function onMatchCreated(matchId) {
+  console.log('Match created with ID:', matchId);
   activeMatchId.value = matchId;
 }
 
@@ -28,7 +29,7 @@ function getMatchConfiguration() {
       <PlayerConfiguration 
         :playerSetup="playerSetup" 
         :get-match-configuration="getMatchConfiguration"
-        @match-started="onMatchStarted"
+        @match-created="onMatchCreated"
       />
       <MatchConfiguration 
         ref="matchConfigRef"

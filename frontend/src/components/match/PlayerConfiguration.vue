@@ -13,7 +13,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'match-started']);
+const emit = defineEmits(['update:modelValue', 'match-created']);
 
 // State for player names
 const teamAPlayers = ref([
@@ -163,17 +163,8 @@ async function startMatch() {
     
     if (response.ok) {
       const match = await response.json();
-      
-      // Start the match
-      const startResponse = await fetch(`/api/matches/${match.id}/start`, {
-        method: 'POST',
-      });
-      
-      if (startResponse.ok) {
-        emit('match-started', match.id);
-      } else {
-        console.error('Failed to start match');
-      }
+      console.log('Match created successfully:', match);
+      emit('match-created', match._id);
     } else {
       console.error('Failed to create match');
     }
