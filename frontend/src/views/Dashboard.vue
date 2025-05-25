@@ -1,6 +1,6 @@
 <script setup>
-import MatchCreationWidget from '@/components/match/MatchConfigurationWidget.vue';
-import MatchWidget from '@/components/match/MatchWidget.vue';
+import MatchConfiguration from '@/components/match/MatchConfiguration.vue';
+import PlayerConfiguration from '@/components/match/PlayerConfiguration.vue';
 import { ref } from 'vue';
 
 const playerSetup = ref('2v2');
@@ -8,7 +8,7 @@ const playerSetup = ref('2v2');
 
 <template>
   <div class="flex flex-row justify-center items-start gap-8 min-h-[60vh]">
-    <MatchWidget :playerSetup="playerSetup" />
-    <MatchCreationWidget v-model="playerSetup" />
+    <MatchConfiguration :playerSetup="playerSetup" />
+    <PlayerConfiguration v-model="playerSetup" />
   </div>
 </template>
