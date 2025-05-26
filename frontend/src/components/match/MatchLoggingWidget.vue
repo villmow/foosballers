@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import SetLoggingWidget from './SetLoggingWidget.vue';
+import SetResultsSummary from './SetResultsSummary.vue';
 
 const props = defineProps({
   matchId: {
@@ -33,6 +34,9 @@ const teams = computed(() => {
     }
   ];
 });
+
+// Ref for SetResultsSummary component
+const setResultsSummaryRef = ref(null);
 
 // Timer functions
 function startMatchTimer() {
@@ -251,6 +255,18 @@ const canStartMatch = computed(() => {
   return match.value?.status === 'notStarted' || match.value?.status === 'pending';
 });
 
+const isLastSet = computed(() => {
+  if (!match.value || !currentSet.value) return false;
+  
+  const setsToWin = match.value.setsToWin || 2;
+  const teamAWins = teams.value[0]?.setsWon || 0;
+  const teamBWins = teams.value[1]?.setsWon || 0;
+  
+  // Check if completing the current set would end the match
+  // This happens when one team is one win away from victory
+  return (teamAWins >= setsToWin - 1) || (teamBWins >= setsToWin - 1);
+});
+
 // Lifecycle
 onMounted(async () => {
   await fetchMatchDetails();
@@ -269,6 +285,10 @@ function onSetCompleted() {
   // Refresh match and set data
   fetchMatchDetails();
   fetchCurrentSet();
+  // Refresh the previous sets summary
+  if (setResultsSummaryRef.value) {
+    setResultsSummaryRef.value.refresh();
+  }
 }
 </script>
 
@@ -336,10 +356,19 @@ function onSetCompleted() {
 
     <!-- Current Set Area -->
     <div v-if="currentSet" class="border-t pt-6">
+      <!-- Previous Sets Summary -->
+      <SetResultsSummary 
+        ref="setResultsSummaryRef"
+        :match-id="matchId"
+        :teams="teams"
+      />
+      
+      <!-- Current Set Widget -->
       <SetLoggingWidget 
         :match-id="matchId"
         :set-data="currentSet"
         :teams="teams"
+        :is-last-set="isLastSet"
         @set-completed="onSetCompleted"
       />
     </div>

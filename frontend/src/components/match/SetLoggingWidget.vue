@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps({
   matchId: {
@@ -13,6 +13,10 @@ const props = defineProps({
   teams: {
     type: Array,
     required: true,
+  },
+  isLastSet: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -46,6 +50,24 @@ function pauseSetTimer() {
   }
   isTimerRunning.value = false;
 }
+
+function resetSetTimer() {
+  pauseSetTimer();
+  setTimer.value = 0;
+  isTimerRunning.value = false;
+}
+
+// Watch for set changes and reset timer
+watch(() => props.setData.id, (newSetId, oldSetId) => {
+  if (newSetId && newSetId !== oldSetId) {
+    resetSetTimer();
+    // Clear last goal IDs when starting new set
+    lastGoalIds.value = {
+      teamA: null,
+      teamB: null,
+    };
+  }
+});
 
 const formattedSetTime = computed(() => {
   const minutes = Math.floor(setTimer.value / 60);
@@ -261,6 +283,14 @@ const showCompleteSetButton = computed(() => {
   return props.setData.status === 'completed';
 });
 
+const completeSetButtonLabel = computed(() => {
+  return props.isLastSet ? 'End Match' : 'Complete Set';
+});
+
+const completeSetButtonIcon = computed(() => {
+  return props.isLastSet ? 'pi pi-flag' : 'pi pi-check';
+});
+
 async function fetchCurrentSet() {
   try {
     const response = await fetch(`/api/matches/${props.matchId}/sets/current`, {
@@ -450,8 +480,8 @@ const isActionHoveredB = ref(false);
     <!-- Set Actions -->
     <div v-if="showCompleteSetButton" class="text-center">
       <Button 
-        label="Complete Set" 
-        icon="pi pi-check" 
+        :label="completeSetButtonLabel" 
+        :icon="completeSetButtonIcon" 
         @click="fetchCurrentSet"
         severity="primary"
         size="large"

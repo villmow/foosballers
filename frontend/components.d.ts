@@ -86,6 +86,7 @@ declare module 'vue' {
     Select: typeof import('primevue/select')['default']
     SelectButton: typeof import('primevue/selectbutton')['default']
     SetLoggingWidget: typeof import('./src/components/match/SetLoggingWidget.vue')['default']
+    SetResultsSummary: typeof import('./src/components/match/SetResultsSummary.vue')['default']
     Skeleton: typeof import('primevue/skeleton')['default']
     Slider: typeof import('primevue/slider')['default']
     SplitButton: typeof import('primevue/splitbutton')['default']
