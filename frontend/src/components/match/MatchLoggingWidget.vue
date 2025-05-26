@@ -76,6 +76,31 @@ async function abortMatch() {
   }
 }
 
+async function startMatch() {
+  try {
+    // Start the match
+    const startResponse = await fetch(`/api/matches/${props.matchId}/start`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    
+    if (startResponse.ok) {
+      console.log('Match started successfully');
+      // Refresh match details and current set
+      await fetchMatchDetails();
+      await fetchCurrentSet();
+      // Start the timer if match is now in progress
+      if (match.value?.status === 'inProgress') {
+        startMatchTimer();
+      }
+    } else {
+      console.error('Failed to start match:', startResponse.statusText);
+    }
+  } catch (error) {
+    console.error('Error starting match:', error);
+  }
+}
+
 async function endMatch() {
   try {
     // TODO: Call API to end match
@@ -165,10 +190,10 @@ async function fetchMatchDetails() {
 
 async function fetchCurrentSet() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/current-set`, {
+    const response = await fetch(`/api/matches/${props.matchId}/sets/current`, {
       credentials: 'include',
     });
-    
+    console.log('Fetching current set for match:', props.matchId);
     if (response.ok) {
       const set = await response.json();
       
@@ -222,6 +247,10 @@ const canStartNextSet = computed(() => {
   return currentSet.value?.status === 'completed' && !canEndMatch.value;
 });
 
+const canStartMatch = computed(() => {
+  return match.value?.status === 'notStarted' || match.value?.status === 'pending';
+});
+
 // Lifecycle
 onMounted(async () => {
   await fetchMatchDetails();
@@ -252,7 +281,7 @@ function onSetCompleted() {
         <h2 class="text-2xl font-bold">Match Logging</h2>
         <div class="text-lg font-mono">{{ formattedMatchTime }}</div>
       </div>
-      
+
       <!-- Overall Match Score -->
       <div class="flex justify-between items-center mb-4">
         <div class="flex items-center gap-4">
@@ -300,6 +329,14 @@ function onSetCompleted() {
     <!-- Match Actions -->
     <div class="flex gap-4 justify-center border-t pt-6">
       <Button 
+        v-if="canStartMatch"
+        label="Start Match" 
+        icon="pi pi-play" 
+        severity="success" 
+        @click="startMatch"
+      />
+      
+      <Button 
         label="Abort Match" 
         icon="pi pi-times" 
         severity="danger" 
@@ -307,6 +344,7 @@ function onSetCompleted() {
         outlined
       />
       
+  
       <Button 
         v-if="canEndMatch"
         label="End Match" 

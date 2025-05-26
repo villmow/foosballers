@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 // Props for configuration
 const props = defineProps({
@@ -110,6 +110,10 @@ async function fetchPlayersFromAPI() {
     isLoadingAPI.value = false;
   }
 }
+
+onMounted(() => {
+  fetchPlayersFromAPI();
+});
 
 async function startMatch() {
   // Validate that all required fields are filled
