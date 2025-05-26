@@ -56,28 +56,35 @@ const formattedSetTime = computed(() => {
 // Score management
 async function addGoal(teamIndex) {
   try {
-    // TODO: Call API to add goal
     const response = await fetch('/api/goals', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         matchId: props.matchId,
         setId: props.setData.id,
-        teamId: teamIndex === 0 ? 'teamA' : 'teamB',
+        teamIndex: teamIndex,
+        timestamp: new Date().toISOString(),
       }),
     });
     
     if (response.ok) {
-      const goal = await response.json();
+      const result = await response.json();
+      const goal = result.goal;
+      
       // Store the goal ID for potential undo
       if (teamIndex === 0) {
-        lastGoalIds.value.teamA = goal.id;
-        props.setData.teamAScore++;
+        lastGoalIds.value.teamA = goal._id;
       } else {
-        lastGoalIds.value.teamB = goal.id;
-        props.setData.teamBScore++;
+        lastGoalIds.value.teamB = goal._id;
+      }
+      
+      // Update local state with progression data
+      if (result.set) {
+        // Update set data from server response
+        Object.assign(props.setData, result.set);
       }
       
       // Check if set is won
@@ -97,19 +104,25 @@ async function undoGoal(teamIndex) {
   }
   
   try {
-    // TODO: Call API to void goal
     const response = await fetch(`/api/goals/${goalId}/void`, {
       method: 'POST',
+      credentials: 'include',
     });
     
     if (response.ok) {
-      // Update score
+      const result = await response.json();
+      
+      // Clear the last goal ID
       if (teamIndex === 0) {
-        props.setData.teamAScore = Math.max(0, props.setData.teamAScore - 1);
         lastGoalIds.value.teamA = null;
       } else {
-        props.setData.teamBScore = Math.max(0, props.setData.teamBScore - 1);
         lastGoalIds.value.teamB = null;
+      }
+      
+      // Update local state with progression data
+      if (result.set) {
+        // Update set data from server response
+        Object.assign(props.setData, result.set);
       }
     }
   } catch (error) {
@@ -127,25 +140,27 @@ async function callTimeout(teamIndex) {
   }
   
   try {
-    // TODO: Call API to call timeout
     const response = await fetch('/api/timeouts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         matchId: props.matchId,
         setId: props.setData.id,
-        teamId: teamIndex === 0 ? 'teamA' : 'teamB',
+        teamIndex: teamIndex,
+        timestamp: new Date().toISOString(),
       }),
     });
     
     if (response.ok) {
-      // Update timeout count
-      if (teamIndex === 0) {
-        props.setData.teamATimeouts--;
-      } else {
-        props.setData.teamBTimeouts--;
+      const result = await response.json();
+      
+      // Update local state with progression data
+      if (result.set) {
+        // Update set data from server response
+        Object.assign(props.setData, result.set);
       }
     }
   } catch (error) {
@@ -173,14 +188,27 @@ const showCompleteSetButton = ref(false);
 
 async function completeSet() {
   try {
-    // TODO: Call API to complete set
-    const response = await fetch(`/api/matches/${props.matchId}/sets/${props.setData.id}/complete`, {
+    const response = await fetch(`/api/sets/${props.setData.id}/complete`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        winner: props.setData.teamAScore > props.setData.teamBScore ? 0 : 1,
+      }),
     });
     
     if (response.ok) {
+      const result = await response.json();
+      
+      // Update local state with progression data
+      if (result.set) {
+        Object.assign(props.setData, result.set);
+      }
+      
       pauseSetTimer();
-      emit('set-completed');
+      emit('set-completed', result);
     }
   } catch (error) {
     console.error('Error completing set:', error);

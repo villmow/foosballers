@@ -46,7 +46,7 @@ router.post('/:id/abort', abortMatch);
 // Match sets endpoints
 router.get('/:id/sets', getMatchSets);
 router.post('/:id/sets', startNewSet);
-router.get('/:id/sets/current', getCurrentSet);
+router.get('/:matchId/sets/current', getCurrentSet);
 
 // Match-based set operations using setNumber
 router.get('/:matchId/sets/:setNumber', resolveSetByNumber, getSet);

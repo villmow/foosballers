@@ -88,9 +88,38 @@ async function endMatch() {
 
 async function startNextSet() {
   try {
-    // TODO: Call API to create and start next set
-    console.log('Starting next set...');
-    await fetchCurrentSet();
+    const response = await fetch(`/api/matches/${props.matchId}/sets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log('New set created:', result.set);
+      
+      // Update the current set data
+      if (result.set) {
+        const timeoutsPerSet = match.value?.timeoutsPerSet || 2; // Default to 2 if not set
+        
+        currentSet.value = {
+          id: result.set._id,
+          setNumber: result.set.setNumber,
+          status: result.set.status,
+          teamAScore: result.set.scores[0],
+          teamBScore: result.set.scores[1],
+          teamATimeouts: timeoutsPerSet - result.set.timeoutsUsed[0],
+          teamBTimeouts: timeoutsPerSet - result.set.timeoutsUsed[1],
+        };
+      }
+      
+      // Refresh match details to get updated set count
+      await fetchMatchDetails();
+    } else {
+      console.error('Failed to start next set:', response.statusText);
+    }
   } catch (error) {
     console.error('Error starting next set:', error);
   }
@@ -99,22 +128,36 @@ async function startNextSet() {
 // Data fetching
 async function fetchMatchDetails() {
   try {
-    // TODO: Implement API call to fetch match details
-    // For now, using mock data
-    match.value = {
-      id: props.matchId,
-      teamAName: 'Team A',
-      teamBName: 'Team B',
-      teamAColor: '#65bc7b',
-      teamBColor: '#000000',
-      teamAPlayers: ['Player 1', 'Player 2'],
-      teamBPlayers: ['Player 3', 'Player 4'],
-      teamASetsWon: 0,
-      teamBSetsWon: 0,
-      status: 'inProgress',
-      startTime: new Date(),
-      currentSetNumber: 1,
-    };
+    const response = await fetch(`/api/matches/${props.matchId}`, {
+      credentials: 'include',
+    });
+    
+    if (response.ok) {
+      const matchData = await response.json();
+      
+      // Convert backend format to component format
+      match.value = {
+        id: matchData._id,
+        teamAName: matchData.teams?.[0]?.name || 'Team A',
+        teamBName: matchData.teams?.[1]?.name || 'Team B',
+        teamAColor: matchData.teams?.[0]?.color || '#65bc7b',
+        teamBColor: matchData.teams?.[1]?.color || '#000000',
+        teamAPlayers: matchData.teams?.[0]?.players?.map(p => p.name) || [],
+        teamBPlayers: matchData.teams?.[1]?.players?.map(p => p.name) || [],
+        teamASetsWon: matchData.teams?.[0]?.setsWon || 0,
+        teamBSetsWon: matchData.teams?.[1]?.setsWon || 0,
+        status: matchData.status,
+        startTime: new Date(matchData.startTime || Date.now()),
+        currentSetNumber: matchData.currentSetNumber || 1,
+        setsToWin: matchData.numSetsToWin || 2,
+        drawAllowed: matchData.draw || false,
+        timeoutsPerSet: matchData.timeoutsPerSet || 2,
+        numGoalsToWin: matchData.numGoalsToWin || 5,
+        twoAhead: matchData.twoAhead || false,
+      };
+    } else {
+      console.error('Failed to fetch match details:', response.statusText);
+    }
   } catch (error) {
     console.error('Error fetching match details:', error);
   }
@@ -122,17 +165,33 @@ async function fetchMatchDetails() {
 
 async function fetchCurrentSet() {
   try {
-    // TODO: Implement API call to fetch current set details
-    // For now, using mock data
-    currentSet.value = {
-      id: '1',
-      setNumber: 1,
-      status: 'inProgress',
-      teamAScore: 0,
-      teamBScore: 0,
-      teamATimeouts: 2,
-      teamBTimeouts: 2,
-    };
+    const response = await fetch(`/api/matches/${props.matchId}/current-set`, {
+      credentials: 'include',
+    });
+    
+    if (response.ok) {
+      const set = await response.json();
+      
+      // Get match details to determine timeouts per set
+      const timeoutsPerSet = match.value?.timeoutsPerSet || 2; // Default to 2 if not set
+      
+      // Convert backend format to component format
+      currentSet.value = {
+        id: set._id,
+        setNumber: set.setNumber,
+        status: set.status,
+        teamAScore: set.scores[0],
+        teamBScore: set.scores[1],
+        teamATimeouts: timeoutsPerSet - set.timeoutsUsed[0], // Remaining timeouts
+        teamBTimeouts: timeoutsPerSet - set.timeoutsUsed[1], // Remaining timeouts
+      };
+    } else if (response.status === 404) {
+      // No current set found - this might happen for new matches
+      console.log('No current set found, match may need to be started');
+      currentSet.value = null;
+    } else {
+      console.error('Failed to fetch current set:', response.statusText);
+    }
   } catch (error) {
     console.error('Error fetching current set:', error);
   }
