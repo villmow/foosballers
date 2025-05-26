@@ -202,6 +202,44 @@ async function callTimeout(teamIndex) {
   }
 }
 
+async function undoTimeout(teamIndex) {
+  // Find the last timeout for the team from setData.timeouts (array of timeout IDs)
+  const timeouts = Array.isArray(props.setData.timeouts) ? props.setData.timeouts : [];
+  if (!timeouts.length) {
+    console.warn('No timeout to undo for this team');
+    return;
+  }
+  // Find the last timeout for this team (assuming timeouts are ordered, and we can get the last one for the team)
+  // For simplicity, just use the last timeout in the array
+  const lastTimeoutId = timeouts[timeouts.length - 1];
+  if (!lastTimeoutId) {
+    console.warn('No timeout to undo for this team');
+    return;
+  }
+  try {
+    const response = await fetch(`/api/timeouts/${lastTimeoutId}/void`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (response.ok) {
+      const result = await response.json();
+      if (result.set) {
+        Object.assign(props.setData, result.set);
+        if (Array.isArray(result.set.scores)) {
+          props.setData.teamAScore = result.set.scores[0];
+          props.setData.teamBScore = result.set.scores[1];
+        }
+        if (Array.isArray(result.set.timeoutsUsed)) {
+          props.setData.teamATimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[0];
+          props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error undoing timeout:', error);
+  }
+}
+
 // Set completion logic
 function checkSetComplete() {
   // TODO: Implement proper set completion logic based on match configuration
@@ -299,29 +337,44 @@ const isActionHoveredB = ref(false);
         </div>
         <div class="text-6xl font-bold mb-4">{{ setData.teamAScore }}</div>
         <div
-          class="flex gap-2 justify-center z-10 relative"
+          class="flex gap-2 justify-center z-10 relative mt-4"
           @mouseenter="isActionHoveredA = true"
           @mouseleave="isActionHoveredA = false"
         >
-          <Button 
-            :label="`Timeout (${setData.teamATimeouts})`"
-            icon="pi pi-clock" 
-            @click.stop="callTimeout(0)"
-            severity="info"
-            outlined
-            :disabled="setData.teamATimeouts <= 0"
-            class="flex-1"
-          />
-          <Button 
-            label="Undo Goal" 
-            icon="pi pi-minus" 
-            @click.stop="undoGoal(0)"
-            severity="warn"
-            outlined
-            size="large"
-            :disabled="!lastGoalIds.teamA"
-            class="flex-1"
-          />
+          <div class="flex flex-col w-full gap-2">
+            <Button 
+              :label="`Timeout (${setData.teamATimeouts})`"
+              icon="pi pi-clock" 
+              @click.stop="callTimeout(0)"
+              severity="info"
+              size="large"
+              outlined
+              :disabled="setData.teamATimeouts <= 0"
+              class="w-full"
+            />
+            <div class="flex gap-2 w-full">
+              <Button 
+                label="Undo Goal" 
+                icon="pi pi-minus" 
+                @click.stop="undoGoal(0)"
+                severity="warn"
+                outlined
+                size="small"
+                :disabled="!lastGoalIds.teamA"
+                class="flex-1"
+              />
+              <Button 
+                label="Undo Timeout" 
+                icon="pi pi-undo" 
+                @click.stop="undoTimeout(0)"
+                severity="warn"
+                outlined
+                size="small"
+                :disabled="(props.setData.timeoutsUsed && props.setData.timeoutsUsed[0] === 0)"
+                class="flex-1"
+              />
+            </div>
+          </div>
         </div>
       </button>
 
@@ -340,29 +393,44 @@ const isActionHoveredB = ref(false);
         </div>
         <div class="text-6xl font-bold mb-4">{{ setData.teamBScore }}</div>
         <div
-          class="flex gap-2 justify-center z-10 relative"
+          class="flex gap-2 justify-center z-10 relative mt-4"
           @mouseenter="isActionHoveredB = true"
           @mouseleave="isActionHoveredB = false"
         >
-          <Button 
-            :label="`Timeout (${setData.teamBTimeouts})`"
-            icon="pi pi-clock" 
-            @click.stop="callTimeout(1)"
-            severity="info"
-            outlined
-            :disabled="setData.teamBTimeouts <= 0"
-            class="flex-1"
-          />
-          <Button 
-            label="Undo Goal" 
-            icon="pi pi-minus" 
-            @click.stop="undoGoal(1)"
-            severity="warn"
-            outlined
-            size="large"
-            :disabled="!lastGoalIds.teamB"
-            class="flex-1"
-          />
+          <div class="flex flex-col w-full gap-2">
+            <Button 
+              :label="`Timeout (${setData.teamBTimeouts})`"
+              icon="pi pi-clock" 
+              @click.stop="callTimeout(1)"
+              severity="info"
+              outlined
+              size="large"
+              :disabled="setData.teamBTimeouts <= 0"
+              class="w-full"
+            />
+            <div class="flex gap-2 w-full">
+              <Button 
+                label="Undo Goal" 
+                icon="pi pi-minus" 
+                @click.stop="undoGoal(1)"
+                severity="warn"
+                outlined
+                size="small"
+                :disabled="!lastGoalIds.teamB"
+                class="flex-1"
+              />
+              <Button 
+                label="Undo Timeout" 
+                icon="pi pi-undo" 
+                @click.stop="undoTimeout(1)"
+                severity="warn"
+                outlined
+                size="small"
+                :disabled="(props.setData.timeoutsUsed && props.setData.timeoutsUsed[1] === 0)"
+                class="flex-1"
+              />
+            </div>
+          </div>
         </div>
       </button>
     </div>
