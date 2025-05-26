@@ -256,34 +256,30 @@ function checkSetComplete() {
   }
 }
 
-const showCompleteSetButton = ref(false);
+// Only show the button if set is completed and not the current set
+const showCompleteSetButton = computed(() => {
+  return props.setData.status === 'completed';
+});
 
-async function completeSet() {
+async function fetchCurrentSet() {
   try {
-    const response = await fetch(`/api/sets/${props.setData.id}/complete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const response = await fetch(`/api/matches/${props.matchId}/sets/current`, {
       credentials: 'include',
-      body: JSON.stringify({
-        winner: props.setData.teamAScore > props.setData.teamBScore ? 0 : 1,
-      }),
     });
-    
     if (response.ok) {
       const result = await response.json();
-      
-      // Update local state with progression data
       if (result.set) {
         Object.assign(props.setData, result.set);
       }
-      
-      pauseSetTimer();
       emit('set-completed', result);
+    } else {
+      const errorText = await response.text();
+      console.error('Failed to fetch current set:', errorText);
+      alert('Failed to fetch current set: ' + errorText);
     }
   } catch (error) {
-    console.error('Error completing set:', error);
+    console.error('Error fetching current set:', error);
+    alert('Error fetching current set: ' + error.message);
   }
 }
 
@@ -456,7 +452,7 @@ const isActionHoveredB = ref(false);
       <Button 
         label="Complete Set" 
         icon="pi pi-check" 
-        @click="completeSet"
+        @click="fetchCurrentSet"
         severity="primary"
         size="large"
       />

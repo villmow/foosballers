@@ -283,44 +283,47 @@ function onSetCompleted() {
 
       <!-- Overall Match Score -->
       <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <div 
-              class="w-4 h-4 rounded"
-              :style="{ backgroundColor: teams[0]?.color }"
-            ></div>
-            <span v-if="teams[0]?.name" class="font-semibold">
-              <span class="text-2xl font-bold text-gray-800">{{ teams[0].name }}</span>
-              <span v-if="teams[0]?.players && teams[0].players.length" class="text-xs text-gray-500 ml-2">
-                {{ teams[0].players.join(' / ') }}
-              </span>
-            </span>
-            <span v-else-if="teams[0]?.players && teams[0].players.length" class="text-2xl font-bold text-gray-800">
+        <!-- Team 1 Info -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[0]?.color }"></div>
+          <span v-if="teams[0]?.name" class="font-semibold truncate">
+            <span class="text-2xl font-bold text-gray-800">{{ teams[0].name }}</span>
+            <span v-if="teams[0]?.players && teams[0].players.length" class="text-xs text-gray-500 ml-2">
               {{ teams[0].players.join(' / ') }}
             </span>
-          </div>
-          <div class="text-3xl font-bold">{{ teams[0]?.setsWon }}</div>
+          </span>
+          <span v-else-if="teams[0]?.players && teams[0].players.length" class="text-2xl font-bold text-gray-800 truncate">
+            {{ teams[0].players.join(' / ') }}
+          </span>
         </div>
-        
-        <div class="text-xl font-semibold">VS</div>
-        
-        <div class="flex items-center gap-4">
+
+        <!-- Team 1 Score -->
+        <div class="flex flex-row items-center mx-6">
+          <div class="text-3xl font-bold">{{ teams[0]?.setsWon }}</div>
+          <div class="mx-1 text-sm font-light ">/ {{ match.setsToWin }}</div>
+        </div>
+
+        <!-- VS -->
+        <div class="text-xl font-semibold mx-2">VS</div>
+
+        <!-- Team 2 Score -->
+        <div class="flex flex-row items-center mx-6">
           <div class="text-3xl font-bold">{{ teams[1]?.setsWon }}</div>
-          <div class="flex items-center gap-2">
-            <span v-if="teams[1]?.name" class="font-semibold">
-              <span class="text-2xl font-bold text-gray-800">{{ teams[1].name }}</span>
-              <span v-if="teams[1]?.players && teams[1].players.length" class="text-xs text-gray-500 ml-2">
-                {{ teams[1].players.join(' / ') }}
-              </span>
-            </span>
-            <span v-else-if="teams[1]?.players && teams[1].players.length" class="text-2xl font-bold text-gray-800">
+          <div class="mx-1 text-sm font-light">/ {{ match.setsToWin }}</div>
+        </div>
+
+        <!-- Team 2 Info -->
+        <div class="flex items-center gap-2 min-w-0 justify-end">
+          <span v-if="teams[1]?.name" class="font-semibold truncate">
+            <span class="text-2xl font-bold text-gray-800">{{ teams[1].name }}</span>
+            <span v-if="teams[1]?.players && teams[1].players.length" class="text-xs text-gray-500 ml-2">
               {{ teams[1].players.join(' / ') }}
             </span>
-            <div 
-              class="w-4 h-4 rounded"
-              :style="{ backgroundColor: teams[1]?.color }"
-            ></div>
-          </div>
+          </span>
+          <span v-else-if="teams[1]?.players && teams[1].players.length" class="text-2xl font-bold text-gray-800 truncate">
+            {{ teams[1].players.join(' / ') }}
+          </span>
+          <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[1]?.color }"></div>
         </div>
       </div>
       
