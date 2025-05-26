@@ -96,6 +96,11 @@ async function addGoal(teamIndex) {
           props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
         }
       }
+
+      // Start timer if this is the first goal and timer is not running
+      if (!isTimerRunning.value && setTimer.value === 0) {
+        startSetTimer();
+      }
       
       // Check if set is won
       checkSetComplete();
@@ -180,6 +185,16 @@ async function callTimeout(teamIndex) {
       if (result.set) {
         // Update set data from server response
         Object.assign(props.setData, result.set);
+        // Map scores array to teamAScore/teamBScore for UI reactivity
+        if (Array.isArray(result.set.scores)) {
+          props.setData.teamAScore = result.set.scores[0];
+          props.setData.teamBScore = result.set.scores[1];
+        }
+        // Map timeoutsUsed if needed
+        if (Array.isArray(result.set.timeoutsUsed)) {
+          props.setData.teamATimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[0];
+          props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
+        }
       }
     }
   } catch (error) {
@@ -245,6 +260,9 @@ onMounted(() => {
 onUnmounted(() => {
   pauseSetTimer();
 });
+
+const isActionHoveredA = ref(false);
+const isActionHoveredB = ref(false);
 </script>
 
 <template>
@@ -261,116 +279,92 @@ onUnmounted(() => {
           @click="startSetTimer"
           size="small"
         />
-        <Button 
-          v-else
-          label="Pause Timer" 
-          icon="pi pi-pause" 
-          @click="pauseSetTimer"
-          size="small"
-          severity="secondary"
-        />
       </div>
     </div>
 
     <!-- Team Score Areas -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <!-- Team A Area -->
-      <div 
-        class="border-2 rounded-lg p-6 text-center"
+      <button
+        type="button"
+        class="score-panel border-2 rounded-lg p-6 text-center w-full focus:outline-none transition"
+        :class="{ 'score-panel-hover': !isActionHoveredA }"
         :style="{ borderColor: teams[0]?.color }"
+        @click="addGoal(0)"
+        @mouseleave="isActionHoveredA = false"
       >
         <div class="flex items-center justify-center gap-2 mb-4">
-          <div 
-            class="w-4 h-4 rounded"
-            :style="{ backgroundColor: teams[0]?.color }"
-          ></div>
+          <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[0]?.color }"></div>
           <h4 class="text-lg font-semibold">{{ teams[0]?.name }}</h4>
         </div>
-        
-        <!-- Score Display -->
         <div class="text-6xl font-bold mb-4">{{ setData.teamAScore }}</div>
-        
-        <!-- Goal Buttons -->
-        <div class="flex gap-2 justify-center mb-4">
+        <div
+          class="flex gap-2 justify-center z-10 relative"
+          @mouseenter="isActionHoveredA = true"
+          @mouseleave="isActionHoveredA = false"
+        >
           <Button 
-            label="+ Goal" 
-            icon="pi pi-plus" 
-            @click="addGoal(0)"
-            severity="success"
-            size="large"
+            :label="`Timeout (${setData.teamATimeouts})`"
+            icon="pi pi-clock" 
+            @click.stop="callTimeout(0)"
+            severity="info"
+            outlined
+            :disabled="setData.teamATimeouts <= 0"
             class="flex-1"
           />
           <Button 
-            label="- Goal (Undo)" 
+            label="Undo Goal" 
             icon="pi pi-minus" 
-            @click="undoGoal(0)"
-            severity="warning"
+            @click.stop="undoGoal(0)"
+            severity="warn"
             outlined
             size="large"
             :disabled="!lastGoalIds.teamA"
+            class="flex-1"
           />
         </div>
-        
-        <!-- Timeout Button -->
-        <Button 
-          :label="`Call Timeout (${setData.teamATimeouts} remaining)`"
-          icon="pi pi-clock" 
-          @click="callTimeout(0)"
-          severity="info"
-          outlined
-          :disabled="setData.teamATimeouts <= 0"
-          class="w-full"
-        />
-      </div>
+      </button>
 
       <!-- Team B Area -->
-      <div 
-        class="border-2 rounded-lg p-6 text-center"
+      <button
+        type="button"
+        class="score-panel border-2 rounded-lg p-6 text-center w-full focus:outline-none transition"
+        :class="{ 'score-panel-hover': !isActionHoveredB }"
         :style="{ borderColor: teams[1]?.color }"
+        @click="addGoal(1)"
+        @mouseleave="isActionHoveredB = false"
       >
         <div class="flex items-center justify-center gap-2 mb-4">
-          <div 
-            class="w-4 h-4 rounded"
-            :style="{ backgroundColor: teams[1]?.color }"
-          ></div>
+          <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[1]?.color }"></div>
           <h4 class="text-lg font-semibold">{{ teams[1]?.name }}</h4>
         </div>
-        
-        <!-- Score Display -->
         <div class="text-6xl font-bold mb-4">{{ setData.teamBScore }}</div>
-        
-        <!-- Goal Buttons -->
-        <div class="flex gap-2 justify-center mb-4">
+        <div
+          class="flex gap-2 justify-center z-10 relative"
+          @mouseenter="isActionHoveredB = true"
+          @mouseleave="isActionHoveredB = false"
+        >
           <Button 
-            label="+ Goal" 
-            icon="pi pi-plus" 
-            @click="addGoal(1)"
-            severity="success"
-            size="large"
+            :label="`Timeout (${setData.teamBTimeouts})`"
+            icon="pi pi-clock" 
+            @click.stop="callTimeout(1)"
+            severity="info"
+            outlined
+            :disabled="setData.teamBTimeouts <= 0"
             class="flex-1"
           />
           <Button 
-            label="- Goal (Undo)" 
+            label="Undo Goal" 
             icon="pi pi-minus" 
-            @click="undoGoal(1)"
-            severity="warning"
+            @click.stop="undoGoal(1)"
+            severity="warn"
             outlined
             size="large"
             :disabled="!lastGoalIds.teamB"
+            class="flex-1"
           />
         </div>
-        
-        <!-- Timeout Button -->
-        <Button 
-          :label="`Call Timeout (${setData.teamBTimeouts} remaining)`"
-          icon="pi pi-clock" 
-          @click="callTimeout(1)"
-          severity="info"
-          outlined
-          :disabled="setData.teamBTimeouts <= 0"
-          class="w-full"
-        />
-      </div>
+      </button>
     </div>
 
     <!-- Set Actions -->
@@ -389,5 +383,12 @@ onUnmounted(() => {
 <style scoped>
 .border-2 {
   border-width: 2px;
+}
+.score-panel {
+  background-color: white;
+}
+.score-panel-hover:hover,
+.score-panel-hover:active {
+  background-color: #f0fdf4; /* Tailwind green-50 */
 }
 </style>
