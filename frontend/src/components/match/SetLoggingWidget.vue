@@ -333,7 +333,15 @@ const isActionHoveredB = ref(false);
       >
         <div class="flex items-center justify-center gap-2 mb-4">
           <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[0]?.color }"></div>
-          <h4 class="text-lg font-semibold">{{ teams[0]?.name }}</h4>
+          <div v-if="teams[0]?.name" class="text-lg font-semibold">
+            <span class="text-2xl font-bold text-gray-800">{{ teams[0].name }}</span>
+            <span v-if="teams[0]?.players && teams[0].players.length" class="text-md text-gray-500 ml-2">
+              {{ teams[0].players.join(' / ') }}
+            </span>
+          </div>
+          <div v-else-if="teams[0]?.players && teams[0].players.length" class="text-2xl font-bold text-gray-800">
+            {{ teams[0].players.join(' / ') }}
+          </div>
         </div>
         <div class="text-6xl font-bold mb-4">{{ setData.teamAScore }}</div>
         <div
@@ -389,7 +397,15 @@ const isActionHoveredB = ref(false);
       >
         <div class="flex items-center justify-center gap-2 mb-4">
           <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[1]?.color }"></div>
-          <h4 class="text-lg font-semibold">{{ teams[1]?.name }}</h4>
+          <div v-if="teams[1]?.name" class="font-semibold text-2xl text-gray-800">
+            <span class="">{{ teams[1].name }}</span>
+            <span v-if="teams[1]?.players && teams[1].players.length" class="text-xs text-gray-500 ml-2">
+              {{ teams[1].players.join(' / ') }}
+            </span>
+          </div>
+          <div v-else-if="teams[1]?.players && teams[1].players.length" class="text-2xl font-bold text-gray-800">
+            {{ teams[1].players.join(' / ') }}
+          </div>
         </div>
         <div class="text-6xl font-bold mb-4">{{ setData.teamBScore }}</div>
         <div

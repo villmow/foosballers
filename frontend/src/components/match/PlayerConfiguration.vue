@@ -39,7 +39,7 @@ watch(
   { immediate: true }
 );
 
-const teamNames = ref(['Team A', 'Team B']);
+const teamNames = ref([null, null]);
 
 // State for team colors
 const teamAColor = ref('#65bc7b');
@@ -49,7 +49,7 @@ const isLoadingAPI = ref(false);
 function resetPlayerNames() {
   teamAPlayers.value.forEach((player) => (player.name = ''));
   teamBPlayers.value.forEach((player) => (player.name = ''));
-  teamNames.value = ['Team A', 'Team B'];
+  teamNames.value = [null, null];
 }
 
 function swapTeams() {
@@ -78,12 +78,12 @@ async function fetchPlayersFromAPI() {
       '1v1': {
         teamA: [{ name: 'Alice' }],
         teamB: [{ name: 'Bob' }],
-        teamNames: ['Red Team', 'Blue Team']
+        teamNames: [null, null]
       },
       '2v2': {
         teamA: [{ name: 'Alice' }, { name: 'Charlie' }],
         teamB: [{ name: 'Bob' }, { name: 'Diana' }],
-        teamNames: ['Red Team', 'Blue Team']
+        teamNames: [null, null]
       }
     };
     
@@ -124,11 +124,6 @@ async function startMatch() {
   
   if (team1Players.length < requiredPlayersPerTeam || team2Players.length < requiredPlayersPerTeam) {
     alert('Please fill in all player names before starting the match.');
-    return;
-  }
-  
-  if (!teamNames.value[0].trim() || !teamNames.value[1].trim()) {
-    alert('Please provide team names before starting the match.');
     return;
   }
   

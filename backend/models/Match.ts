@@ -8,7 +8,7 @@ const PlayerSchema = new Schema({
 
 // Team subdocument schema
 const TeamSchema = new Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: false },
   color: { type: String, required: true },
   players: [{ type: PlayerSchema, required: true }],
   setsWon: { type: Number, default: 0 },

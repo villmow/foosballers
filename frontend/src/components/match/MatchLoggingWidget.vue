@@ -20,13 +20,13 @@ const teams = computed(() => {
   if (!match.value) return [];
   return [
     {
-      name: match.value.teamAName || 'Team A',
+      name: match.value.teamAName || null,
       color: match.value.teamAColor || '#65bc7b',
       players: match.value.teamAPlayers || [],
       setsWon: match.value.teamASetsWon || 0,
     },
     {
-      name: match.value.teamBName || 'Team B', 
+      name: match.value.teamBName || '', 
       color: match.value.teamBColor || '#000000',
       players: match.value.teamBPlayers || [],
       setsWon: match.value.teamBSetsWon || 0,
@@ -163,8 +163,8 @@ async function fetchMatchDetails() {
       // Convert backend format to component format
       match.value = {
         id: matchData._id,
-        teamAName: matchData.teams?.[0]?.name || 'Team A',
-        teamBName: matchData.teams?.[1]?.name || 'Team B',
+        teamAName: matchData.teams?.[0]?.name || null,
+        teamBName: matchData.teams?.[1]?.name || null,
         teamAColor: matchData.teams?.[0]?.color || '#65bc7b',
         teamBColor: matchData.teams?.[1]?.color || '#000000',
         teamAPlayers: matchData.teams?.[0]?.players?.map(p => p.name) || [],
@@ -254,7 +254,6 @@ const canStartMatch = computed(() => {
 // Lifecycle
 onMounted(async () => {
   await fetchMatchDetails();
-  await fetchCurrentSet();
   
   if (match.value?.status === 'inProgress') {
     startMatchTimer();
@@ -290,7 +289,15 @@ function onSetCompleted() {
               class="w-4 h-4 rounded"
               :style="{ backgroundColor: teams[0]?.color }"
             ></div>
-            <span class="font-semibold">{{ teams[0]?.name }}</span>
+            <span v-if="teams[0]?.name" class="font-semibold">
+              <span class="text-2xl font-bold text-gray-800">{{ teams[0].name }}</span>
+              <span v-if="teams[0]?.players && teams[0].players.length" class="text-xs text-gray-500 ml-2">
+                {{ teams[0].players.join(' / ') }}
+              </span>
+            </span>
+            <span v-else-if="teams[0]?.players && teams[0].players.length" class="text-2xl font-bold text-gray-800">
+              {{ teams[0].players.join(' / ') }}
+            </span>
           </div>
           <div class="text-3xl font-bold">{{ teams[0]?.setsWon }}</div>
         </div>
@@ -300,7 +307,15 @@ function onSetCompleted() {
         <div class="flex items-center gap-4">
           <div class="text-3xl font-bold">{{ teams[1]?.setsWon }}</div>
           <div class="flex items-center gap-2">
-            <span class="font-semibold">{{ teams[1]?.name }}</span>
+            <span v-if="teams[1]?.name" class="font-semibold">
+              <span class="text-2xl font-bold text-gray-800">{{ teams[1].name }}</span>
+              <span v-if="teams[1]?.players && teams[1].players.length" class="text-xs text-gray-500 ml-2">
+                {{ teams[1].players.join(' / ') }}
+              </span>
+            </span>
+            <span v-else-if="teams[1]?.players && teams[1].players.length" class="text-2xl font-bold text-gray-800">
+              {{ teams[1].players.join(' / ') }}
+            </span>
             <div 
               class="w-4 h-4 rounded"
               :style="{ backgroundColor: teams[1]?.color }"
@@ -332,7 +347,7 @@ function onSetCompleted() {
         v-if="canStartMatch"
         label="Start Match" 
         icon="pi pi-play" 
-        severity="success" 
+        severity="primary" 
         @click="startMatch"
       />
       
