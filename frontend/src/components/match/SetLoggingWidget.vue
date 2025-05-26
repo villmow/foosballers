@@ -85,6 +85,16 @@ async function addGoal(teamIndex) {
       if (result.set) {
         // Update set data from server response
         Object.assign(props.setData, result.set);
+        // Map scores array to teamAScore/teamBScore for UI reactivity
+        if (Array.isArray(result.set.scores)) {
+          props.setData.teamAScore = result.set.scores[0];
+          props.setData.teamBScore = result.set.scores[1];
+        }
+        // Map timeoutsUsed if needed
+        if (Array.isArray(result.set.timeoutsUsed)) {
+          props.setData.teamATimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[0];
+          props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
+        }
       }
       
       // Check if set is won
@@ -121,8 +131,17 @@ async function undoGoal(teamIndex) {
       
       // Update local state with progression data
       if (result.set) {
-        // Update set data from server response
         Object.assign(props.setData, result.set);
+        // Map scores array to teamAScore/teamBScore for UI reactivity
+        if (Array.isArray(result.set.scores)) {
+          props.setData.teamAScore = result.set.scores[0];
+          props.setData.teamBScore = result.set.scores[1];
+        }
+        // Map timeoutsUsed if needed
+        if (Array.isArray(result.set.timeoutsUsed)) {
+          props.setData.teamATimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[0];
+          props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
+        }
       }
     }
   } catch (error) {
