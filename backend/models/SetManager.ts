@@ -39,12 +39,21 @@ export class SetManager {
   checkWinningCondition(): void {
     const goalsToWin = this.match.numGoalsToWin;
     const twoAhead = this.match.twoAhead;
+    const twoAheadUpUntil = this.match.twoAheadUpUntil || 8; // Default to 8 if not set
     const [score0, score1] = this.set.scores;
     const maxScore = Math.max(score0, score1);
     const minScore = Math.min(score0, score1);
+    
+    // Check if this is the final deciding set (both teams have numSetsToWin - 1 sets won)
+    const isDecidingSet = this.match.teams[0].setsWon === (this.match.numSetsToWin - 1) && 
+                         this.match.teams[1].setsWon === (this.match.numSetsToWin - 1);
+    
+    // Only apply twoAhead rule in the deciding set and when score hasn't exceeded twoAheadUpUntil
+    const shouldApplyTwoAhead = twoAhead && isDecidingSet && maxScore < twoAheadUpUntil;
+    
     if (
       maxScore >= goalsToWin &&
-      (!twoAhead || maxScore - minScore >= 2)
+      (!shouldApplyTwoAhead || maxScore - minScore >= 2)
     ) {
       this.completeSet(score0 > score1 ? 0 : 1);
     }

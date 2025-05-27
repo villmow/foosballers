@@ -20,7 +20,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['set-completed']);
+const emit = defineEmits(['set-completed', 'match-completed']);
 
 // Set timer state
 const setTimer = ref(0);
@@ -31,6 +31,13 @@ const isTimerRunning = ref(false);
 const lastGoalIds = ref({
   teamA: null,
   teamB: null,
+});
+
+// Progression state from API responses
+const progression = ref({
+  setCompleted: false,
+  matchCompleted: false,
+  newSetCreated: false
 });
 
 // Timer functions
@@ -65,6 +72,12 @@ watch(() => props.setData.id, (newSetId, oldSetId) => {
     lastGoalIds.value = {
       teamA: null,
       teamB: null,
+    };
+    // Reset progression state for new set
+    progression.value = {
+      setCompleted: false,
+      matchCompleted: false,
+      newSetCreated: false
     };
   }
 });
@@ -119,13 +132,15 @@ async function addGoal(teamIndex) {
         }
       }
 
+      // Update progression state if available
+      if (result.progression) {
+        progression.value = result.progression;
+      }
+
       // Start timer if this is the first goal and timer is not running
       if (!isTimerRunning.value && setTimer.value === 0) {
         startSetTimer();
       }
-      
-      // Check if set is won
-      checkSetComplete();
     }
   } catch (error) {
     console.error('Error adding goal:', error);
@@ -169,6 +184,11 @@ async function undoGoal(teamIndex) {
           props.setData.teamATimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[0];
           props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
         }
+      }
+      
+      // Update progression state if available
+      if (result.progression) {
+        progression.value = result.progression;
       }
     }
   } catch (error) {
@@ -218,6 +238,11 @@ async function callTimeout(teamIndex) {
           props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
         }
       }
+      
+      // Update progression state if available
+      if (result.progression) {
+        progression.value = result.progression;
+      }
     }
   } catch (error) {
     console.error('Error calling timeout:', error);
@@ -256,60 +281,50 @@ async function undoTimeout(teamIndex) {
           props.setData.teamBTimeouts = (props.setData.timeoutsPerSet || 2) - result.set.timeoutsUsed[1];
         }
       }
+      
+      // Update progression state if available
+      if (result.progression) {
+        progression.value = result.progression;
+      }
     }
   } catch (error) {
     console.error('Error undoing timeout:', error);
   }
 }
 
-// Set completion logic
-function checkSetComplete() {
-  // TODO: Implement proper set completion logic based on match configuration
-  // For now, simple logic: first to 5 goals wins (considering two-ahead rule if applicable)
-  const scoreA = props.setData.teamAScore;
-  const scoreB = props.setData.teamBScore;
-  const minGoals = 5; // This should come from match configuration
-  
-  // Basic winning condition
-  if (scoreA >= minGoals && scoreA - scoreB >= 2) {
-    showCompleteSetButton.value = true;
-  } else if (scoreB >= minGoals && scoreB - scoreA >= 2) {
-    showCompleteSetButton.value = true;
-  }
-}
-
-// Only show the button if set is completed and not the current set
+// Only show the button if progression indicates set is completed
 const showCompleteSetButton = computed(() => {
-  return props.setData.status === 'completed';
+  return progression.value.setCompleted;
 });
 
 const completeSetButtonLabel = computed(() => {
-  return props.isLastSet ? 'End Match' : 'Complete Set';
+  return progression.value.matchCompleted ? 'End Match' : 'Complete Set';
 });
 
 const completeSetButtonIcon = computed(() => {
-  return props.isLastSet ? 'pi pi-flag' : 'pi pi-check';
+  return progression.value.matchCompleted ? 'pi pi-flag' : 'pi pi-check';
 });
 
-async function fetchCurrentSet() {
+async function completeSetOrMatch() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/sets/current`, {
-      credentials: 'include',
-    });
-    if (response.ok) {
-      const result = await response.json();
-      if (result.set) {
-        Object.assign(props.setData, result.set);
-      }
-      emit('set-completed', result);
+    // Stop the timer when set/match is completed
+    pauseSetTimer();
+    
+    // Emit appropriate events based on progression state
+    if (progression.value.matchCompleted) {
+      emit('match-completed', { 
+        match: props.matchId,
+        progression: progression.value 
+      });
     } else {
-      const errorText = await response.text();
-      console.error('Failed to fetch current set:', errorText);
-      alert('Failed to fetch current set: ' + errorText);
+      emit('set-completed', { 
+        match: props.matchId,
+        set: props.setData,
+        progression: progression.value 
+      });
     }
   } catch (error) {
-    console.error('Error fetching current set:', error);
-    alert('Error fetching current set: ' + error.message);
+    console.error('Error completing set/match:', error);
   }
 }
 
@@ -482,7 +497,7 @@ const isActionHoveredB = ref(false);
       <Button 
         :label="completeSetButtonLabel" 
         :icon="completeSetButtonIcon" 
-        @click="fetchCurrentSet"
+        @click="completeSetOrMatch"
         severity="primary"
         size="large"
       />

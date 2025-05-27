@@ -75,14 +75,59 @@ describe('SetManager', () => {
     expect(() => manager.recordGoal(0)).toThrow();
   });
 
-  it('enforces two-ahead rule if enabled', () => {
+  it('enforces two-ahead rule only in deciding set', () => {
     match.twoAhead = true;
+    
+    // Test non-deciding set (neither team has numSetsToWin - 1 sets won)
+    // This should NOT apply two-ahead rule
     manager.startSet();
     set.scores = [4, 4];
-    manager.recordGoal(0); // 5-4, not enough
+    manager.recordGoal(0); // 5-4, should complete since it's not deciding set
+    expect(set.status).toBe('completed');
+    expect(set.winner).toBe(0);
+  });
+
+  it('does not enforce two-ahead rule in non-deciding sets', () => {
+    match.twoAhead = true;
+    match.teams[0].setsWon = 0; // Team 0 has 0 sets
+    match.teams[1].setsWon = 1; // Team 1 has 1 set, not 1-1 so not deciding
+    
+    manager.startSet();
+    set.scores = [4, 4];
+    manager.recordGoal(0); // 5-4, should complete since it's not deciding set
+    expect(set.status).toBe('completed');
+    expect(set.winner).toBe(0);
+  });
+
+  it('enforces two-ahead rule in deciding set (1-1 for best of 3)', () => {
+    match.twoAhead = true;
+    match.numSetsToWin = 2; // Best of 3
+    match.teams[0].setsWon = 1; // 1-1, this is the deciding set
+    match.teams[1].setsWon = 1;
+    
+    manager.startSet();
+    set.scores = [4, 4];
+    manager.recordGoal(0); // 5-4, not enough in deciding set
     expect(set.status).toBe('inProgress');
+    
     set.scores = [6, 4];
-    manager.checkWinningCondition();
+    manager.checkWinningCondition(); // 6-4, enough (2 ahead)
+    expect(set.status).toBe('completed');
+    expect(set.winner).toBe(0);
+  });
+
+  it('enforces two-ahead rule in deciding set (2-2 for best of 5)', () => {
+    match.twoAhead = true;
+    match.numSetsToWin = 3; // Best of 5
+    match.teams[0].setsWon = 2; // 2-2, this is the deciding set
+    match.teams[1].setsWon = 2;
+    
+    manager.startSet();
+    set.scores = [4, 4];
+    manager.recordGoal(0); // 5-4, not enough in deciding set
+    expect(set.status).toBe('inProgress');
+    
+    manager.recordGoal(0); // 6-4, enough (2 ahead)
     expect(set.status).toBe('completed');
     expect(set.winner).toBe(0);
   });

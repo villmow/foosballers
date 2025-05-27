@@ -193,10 +193,6 @@ function cancelMatch() {
         />
     </div>
 
-    <div class="text-sm text-gray-600">
-      Mode: {{ props.playerSetup === '1v1' ? 'Singles' : 'Doubles' }}
-    </div>
-
     <div class="flex flex-col gap-4">
       <div
         v-for="(team, tIdx) in [teamAPlayers, teamBPlayers]"

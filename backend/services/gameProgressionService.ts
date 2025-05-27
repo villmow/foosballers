@@ -175,12 +175,20 @@ export class GameProgressionService {
 
     const goalsToWin = match.numGoalsToWin;
     const twoAhead = match.twoAhead;
+    const twoAheadUpUntil = match.twoAheadUpUntil || 8; // Default to 8 if not set
     const [score0, score1] = set.scores;
     const maxScore = Math.max(score0, score1);
     const minScore = Math.min(score0, score1);
 
+    // Check if this is the final deciding set (both teams have numSetsToWin - 1 sets won)
+    const isDecidingSet = match.teams[0].setsWon === (match.numSetsToWin - 1) && 
+                         match.teams[1].setsWon === (match.numSetsToWin - 1);
+    
+    // Only apply twoAhead rule in the deciding set and when score hasn't exceeded twoAheadUpUntil
+    const shouldApplyTwoAhead = twoAhead && isDecidingSet && maxScore < twoAheadUpUntil;
+
     // Check if winning condition is met
-    if (maxScore >= goalsToWin && (!twoAhead || maxScore - minScore >= 2)) {
+    if (maxScore >= goalsToWin && (!shouldApplyTwoAhead || maxScore - minScore >= 2)) {
       const winner = score0 > score1 ? 0 : 1;
       set.status = 'completed';
       set.endTime = new Date();
@@ -227,9 +235,8 @@ export class GameProgressionService {
       stateMachine.endMatch();
       return { matchCompleted: true, newSetCreated: false };
     } else {
-      // Create new set automatically
-      const existingSets = await SetModel.find({ matchId: match._id }).sort({ setNumber: -1 }).limit(1);
-      const nextSetNumber = existingSets.length > 0 ? existingSets[0].setNumber + 1 : 1;
+      // Create new set automatically - next set number is current set + 1
+      const nextSetNumber = set.setNumber + 1;
 
       // Check if a set with this number already exists to prevent duplicates
       const existingSet = await SetModel.findOne({ matchId: match._id, setNumber: nextSetNumber });
@@ -267,16 +274,24 @@ export class GameProgressionService {
     // Check if set status should change based on new scores
     const goalsToWin = match.numGoalsToWin;
     const twoAhead = match.twoAhead;
+    const twoAheadUpUntil = match.twoAheadUpUntil || 8; // Default to 8 if not set
     const [score0, score1] = set.scores;
     const maxScore = Math.max(score0, score1);
     const minScore = Math.min(score0, score1);
+
+    // Check if this is the final deciding set (both teams have numSetsToWin - 1 sets won)
+    const isDecidingSet = match.teams[0].setsWon === (match.numSetsToWin - 1) && 
+                         match.teams[1].setsWon === (match.numSetsToWin - 1);
+    
+    // Only apply twoAhead rule in the deciding set and when score hasn't exceeded twoAheadUpUntil
+    const shouldApplyTwoAhead = twoAhead && isDecidingSet && maxScore < twoAheadUpUntil;
 
     let setCompleted = false;
     let setStatusChanged = false;
 
     if (set.status === 'completed') {
       // Check if we should revert to inProgress
-      if (maxScore < goalsToWin || (twoAhead && maxScore - minScore < 2)) {
+      if (maxScore < goalsToWin || (shouldApplyTwoAhead && maxScore - minScore < 2)) {
         set.status = 'inProgress';
         set.endTime = undefined;
         set.winner = undefined;
@@ -284,7 +299,7 @@ export class GameProgressionService {
       }
     } else if (set.status === 'inProgress') {
       // Check if we should complete the set
-      if (maxScore >= goalsToWin && (!twoAhead || maxScore - minScore >= 2)) {
+      if (maxScore >= goalsToWin && (!shouldApplyTwoAhead || maxScore - minScore >= 2)) {
         const winner = score0 > score1 ? 0 : 1;
         set.status = 'completed';
         set.endTime = new Date();

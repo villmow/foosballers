@@ -41,6 +41,7 @@ export interface IMatch extends Document {
   numGoalsToWin: number;
   numSetsToWin: number;
   twoAhead: boolean;
+  twoAheadUpUntil?: number;
   name?: string;
   draw?: boolean;
   timeoutsPerSet?: number;
@@ -52,6 +53,7 @@ const MatchSchema = new Schema({
   numGoalsToWin: { type: Number, required: true, min: 1 },
   numSetsToWin: { type: Number, required: true, min: 1 },
   twoAhead: { type: Boolean, default: false },
+  twoAheadUpUntil: { type: Number, required: false, min: 1, max: 20, default: 8 },
   name: { type: String, required: false },
   draw: { type: Boolean, default: false },
   timeoutsPerSet: { type: Number, required: false, min: 0, max: 5, default: 2 },

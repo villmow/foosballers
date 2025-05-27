@@ -331,7 +331,8 @@ describe('Goal Controller Integration Tests', () => {
       match.twoAhead = true;
       await match.save();
 
-      // Create goals to reach 5-4 score (should not complete set yet)
+      // Create goals to reach 5-4 score
+      // Since this is NOT a deciding set (0-0, not 2-2), twoAhead should not apply
       const goals = [];
       for (let i = 0; i < 5; i++) {
         const goal = new GoalModel({
@@ -363,7 +364,9 @@ describe('Goal Controller Integration Tests', () => {
       set.scores = [5, 4];
       await set.save();
 
-      // Score another goal for team 0 (should complete - 6-4 is 2 ahead and past 5)
+      // Score another goal for team 0 
+      // This should complete the set immediately (5-4 becomes 6-4)
+      // because twoAhead rule should NOT apply in non-deciding sets
       const req: Partial<Request> = {
         body: {
           matchId: (match._id as any).toString(),
@@ -379,12 +382,101 @@ describe('Goal Controller Integration Tests', () => {
 
       const responseCall = (res.json as jest.Mock).mock.calls[0][0];
 
-      // With two-ahead rule, 6-4 should complete the set (2 ahead and >= 5)
+      // The set should complete because twoAhead rule doesn't apply in non-deciding sets
       expect(responseCall.set.status).toBe('completed');
       expect(responseCall.set.winner).toBe(0);
       expect(responseCall.set.scores[0]).toBe(6);
       expect(responseCall.progression.setCompleted).toBe(true);
     });
+
+    it('should enforce two-ahead rule in deciding set', async () => {
+      // Create test data with two-ahead rule enabled
+      const { match, set } = await createTestMatchAndSet();
+      
+      // Enable two-ahead rule and set up a deciding set scenario (2-2 in best of 5)
+      match.twoAhead = true;
+      match.teams[0].setsWon = 2;
+      match.teams[1].setsWon = 2;
+      await match.save();
+
+      // Create goals to reach 4-4 score
+      const goals = [];
+      for (let i = 0; i < 4; i++) {
+        const goal = new GoalModel({
+          matchId: match._id,
+          setId: set._id,
+          teamIndex: 0,
+          timestamp: new Date(Date.now() - (8 - i) * 1000),
+          scoringRow: '3-bar',
+          voided: false
+        });
+        await goal.save();
+        goals.push(goal._id);
+      }
+      for (let i = 0; i < 4; i++) {
+        const goal = new GoalModel({
+          matchId: match._id,
+          setId: set._id,
+          teamIndex: 1,
+          timestamp: new Date(Date.now() - (4 - i) * 1000),
+          scoringRow: '5-bar',
+          voided: false
+        });
+        await goal.save();
+        goals.push(goal._id);
+      }
+
+      // Update set to reflect 4-4 score
+      set.goals = goals as any[];
+      set.scores = [4, 4];
+      await set.save();
+
+      // Score one goal for team 0 (4-4 becomes 5-4)
+      // This should NOT complete the set because we need 2 ahead in deciding set
+      const req1: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res1 = mockResponse();
+      await createGoal(req1 as Request, res1);
+
+      const responseCall1 = (res1.json as jest.Mock).mock.calls[0][0];
+
+      // The set should NOT complete yet - 5-4 is only 1 ahead in deciding set
+      expect(responseCall1.set.status).toBe('inProgress');
+      expect(responseCall1.set.scores).toEqual([5, 4]);
+      expect(responseCall1.progression.setCompleted).toBe(false);
+
+      // Score another goal for team 0 (5-4 becomes 6-4)
+      // This should complete the set because 6-4 is 2 ahead
+      const req2: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res2 = mockResponse();
+      await createGoal(req2 as Request, res2);
+
+      const responseCall2 = (res2.json as jest.Mock).mock.calls[0][0];
+
+      // Now the set should complete - 6-4 is 2 ahead in deciding set
+      expect(responseCall2.set.status).toBe('completed');
+      expect(responseCall2.set.winner).toBe(0);
+      expect(responseCall2.set.scores).toEqual([6, 4]);
+      expect(responseCall2.progression.setCompleted).toBe(true);
+    });
+
   });
 
   describe('Goal Voiding and Unvoiding', () => {

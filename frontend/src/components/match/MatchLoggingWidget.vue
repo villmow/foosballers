@@ -281,15 +281,42 @@ onUnmounted(() => {
 });
 
 // Event handlers
-function onSetCompleted() {
+function onSetCompleted(event) {
+  console.log('Set completed:', event);
+  
   // Refresh match and set data
   fetchMatchDetails();
-  fetchCurrentSet();
+  
+  // If a new set was created, fetch it
+  if (event.progression?.newSetCreated) {
+    fetchCurrentSet();
+  }
+  
   // Refresh the previous sets summary
   if (setResultsSummaryRef.value) {
     setResultsSummaryRef.value.refresh();
   }
 }
+
+function onMatchCompleted(event) {
+  console.log('Match completed:', event);
+  
+  // Stop the match timer
+  stopMatchTimer();
+  
+  // Hide the current set by clearing it
+  currentSet.value = null;
+  
+  // Refresh match details to get final state
+  fetchMatchDetails();
+  
+  // Refresh the sets summary to show all completed sets
+  if (setResultsSummaryRef.value) {
+    setResultsSummaryRef.value.refresh();
+  }
+}
+
+
 </script>
 
 <template>
@@ -348,28 +375,30 @@ function onSetCompleted() {
       </div>
       
       <!-- Match Info -->
-      <div class="flex justify-between text-sm text-gray-600">
+      <!-- <div class="flex justify-between text-sm text-gray-600">
         <div>Set {{ match.currentSetNumber || 1 }}</div>
         <div>Status: {{ match.status }}</div>
-      </div>
+      </div> -->
     </div>
 
-    <!-- Current Set Area -->
-    <div v-if="currentSet" class="border-t pt-6">
-      <!-- Previous Sets Summary -->
+    <!-- Sets Summary and Current Set Area -->
+    <div class="border-t pt-6">
+      <!-- Previous Sets Summary (always shown when match has started) -->
       <SetResultsSummary 
         ref="setResultsSummaryRef"
         :match-id="matchId"
         :teams="teams"
       />
       
-      <!-- Current Set Widget -->
+      <!-- Current Set Widget (only shown when there's an active set) -->
       <SetLoggingWidget 
+        v-if="currentSet"
         :match-id="matchId"
         :set-data="currentSet"
         :teams="teams"
         :is-last-set="isLastSet"
         @set-completed="onSetCompleted"
+        @match-completed="onMatchCompleted"
       />
     </div>
 

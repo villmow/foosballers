@@ -56,26 +56,6 @@ function onPresetChange(value) {
   else if (value === 'bestof5') bestOf5();
 }
 
-async function saveAsPreset() {
-  // TODO: Implement API call to save current configuration as preset
-  const presetData = {
-    numGoalsToWin: numGoalsToWin.value,
-    numSetsToWin: numSetsToWin.value,
-    timeoutsPerSet: timeoutsPerSet.value,
-    draw: draw.value,
-    twoAhead: twoAhead.value,
-    twoAheadUpUntil: twoAheadUpUntil.value,
-    playerSetup: playerSetup.value,
-  };
-  
-  console.log('Saving preset:', presetData);
-  // This would save to user profile or local storage
-}
-
-async function loadPresets() {
-  // TODO: Implement API call to load user's saved presets
-  console.log('Loading user presets...');
-}
 
 // Expose configuration data for parent components
 const getConfiguration = () => {
@@ -261,27 +241,6 @@ watch(playerSetup, (val) => {
         <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Draw Allowed</label>
         <div class="col-span-12 md:col-span-9">
           <ToggleSwitch v-model="draw" />
-        </div>
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="grid grid-cols-12 gap-2 items-center">
-        <div class="col-span-12 md:col-span-3"></div>
-        <div class="col-span-12 md:col-span-9 flex gap-2">
-          <Button 
-            label="Save Settings as Preset" 
-            icon="pi pi-save" 
-            severity="secondary" 
-            outlined
-            @click="saveAsPreset"
-          />
-          <Button 
-            label="Load Presets" 
-            icon="pi pi-folder-open" 
-            severity="secondary" 
-            outlined
-            @click="loadPresets"
-          />
         </div>
       </div>
     </div>
