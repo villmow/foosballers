@@ -203,11 +203,6 @@ export class GameProgressionService {
    * Process set completion: update match setsWon, check for match completion, create new set if needed
    */
   private async processSetCompletion(set: ISet, match: IMatch): Promise<{ matchCompleted: boolean; newSetCreated: boolean }> {
-    // Skip processing if match is already completed
-    if (match.status === 'completed') {
-      return { matchCompleted: false, newSetCreated: false };
-    }
-
     // Count completed sets to ensure setsWon is accurate
     const completedSets = await SetModel.find({ 
       matchId: match._id, 
@@ -235,6 +230,13 @@ export class GameProgressionService {
       stateMachine.endMatch();
       return { matchCompleted: true, newSetCreated: false };
     } else {
+      // If match was previously completed but no longer meets the winning condition, revert it to inProgress
+      if (match.status === 'completed') {
+        // Reset to inProgress since winning condition is no longer met
+        match.status = 'inProgress';
+        (match as any).endTime = undefined;
+      }
+
       // Create new set automatically - next set number is current set + 1
       const nextSetNumber = set.setNumber + 1;
 
@@ -333,11 +335,19 @@ export class GameProgressionService {
         }
       }
 
-      // If we just completed a set, check for match completion and new set creation
+      // Check if match status should change based on new setsWon
+      const setsWon = match.teams.map(t => t.setsWon);
+      const maxSets = Math.max(...setsWon);
+
       if (setCompleted) {
+        // If we just completed a set, check for match completion and new set creation
         const result = await this.processSetCompletion(set, match);
         matchCompleted = result.matchCompleted;
         newSetCreated = result.newSetCreated;
+      } else if (match.status === 'completed' && maxSets < match.numSetsToWin) {
+        // If match was completed but no longer meets winning condition, revert to inProgress
+        match.status = 'inProgress';
+        (match as any).endTime = undefined;
       }
     } else {
       await set.save();

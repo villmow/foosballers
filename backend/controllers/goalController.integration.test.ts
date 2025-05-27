@@ -839,4 +839,283 @@ describe('Goal Controller Integration Tests', () => {
       expect(res.status).toHaveBeenCalledWith(400);
     });
   });
+
+  describe('Match Completion Edge Case', () => {
+    it('should correctly handle match completion after voiding last goal and scoring new goal', async () => {
+      // This test reproduces the bug where voiding the last goal of a match completion
+      // and then scoring another goal doesn't return matchCompleted=true
+      const { match, set } = await createTestMatchAndSet();
+      
+      // Set up match with 2 sets already won (needs 3 to win)
+      const completedSet1 = new SetModel({
+        matchId: match._id,
+        setNumber: 2,
+        status: 'completed',
+        scores: [5, 2],
+        timeoutsUsed: [0, 0],
+        goals: [],
+        timeouts: [],
+        winner: 0,
+        endTime: new Date(Date.now() - 60000)
+      });
+      await completedSet1.save();
+
+      const completedSet2 = new SetModel({
+        matchId: match._id,
+        setNumber: 3,
+        status: 'completed',
+        scores: [5, 1],
+        timeoutsUsed: [0, 0],
+        goals: [],
+        timeouts: [],
+        winner: 0,
+        endTime: new Date(Date.now() - 30000)
+      });
+      await completedSet2.save();
+
+      // Update match to include these sets and current setsWon
+      match.sets.push(completedSet1._id as any, completedSet2._id as any);
+      match.teams[0].setsWon = 2;
+      match.currentSet = set._id as any;
+      await match.save();
+
+      // Create 4 goals for team 0 to set up 4-0 score
+      const goals = [];
+      for (let i = 0; i < 4; i++) {
+        const goal = new GoalModel({
+          matchId: match._id,
+          setId: set._id,
+          teamIndex: 0,
+          timestamp: new Date(Date.now() - (4 - i) * 1000),
+          scoringRow: '3-bar',
+          voided: false
+        });
+        await goal.save();
+        goals.push(goal._id);
+      }
+
+      // Update set to reflect 4-0 score
+      set.goals = goals as any[];
+      set.scores = [4, 0];
+      await set.save();
+
+      // Step 1: Score the match-winning goal (5-0) - this should complete the match
+      const goalReq1: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res1 = mockResponse();
+      await createGoal(goalReq1 as Request, res1);
+
+      const responseCall1 = (res1.json as jest.Mock).mock.calls[0][0];
+      
+      // Verify match was completed
+      expect(responseCall1.set.status).toBe('completed');
+      expect(responseCall1.set.winner).toBe(0);
+      expect(responseCall1.set.scores).toEqual([5, 0]);
+      expect(responseCall1.match.status).toBe('completed');
+      expect(responseCall1.match.teams[0].setsWon).toBe(3);
+      expect(responseCall1.progression.setCompleted).toBe(true);
+      expect(responseCall1.progression.matchCompleted).toBe(true);
+
+      // Get the winning goal ID
+      const winningGoalId = responseCall1.goal._id;
+
+      // Step 2: Void the match-winning goal - this should revert match to inProgress
+      const voidReq: Partial<Request> = {
+        params: { goalId: winningGoalId }
+      };
+
+      const res2 = mockResponse();
+      await voidGoal(voidReq as Request, res2);
+
+      const responseCall2 = (res2.json as jest.Mock).mock.calls[0][0];
+
+      // Verify match was reverted to inProgress
+      expect(responseCall2.set.status).toBe('inProgress');
+      expect(responseCall2.set.winner).toBeUndefined();
+      expect(responseCall2.set.scores).toEqual([4, 0]);
+      expect(responseCall2.match.status).toBe('inProgress');
+      expect(responseCall2.match.teams[0].setsWon).toBe(2); // Should be back to 2
+
+      // Step 3: Score another goal - this should complete the match again
+      const goalReq2: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res3 = mockResponse();
+      await createGoal(goalReq2 as Request, res3);
+
+      const responseCall3 = (res3.json as jest.Mock).mock.calls[0][0];
+
+      // This is where the bug occurs - the match should be completed but matchCompleted is false
+      expect(responseCall3.set.status).toBe('completed');
+      expect(responseCall3.set.winner).toBe(0);
+      expect(responseCall3.set.scores).toEqual([5, 0]);
+      expect(responseCall3.match.status).toBe('completed');
+      expect(responseCall3.match.teams[0].setsWon).toBe(3);
+      expect(responseCall3.progression.setCompleted).toBe(true);
+      expect(responseCall3.progression.matchCompleted).toBe(true); // This should be true but the bug makes it false
+    });
+
+    it('should handle match reversion and completion correctly in complex scenarios', async () => {
+      // This test verifies that the fix handles various edge cases correctly
+      const { match, set } = await createTestMatchAndSet();
+      
+      // Set up match with 1 set already won (needs 3 to win)
+      const completedSet1 = new SetModel({
+        matchId: match._id,
+        setNumber: 2,
+        status: 'completed',
+        scores: [5, 2],
+        timeoutsUsed: [0, 0],
+        goals: [],
+        timeouts: [],
+        winner: 0,
+        endTime: new Date(Date.now() - 60000)
+      });
+      await completedSet1.save();
+
+      // Update match to include this set
+      match.sets.push(completedSet1._id as any);
+      match.teams[0].setsWon = 1;
+      match.currentSet = set._id as any;
+      await match.save();
+
+      // Create 4 goals for team 0 to set up 4-0 score
+      const goals = [];
+      for (let i = 0; i < 4; i++) {
+        const goal = new GoalModel({
+          matchId: match._id,
+          setId: set._id,
+          teamIndex: 0,
+          timestamp: new Date(Date.now() - (4 - i) * 1000),
+          scoringRow: '3-bar',
+          voided: false
+        });
+        await goal.save();
+        goals.push(goal._id);
+      }
+
+      set.goals = goals as any[];
+      set.scores = [4, 0];
+      await set.save();
+
+      // Score a goal to complete the set (but not the match yet - only 2 sets won)
+      const goalReq1: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res1 = mockResponse();
+      await createGoal(goalReq1 as Request, res1);
+
+      const responseCall1 = (res1.json as jest.Mock).mock.calls[0][0];
+      
+      // Verify set was completed but match wasn't (only 2 sets won)
+      expect(responseCall1.set.status).toBe('completed');
+      expect(responseCall1.set.winner).toBe(0);
+      expect(responseCall1.match.status).toBe('inProgress');
+      expect(responseCall1.match.teams[0].setsWon).toBe(2);
+      expect(responseCall1.progression.setCompleted).toBe(true);
+      expect(responseCall1.progression.matchCompleted).toBe(false);
+      expect(responseCall1.progression.newSetCreated).toBe(true);
+
+      // Get the winning goal ID and the new set ID
+      const setWinningGoalId = responseCall1.goal._id;
+      const newSetId = responseCall1.match.currentSet;
+
+      // Now score a goal in the new set to set up for match completion
+      const goalReq2: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: newSetId,
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res2 = mockResponse();
+      await createGoal(goalReq2 as Request, res2);
+
+      // Void the previous set-winning goal - this should revert that set to inProgress
+      const voidReq1: Partial<Request> = {
+        params: { goalId: setWinningGoalId }
+      };
+
+      const res3 = mockResponse();
+      await voidGoal(voidReq1 as Request, res3);
+
+      const responseCall3 = (res3.json as jest.Mock).mock.calls[0][0];
+
+      // Verify the previous set was reverted and match setsWon updated
+      expect(responseCall3.set.status).toBe('inProgress');
+      expect(responseCall3.set.winner).toBeUndefined();
+      expect(responseCall3.match.teams[0].setsWon).toBe(1); // Back to 1 set won
+
+      // Now score the winning goal again to complete the match
+      const goalReq3: Partial<Request> = {
+        body: {
+          matchId: (match._id as any).toString(),
+          setId: (responseCall3.set._id as any).toString(),
+          teamIndex: 0,
+          timestamp: new Date(),
+          scoringRow: '3-bar'
+        }
+      };
+
+      const res4 = mockResponse();
+      await createGoal(goalReq3 as Request, res4);
+
+      const responseCall4 = (res4.json as jest.Mock).mock.calls[0][0];
+
+      // Verify set completion again
+      expect(responseCall4.set.status).toBe('completed');
+      expect(responseCall4.set.winner).toBe(0);
+      expect(responseCall4.match.teams[0].setsWon).toBe(2); // Back to 2 sets won
+      expect(responseCall4.progression.setCompleted).toBe(true);
+      expect(responseCall4.progression.matchCompleted).toBe(false); // Still not match winning
+
+      // Continue scoring in the new set until we can test match completion
+      for (let i = 0; i < 5; i++) {
+        const goalReq: Partial<Request> = {
+          body: {
+            matchId: (match._id as any).toString(),
+            setId: newSetId,
+            teamIndex: 0,
+            timestamp: new Date(),
+            scoringRow: '3-bar'
+          }
+        };
+
+        const res = mockResponse();
+        await createGoal(goalReq as Request, res);
+
+        if (i === 4) { // Last goal should complete the match
+          const responseCall = (res.json as jest.Mock).mock.calls[0][0];
+          expect(responseCall.progression.matchCompleted).toBe(true);
+          expect(responseCall.match.status).toBe('completed');
+          expect(responseCall.match.teams[0].setsWon).toBe(3);
+        }
+      }
+    });
+  });
 });

@@ -292,9 +292,38 @@ async function undoTimeout(teamIndex) {
   }
 }
 
-// Only show the button if progression indicates set is completed
+// Show the button if progression indicates set is completed OR if current score meets winning conditions
 const showCompleteSetButton = computed(() => {
-  return progression.value.setCompleted;
+  // First check if progression state indicates completion (from API responses)
+  if (progression.value.setCompleted) {
+    return true;
+  }
+  
+  // Also check if current score meets winning conditions for manual completion
+  if (!props.setData || props.setData.status !== 'inProgress') {
+    return false;
+  }
+  
+  // Get the score and match rules from props
+  const teamAScore = props.setData.teamAScore || 0;
+  const teamBScore = props.setData.teamBScore || 0;
+  const maxScore = Math.max(teamAScore, teamBScore);
+  const minScore = Math.min(teamAScore, teamBScore);
+  
+  // Get the match rules - we need to access these from the parent component's match data
+  // For now, use default values if not available
+  const numGoalsToWin = props.setData.numGoalsToWin || 5;
+  const twoAhead = props.setData.twoAhead || false;
+  const twoAheadUpUntil = props.setData.twoAheadUpUntil || 8;
+  
+  // Check if this is the deciding set (based on isLastSet prop)
+  const isDecidingSet = props.isLastSet;
+  
+  // Only apply twoAhead rule in the deciding set and when score hasn't exceeded twoAheadUpUntil
+  const shouldApplyTwoAhead = twoAhead && isDecidingSet && maxScore < twoAheadUpUntil;
+  
+  // Check if winning condition is met
+  return maxScore >= numGoalsToWin && (!shouldApplyTwoAhead || maxScore - minScore >= 2);
 });
 
 const completeSetButtonLabel = computed(() => {

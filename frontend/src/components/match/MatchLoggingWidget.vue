@@ -141,6 +141,11 @@ async function startNextSet() {
           teamBScore: result.set.scores[1],
           teamATimeouts: timeoutsPerSet - result.set.timeoutsUsed[0],
           teamBTimeouts: timeoutsPerSet - result.set.timeoutsUsed[1],
+          timeoutsPerSet: timeoutsPerSet,
+          // Add match configuration for game rules
+          numGoalsToWin: match.value?.numGoalsToWin || 5,
+          twoAhead: match.value?.twoAhead || false,
+          twoAheadUpUntil: match.value?.twoAheadUpUntil || 8,
         };
       }
       
@@ -200,7 +205,7 @@ async function fetchCurrentSet() {
     console.log('Fetching current set for match:', props.matchId);
     if (response.ok) {
       const set = await response.json();
-      
+      console.log('Current set data:', set);
       // Get match details to determine timeouts per set
       const timeoutsPerSet = match.value?.timeoutsPerSet || 2; // Default to 2 if not set
       
@@ -213,6 +218,11 @@ async function fetchCurrentSet() {
         teamBScore: set.scores[1],
         teamATimeouts: timeoutsPerSet - set.timeoutsUsed[0], // Remaining timeouts
         teamBTimeouts: timeoutsPerSet - set.timeoutsUsed[1], // Remaining timeouts
+        timeoutsPerSet: timeoutsPerSet,
+        // Add match configuration for game rules
+        numGoalsToWin: match.value?.numGoalsToWin || 5,
+        twoAhead: match.value?.twoAhead || false,
+        twoAheadUpUntil: match.value?.twoAheadUpUntil || 8,
       };
     } else if (response.status === 404) {
       // No current set found - this might happen for new matches
@@ -262,9 +272,9 @@ const isLastSet = computed(() => {
   const teamAWins = teams.value[0]?.setsWon || 0;
   const teamBWins = teams.value[1]?.setsWon || 0;
   
-  // Check if completing the current set would end the match
-  // This happens when one team is one win away from victory
-  return (teamAWins >= setsToWin - 1) || (teamBWins >= setsToWin - 1);
+  // A deciding set occurs when BOTH teams have (setsToWin - 1) sets won
+  // This matches the backend logic for determining deciding sets
+  return teamAWins === (setsToWin - 1) && teamBWins === (setsToWin - 1);
 });
 
 // Lifecycle
@@ -287,10 +297,9 @@ function onSetCompleted(event) {
   // Refresh match and set data
   fetchMatchDetails();
   
-  // If a new set was created, fetch it
-  if (event.progression?.newSetCreated) {
-    fetchCurrentSet();
-  }
+  // Always fetch current set because the active set might have changed
+  // even if no new set was created (e.g., when voiding goals)
+  fetchCurrentSet();
   
   // Refresh the previous sets summary
   if (setResultsSummaryRef.value) {
