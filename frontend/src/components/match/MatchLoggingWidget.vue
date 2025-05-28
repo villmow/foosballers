@@ -10,6 +10,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['match-ended']);
+
 // Match state
 const match = ref(null);
 const currentSet = ref(null);
@@ -67,14 +69,36 @@ const formattedMatchTime = computed(() => {
 
 // Match actions
 async function abortMatch() {
-  if (!confirm('Are you sure you want to abort this match? This action cannot be undone.')) {
-    return;
+  // Check if the match is in a state where it can be aborted or just closed
+  const isAbortableMatch = match.value?.status === 'inProgress' || match.value?.status === 'notStarted';
+  
+  if (isAbortableMatch) {
+    if (!confirm('Are you sure you want to abort this match? This action cannot be undone.')) {
+      return;
+    }
   }
   
   try {
-    // TODO: Call API to abort match
-    console.log('Aborting match...');
-    // Navigate back to dashboard
+    if (isAbortableMatch) {
+      // Call API to abort match
+      const response = await fetch(`/api/matches/${props.matchId}/abort`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        console.log('Match aborted successfully');
+        // Stop the match timer
+        stopMatchTimer();
+        // Emit event to remove the widget from dashboard
+        emit('match-ended');
+      } else {
+        console.error('Failed to abort match:', response.statusText);
+      }
+    } else {
+      // Just close/remove the widget without calling abort API
+      emit('match-ended');
+    }
   } catch (error) {
     console.error('Error aborting match:', error);
   }
@@ -265,6 +289,18 @@ const canStartMatch = computed(() => {
   return match.value?.status === 'notStarted' || match.value?.status === 'pending';
 });
 
+const isAbortableMatch = computed(() => {
+  return match.value?.status === 'inProgress' || match.value?.status === 'notStarted';
+});
+
+const abortButtonLabel = computed(() => {
+  return isAbortableMatch.value ? 'Abort Match' : 'Close';
+});
+
+const abortButtonIcon = computed(() => {
+  return isAbortableMatch.value ? 'pi pi-times' : 'pi pi-times';
+});
+
 const isLastSet = computed(() => {
   if (!match.value || !currentSet.value) return false;
   
@@ -422,15 +458,15 @@ function onMatchCompleted(event) {
       />
       
       <Button 
-        label="Abort Match" 
-        icon="pi pi-times" 
+        :label="abortButtonLabel" 
+        :icon="abortButtonIcon" 
         severity="danger" 
         @click="abortMatch"
         outlined
       />
       
   
-      <Button 
+      <!-- <Button 
         v-if="canEndMatch"
         label="End Match" 
         icon="pi pi-flag" 
@@ -444,7 +480,7 @@ function onMatchCompleted(event) {
         icon="pi pi-play" 
         severity="primary" 
         @click="startNextSet"
-      />
+      /> -->
     </div>
   </div>
   
