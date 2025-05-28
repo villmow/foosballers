@@ -215,3 +215,73 @@ I envision a Single Page Application (SPA) with a simple navigation structure:
     *   User -> Navigated to `MatchDetailsWidget` -> View details -> Export (optional).
 
 This detailed breakdown should provide a solid foundation for the UI/UX. The emphasis is on minimizing friction during logging and providing clear information at each stage. Let me know your thoughts or if you'd like to dive deeper into any specific area!         
+
+
+
+
+
+
+Please implement the following two UIs. Add a new Button to the top of the sidebar "Matches" that takes the user to a dedicated page `/matches`that renders the match list. 
+
+Please use the `Crud.vue`file as a template.
+
+## 5. MatchListWidget UI
+
+*   **Purpose:** View a list of all matches, filter them, and access individual matches.
+*   **Location:** At the Sidebar
+*   **Layout & Elements (inspired by `Crud.vue`):**
+    *   **Title:** "All Matches".
+    *   **Action Button (Top):** `[ + Create New Match ]`
+        *   *Action:* Shows a Model with the current the daily `MatchConfiguration` and the `PlayerConfiguration`. Th
+    *   **Filtering & Search Bar (Above the list):**
+        *   **Search Input:** `[ Search by Team Name or Match ID... ]`
+        *   **Status Filter:** Dropdown or segmented buttons: `[ All ] [ In Progress ] [ Completed ] [ Aborted ]`
+    *   **Match List (Table or Card List):**
+        *   **Columns (for table view):**
+            *   Match ID (clickable, leads to `MatchDetailsWidget`)
+            *   Team 1 (Players)
+            *   Team 2 (Players)
+            *   Score (e.g., Sets: 2-1, Current Set Goals: 5-3 if in progress)
+            *   Status (In Progress, Completed, Aborted)
+            *   Date/Time Started
+            *   Actions (e.g., "View Details", "Log Match" if In Progress)
+        *   **Card View (Alternative):** Each match is a card with summarized info and action buttons. Better for mobile/tablet.
+*   **Behavior:**
+    *   On load, fetches matches (`GET /matches`).
+    *   Search and filter controls update query parameters for `GET /matches`.
+    *   Clicking "Log Match" for an "In Progress" match navigates to `MatchLoggingWidget` for that match.
+    *   Clicking "View Details" (or the Match ID) navigates to `MatchDetailsWidget`.
+
+---
+
+## 6. MatchDetailsWidget UI
+
+*   **Purpose:** Provide a comprehensive, read-only view of a completed or in-progress match.
+*   **Location:** Accessed by clicking on a match in the `MatchListWidget`.
+*   **Layout & Elements (Similar to `MatchLoggingWidget` but read-only and more detailed):**
+    *   **Match Summary Header:**
+        *   Teams, Final Score (Sets), Winner (if applicable), Total Match Duration, Status.
+    *   **Tabs or Accordion for Sets:**
+        *   Each tab/section is labeled "Set 1", "Set 2", etc.
+        *   **Inside each Set section:**
+            *   Set Winner (if applicable)
+            *   Set Score (Goals)
+            *   Set Duration
+            *   **Timeline of Goals:**
+                *   List each goal: `[Timestamp] - Player X (Team Y) scored. (Goal 7-5)`
+                *   Indicate if a goal was voided.
+            *   **Timeline of Timeouts:**
+                *   List each timeout: `[Timestamp] - Timeout called by Team X.`
+                *   Indicate if a timeout was voided.
+    *   **Action Buttons (Top or Bottom):**
+        *   `[ Export Match Data (JSON) ]`
+        *   `[ Export Match Data (CSV) ]`
+        *   `[ < Back to Match List ]`
+*   **Behavior:**
+    *   On load, fetches all necessary data:
+        *   `GET /matches/:id`
+        *   `GET /matches/:id/sets`
+        *   For each set: `GET /matches/:matchId/sets/:setNumber/goals` and `GET /matches/:matchId/sets/:setNumber/timeouts`.
+    *   Export buttons will compile the fetched data into the respective formats and trigger a download.
+
+
