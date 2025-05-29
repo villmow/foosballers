@@ -9,7 +9,6 @@ const PlayerSchema = new Schema({
 // Team subdocument schema
 const TeamSchema = new Schema({
   name: { type: String, required: false },
-  color: { type: String, required: true },
   players: [{ type: PlayerSchema, required: true }],
   setsWon: { type: Number, default: 0 },
 }, { _id: false });
@@ -17,7 +16,6 @@ const TeamSchema = new Schema({
 export interface IMatch extends Document {
   teams: Array<{
     name: string;
-    color: string;
     players: Array<{
       name: string;
       playerId: string | null;

@@ -78,6 +78,7 @@ export const startMatch = async (req: Request, res: Response): Promise<void> => 
         scores: [0, 0],
         timeoutsUsed: [0, 0],
         status: 'notStarted',
+        teamColors: ['#65bc7b', '#000000'], // Default green and black for first set
       });
       await set.save();
       match.sets.push(set._id as mongoose.Types.ObjectId);
@@ -119,12 +120,22 @@ export const startNewSet = async (req: Request, res: Response): Promise<void> =>
     const existingSets = await SetModel.find({ matchId: match._id }).sort({ setNumber: -1 }).limit(1);
     const nextSetNumber = existingSets.length > 0 ? existingSets[0].setNumber + 1 : 1;
     
+    // Get default team colors - alternate from the most recent set or use defaults
+    let defaultTeamColors: [string, string] = ['#65bc7b', '#000000']; // Default green and black
+    
+    // Try to get colors from the most recent set and alternate them
+    if (existingSets.length > 0 && existingSets[0].teamColors && existingSets[0].teamColors.length === 2) {
+      // Alternate the colors for the new set
+      defaultTeamColors = [existingSets[0].teamColors[1], existingSets[0].teamColors[0]];
+    }
+    
     const set = new SetModel({
       matchId: match._id,
       setNumber: nextSetNumber,
       scores: [0, 0],
       timeoutsUsed: [0, 0],
       status: 'notStarted',
+      teamColors: defaultTeamColors,
     });
     await set.save();
     match.sets.push(set._id as mongoose.Types.ObjectId);

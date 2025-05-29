@@ -8,11 +8,26 @@ import { GameProgressionService } from '../services/gameProgressionService';
 // Create a new set
 export const createSet = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { matchId, setNumber } = req.body;
+    const { matchId, setNumber, teamColors } = req.body;
 
     // Validate required fields
     if (!matchId || typeof setNumber !== 'number') {
       res.status(400).json({ error: 'Missing required fields: matchId, setNumber' });
+      return;
+    }
+
+    // Validate teamColors
+    if (!teamColors || !Array.isArray(teamColors) || teamColors.length !== 2) {
+      res.status(400).json({ 
+        error: 'teamColors must be an array of exactly 2 color strings' 
+      });
+      return;
+    }
+
+    if (!teamColors.every(color => typeof color === 'string' && color.trim().length > 0)) {
+      res.status(400).json({ 
+        error: 'Each team color must be a non-empty string' 
+      });
       return;
     }
 
@@ -35,7 +50,8 @@ export const createSet = async (req: Request, res: Response): Promise<void> => {
       setNumber,
       scores: [0, 0],
       timeoutsUsed: [0, 0],
-      status: 'notStarted'
+      status: 'notStarted',
+      teamColors: teamColors as [string, string]
     });
 
     await set.save();
@@ -213,6 +229,54 @@ export const getSetTimeouts = async (req: Request, res: Response): Promise<void>
       .sort({ timestamp: 1 });
 
     res.json(timeouts);
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+  }
+};
+
+// Assign team colors to a set
+export const assignTeamColors = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { setId } = req.params;
+    const { teamColors } = req.body;
+
+    // Validate required fields
+    if (!teamColors || !Array.isArray(teamColors) || teamColors.length !== 2) {
+      res.status(400).json({ 
+        error: 'teamColors must be an array of exactly 2 color strings' 
+      });
+      return;
+    }
+
+    // Validate that both colors are non-empty strings
+    if (!teamColors.every(color => typeof color === 'string' && color.trim().length > 0)) {
+      res.status(400).json({ 
+        error: 'Each team color must be a non-empty string' 
+      });
+      return;
+    }
+
+    // Find the set
+    const set = await SetModel.findById(setId);
+    if (!set) {
+      res.status(404).json({ error: 'Set not found' });
+      return;
+    }
+
+    // Verify the associated match exists
+    const match = await MatchModel.findById(set.matchId);
+    if (!match) {
+      res.status(404).json({ error: 'Associated match not found' });
+      return;
+    }
+
+    // Update the set with team colors
+    set.teamColors = teamColors as [string, string];
+    await set.save();
+
+    // Return the updated set
+    const updatedSet = await SetModel.findById(setId).populate('matchId');
+    res.json(updatedSet);
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
   }

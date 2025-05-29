@@ -243,12 +243,25 @@ export class GameProgressionService {
       // Check if a set with this number already exists to prevent duplicates
       const existingSet = await SetModel.findOne({ matchId: match._id, setNumber: nextSetNumber });
       if (!existingSet) {
+        // Get default team colors - alternate from the previous set or use defaults
+        let defaultTeamColors: [string, string] = ['#65bc7b', '#000000']; // Default green and black
+        
+        // Try to get colors from the most recent set and alternate them
+        const lastSet = await SetModel.findOne({ matchId: match._id, setNumber: set.setNumber });
+        if (lastSet && lastSet.teamColors && lastSet.teamColors.length === 2) {
+          // Alternate the colors for the new set
+          // defaultTeamColors = [lastSet.teamColors[1], lastSet.teamColors[0]];
+            // Keep the colors for the new set
+            defaultTeamColors = lastSet.teamColors as [string, string];
+        }
+
         const newSet = new SetModel({
           matchId: match._id,
           setNumber: nextSetNumber,
           scores: [0, 0],
           timeoutsUsed: [0, 0],
           status: 'notStarted',
+          teamColors: defaultTeamColors,
         });
         await newSet.save();
         match.sets.push(newSet._id as mongoose.Types.ObjectId);

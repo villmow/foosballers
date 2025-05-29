@@ -59,7 +59,8 @@ const createTestMatchAndSet = async () => {
     scores: [0, 0],
     timeoutsUsed: [0, 0],
     goals: [],
-    timeouts: []
+    timeouts: [],
+    teamColors: ['#65bc7b', '#000000'] // Default green and black
   });
   await set.save();
 
@@ -246,6 +247,7 @@ describe('Goal Controller Integration Tests', () => {
         goals: [],
         timeouts: [],
         winner: 0,
+        teamColors: ['#000000', '#65bc7b'],
         endTime: new Date(Date.now() - 60000)
       });
       await completedSet1.save();
@@ -259,6 +261,7 @@ describe('Goal Controller Integration Tests', () => {
         goals: [],
         timeouts: [],
         winner: 0,
+        teamColors: ['#65bc7b', '#000000'],
         endTime: new Date(Date.now() - 30000)
       });
       await completedSet2.save();
@@ -856,6 +859,7 @@ describe('Goal Controller Integration Tests', () => {
         goals: [],
         timeouts: [],
         winner: 0,
+        teamColors: ['#000000', '#65bc7b'],
         endTime: new Date(Date.now() - 60000)
       });
       await completedSet1.save();
@@ -869,6 +873,7 @@ describe('Goal Controller Integration Tests', () => {
         goals: [],
         timeouts: [],
         winner: 0,
+        teamColors: ['#65bc7b', '#000000'],
         endTime: new Date(Date.now() - 30000)
       });
       await completedSet2.save();
@@ -984,6 +989,7 @@ describe('Goal Controller Integration Tests', () => {
         goals: [],
         timeouts: [],
         winner: 0,
+        teamColors: ['#000000', '#65bc7b'],
         endTime: new Date(Date.now() - 60000)
       });
       await completedSet1.save();

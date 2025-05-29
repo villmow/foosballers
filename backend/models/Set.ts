@@ -11,6 +11,7 @@ export interface ISet extends Document {
   endTime?: Date;
   status: 'notStarted' | 'inProgress' | 'completed';
   winner?: number;
+  teamColors: [string, string]; // [team0Color, team1Color]
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +27,7 @@ const SetSchema = new Schema({
   endTime: { type: Date },
   status: { type: String, enum: ['notStarted', 'inProgress', 'completed'], default: 'notStarted', required: true },
   winner: { type: Number, min: 0, max: 1 },
+  teamColors: { type: [String], required: true, validate: [(v: string[]) => v.length === 2, 'TeamColors must be an array of two color strings'] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

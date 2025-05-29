@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+    assignTeamColors,
     completeSet,
     createSet,
     deleteSet,
@@ -25,6 +26,9 @@ router.delete('/:setId', deleteSet);
 // Set lifecycle operations
 router.post('/:setId/start', startSet);
 router.post('/:setId/complete', completeSet);
+
+// Set team colors assignment
+router.put('/:setId/colors', assignTeamColors);
 
 // Set-related data endpoints
 router.get('/:setId/goals', getSetGoals);
