@@ -6,15 +6,18 @@ import { ref } from 'vue';
 
 const playerSetup = ref('2v2');
 const activeMatchId = ref(null);
+const activeMatchTeamColors = ref(null); // Store team colors for the active match
 const matchConfigRef = ref(null);
 
-function onMatchCreated(matchId) {
-  console.log('Match created with ID:', matchId);
+function onMatchCreated(matchId, teamColors) {
+  console.log('Match created with ID:', matchId, 'and team colors:', teamColors);
   activeMatchId.value = matchId;
+  activeMatchTeamColors.value = teamColors;
 }
 
 function onMatchEnded() {
   activeMatchId.value = null;
+  activeMatchTeamColors.value = null;
 }
 
 function getMatchConfiguration() {
@@ -41,6 +44,7 @@ function getMatchConfiguration() {
     <div v-if="activeMatchId" class="flex justify-center">
       <MatchLoggingWidget 
         :match-id="activeMatchId"
+        :initial-team-colors="activeMatchTeamColors"
         @match-ended="onMatchEnded"
       />
     </div>

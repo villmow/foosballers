@@ -57,13 +57,9 @@ function swapTeams() {
   teamAPlayers.value = JSON.parse(JSON.stringify(teamBPlayers.value));
   teamBPlayers.value = tempPlayers;
   
-  // Also swap team names and colors
+  // Also swap team names 
   const tempNames = [...teamNames.value];
   teamNames.value = [tempNames[1], tempNames[0]];
-  
-  const tempColor = teamAColor.value;
-  teamAColor.value = teamBColor.value;
-  teamBColor.value = tempColor;
 }
 
 async function fetchPlayersFromAPI() {
@@ -136,15 +132,14 @@ async function startMatch() {
       teams: [
         {
           name: teamNames.value[0],
-          color: teamAColor.value,
           players: team1Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
         },
         {
           name: teamNames.value[1],
-          color: teamBColor.value,
           players: team2Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
         },
       ],
+      teamColors: [teamAColor.value, teamBColor.value], // Send colors separately for first set
       ...matchConfig, // Spread the match configuration
       // Get user ID from context or store
     };
@@ -163,7 +158,7 @@ async function startMatch() {
     if (response.ok) {
       const match = await response.json();
       console.log('Match created successfully:', match);
-      emit('match-created', match._id);
+      emit('match-created', match._id, [teamAColor.value, teamBColor.value]);
     } else {
       console.error('Failed to create match');
     }

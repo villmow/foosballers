@@ -8,6 +8,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  initialTeamColors: {
+    type: Array,
+    default: () => ['#aaaaaa', '#cccccc'], // Default green and black
+  },
 });
 
 const emit = defineEmits(['match-ended']);
@@ -21,16 +25,20 @@ const timerInterval = ref(null);
 // Team data
 const teams = computed(() => {
   if (!match.value) return [];
+  
+  // Get team colors from current set, fallback to initial colors or defaults
+  const teamColors = currentSet.value?.teamColors || props.initialTeamColors || ['#aaaaaa', '#cccccc'];
+  
   return [
     {
       name: match.value.teamAName || null,
-      color: match.value.teamAColor || '#65bc7b',
+      color: teamColors[0],
       players: match.value.teamAPlayers || [],
       setsWon: match.value.teamASetsWon || 0,
     },
     {
       name: match.value.teamBName || '', 
-      color: match.value.teamBColor || '#000000',
+      color: teamColors[1],
       players: match.value.teamBPlayers || [],
       setsWon: match.value.teamBSetsWon || 0,
     }
@@ -106,26 +114,77 @@ async function abortMatch() {
 
 async function startMatch() {
   try {
-    // Start the match
-    const startResponse = await fetch(`/api/matches/${props.matchId}/start`, {
+    const response = await fetch(`/api/matches/${props.matchId}/start`, {
       method: 'POST',
       credentials: 'include',
     });
     
-    if (startResponse.ok) {
-      console.log('Match started successfully');
-      // Refresh match details and current set
-      await fetchMatchDetails();
-      await fetchCurrentSet();
-      // Start the timer if match is now in progress
-      if (match.value?.status === 'inProgress') {
-        startMatchTimer();
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Match started:', result);
+      
+      // Update match state
+      match.value.status = 'inProgress';
+      startMatchTimer();
+      
+      // Assign initial team colors to the first set if provided
+      if (result.set && props.initialTeamColors && props.initialTeamColors.length === 2) {
+        await assignColorsToSet(result.set._id, props.initialTeamColors);
       }
+      
+      // Fetch current set to get updated data
+      await fetchCurrentSet();
     } else {
-      console.error('Failed to start match:', startResponse.statusText);
+      console.error('Failed to start match:', response.statusText);
     }
   } catch (error) {
     console.error('Error starting match:', error);
+  }
+}
+
+// Swap team colors for the current set
+async function swapColors() {
+  if (!currentSet.value || !currentSet.value.teamColors) {
+    console.warn('No current set or team colors to swap');
+    return;
+  }
+  
+  try {
+    const swappedColors = [currentSet.value.teamColors[1], currentSet.value.teamColors[0]];
+    await assignColorsToSet(currentSet.value.id, swappedColors);
+    
+    // Update local state
+    currentSet.value.teamColors = swappedColors;
+  } catch (error) {
+    console.error('Error swapping colors:', error);
+  }
+}
+
+// Assign colors to a specific set
+async function assignColorsToSet(setId, teamColors) {
+  try {
+    const response = await fetch(`/api/sets/${setId}/colors`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ teamColors }),
+    });
+    
+    if (response.ok) {
+      const updatedSet = await response.json();
+      console.log('Colors assigned to set:', updatedSet);
+      
+      // Update current set if it matches
+      if (currentSet.value && currentSet.value.id === setId) {
+        currentSet.value.teamColors = updatedSet.teamColors;
+      }
+    } else {
+      console.error('Failed to assign colors to set:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error assigning colors to set:', error);
   }
 }
 
@@ -166,6 +225,7 @@ async function startNextSet() {
           teamATimeouts: timeoutsPerSet - result.set.timeoutsUsed[0],
           teamBTimeouts: timeoutsPerSet - result.set.timeoutsUsed[1],
           timeoutsPerSet: timeoutsPerSet,
+          teamColors: result.set.teamColors || ['#aaaaaa', '#cccccc'], // Include team colors from set
           // Add match configuration for game rules
           numGoalsToWin: match.value?.numGoalsToWin || 5,
           twoAhead: match.value?.twoAhead || false,
@@ -198,8 +258,6 @@ async function fetchMatchDetails() {
         id: matchData._id,
         teamAName: matchData.teams?.[0]?.name || null,
         teamBName: matchData.teams?.[1]?.name || null,
-        teamAColor: matchData.teams?.[0]?.color || '#65bc7b',
-        teamBColor: matchData.teams?.[1]?.color || '#000000',
         teamAPlayers: matchData.teams?.[0]?.players?.map(p => p.name) || [],
         teamBPlayers: matchData.teams?.[1]?.players?.map(p => p.name) || [],
         teamASetsWon: matchData.teams?.[0]?.setsWon || 0,
@@ -243,6 +301,7 @@ async function fetchCurrentSet() {
         teamATimeouts: timeoutsPerSet - set.timeoutsUsed[0], // Remaining timeouts
         teamBTimeouts: timeoutsPerSet - set.timeoutsUsed[1], // Remaining timeouts
         timeoutsPerSet: timeoutsPerSet,
+        teamColors: set.teamColors || ['#aaaaaa', '#cccccc'], // Include team colors from set
         // Add match configuration for game rules
         numGoalsToWin: match.value?.numGoalsToWin || 5,
         twoAhead: match.value?.twoAhead || false,
@@ -417,6 +476,18 @@ function onMatchCompleted(event) {
           </span>
           <div class="w-4 h-4 rounded" :style="{ backgroundColor: teams[1]?.color }"></div>
         </div>
+      </div>
+      
+      <!-- Swap Colors Button (only show when there's an active set) -->
+      <div v-if="currentSet" class="flex justify-center mt-4">
+        <Button 
+          label="Swap Team Colors" 
+          icon="pi pi-sync" 
+          severity="secondary" 
+          size="small"
+          outlined
+          @click="swapColors"
+        />
       </div>
       
       <!-- Match Info -->

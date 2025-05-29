@@ -33,6 +33,7 @@ async function fetchCompletedSets() {
           timeoutsUsed: set.timeoutsUsed,
           duration: set.duration || calculateDuration(set.startTime, set.endTime),
           winner: set.winner !== undefined ? set.winner : (set.scores[0] > set.scores[1] ? 0 : 1),
+          teamColors: set.teamColors || ['#65bc7b', '#000000'], // Default colors if not available
         }))
         .sort((a, b) => a.setNumber - b.setNumber);
     } else {
@@ -90,7 +91,7 @@ defineExpose({
           <div class="flex items-center gap-4">
             <!-- Team A -->
             <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded" :style="{ backgroundColor: teams[0]?.color }"></div>
+              <div class="w-3 h-3 rounded" :style="{ backgroundColor: set.teamColors[0] }"></div>
               <span class="text-lg font-bold" :class="{ 'text-green-600': set.winner === 0 }">
                 {{ set.teamAScore }}
               </span>
@@ -103,7 +104,7 @@ defineExpose({
               <span class="text-lg font-bold" :class="{ 'text-green-600': set.winner === 1 }">
                 {{ set.teamBScore }}
               </span>
-              <div class="w-3 h-3 rounded" :style="{ backgroundColor: teams[1]?.color }"></div>
+              <div class="w-3 h-3 rounded" :style="{ backgroundColor: set.teamColors[1] }"></div>
             </div>
           </div>
           
