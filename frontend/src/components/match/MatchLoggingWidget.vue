@@ -14,7 +14,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['match-ended']);
+const emit = defineEmits(['match-ended', 'team-colors-swapped']);
 
 // Match state
 const match = ref(null);
@@ -22,12 +22,15 @@ const currentSet = ref(null);
 const matchTimer = ref(0);
 const timerInterval = ref(null);
 
+// Local copy of team colors that can be modified
+const localTeamColors = ref([...props.initialTeamColors]);
+
 // Team data
 const teams = computed(() => {
   if (!match.value) return [];
   
-  // Get team colors from current set, fallback to initial colors or defaults
-  const teamColors = currentSet.value?.teamColors || props.initialTeamColors || ['#aaaaaa', '#cccccc'];
+  // Get team colors from current set, fallback to local team colors or defaults
+  const teamColors = currentSet.value?.teamColors || localTeamColors.value || ['#aaaaaa', '#cccccc'];
   
   return [
     {
@@ -128,8 +131,8 @@ async function startMatch() {
       startMatchTimer();
       
       // Assign initial team colors to the first set if provided
-      if (result.set && props.initialTeamColors && props.initialTeamColors.length === 2) {
-        await assignColorsToSet(result.set._id, props.initialTeamColors);
+      if (result.set && localTeamColors.value && localTeamColors.value.length === 2) {
+        await assignColorsToSet(result.set._id, localTeamColors.value);
       }
       
       // Fetch current set to get updated data
@@ -142,21 +145,30 @@ async function startMatch() {
   }
 }
 
-// Swap team colors for the current set
+// Swap team colors for the current set or initial team colors
 async function swapColors() {
-  if (!currentSet.value || !currentSet.value.teamColors) {
-    console.warn('No current set or team colors to swap');
-    return;
-  }
-  
-  try {
-    const swappedColors = [currentSet.value.teamColors[1], currentSet.value.teamColors[0]];
-    await assignColorsToSet(currentSet.value.id, swappedColors);
+  if (currentSet.value && currentSet.value.teamColors) {
+    // Swap colors for the current active set
+    try {
+      const swappedColors = [currentSet.value.teamColors[1], currentSet.value.teamColors[0]];
+      await assignColorsToSet(currentSet.value.id, swappedColors);
+      
+      // Update local state
+      currentSet.value.teamColors = swappedColors;
+    } catch (error) {
+      console.error('Error swapping colors for current set:', error);
+    }
+  } else if (localTeamColors.value && localTeamColors.value.length === 2) {
+    // Swap the local team colors (before match starts or when no active set)
+    const swappedColors = [localTeamColors.value[1], localTeamColors.value[0]];
+    localTeamColors.value = swappedColors;
     
-    // Update local state
-    currentSet.value.teamColors = swappedColors;
-  } catch (error) {
-    console.error('Error swapping colors:', error);
+    // Emit event to parent to update the initial team colors for future sets
+    emit('team-colors-swapped', swappedColors);
+    
+    console.log('Swapped initial team colors:', swappedColors);
+  } else {
+    console.warn('No team colors available to swap');
   }
 }
 
@@ -478,8 +490,8 @@ function onMatchCompleted(event) {
         </div>
       </div>
       
-      <!-- Swap Colors Button (only show when there's an active set) -->
-      <div v-if="currentSet" class="flex justify-center mt-4">
+      <!-- Swap Colors Button (show when match is loaded) -->
+      <div v-if="match" class="flex justify-center mt-4">
         <Button 
           label="Swap Team Colors" 
           icon="pi pi-sync" 

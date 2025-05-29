@@ -20,6 +20,11 @@ function onMatchEnded() {
   activeMatchTeamColors.value = null;
 }
 
+function onTeamColorsSwapped(newColors) {
+  console.log('Team colors swapped:', newColors);
+  activeMatchTeamColors.value = newColors;
+}
+
 function getMatchConfiguration() {
   return matchConfigRef.value?.getConfiguration();
 }
@@ -46,6 +51,7 @@ function getMatchConfiguration() {
         :match-id="activeMatchId"
         :initial-team-colors="activeMatchTeamColors"
         @match-ended="onMatchEnded"
+        @team-colors-swapped="onTeamColorsSwapped"
       />
     </div>
   </div>
