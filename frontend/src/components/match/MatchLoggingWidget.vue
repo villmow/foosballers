@@ -387,6 +387,7 @@ const isLastSet = computed(() => {
 // Lifecycle
 onMounted(async () => {
   await fetchMatchDetails();
+  await fetchCurrentSet();
   
   if (match.value?.status === 'inProgress') {
     startMatchTimer();
