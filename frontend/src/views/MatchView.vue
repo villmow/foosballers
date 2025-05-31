@@ -29,7 +29,7 @@ async function fetchTeamColors() {
   
   try {
     // First try to get the current set
-    const currentSetResponse = await fetch(`/api/matches/${matchId.value}/current-set`, {
+    const currentSetResponse = await fetch(`/api/matches/${matchId.value}/sets/current`, {
       credentials: 'include',
     });
 

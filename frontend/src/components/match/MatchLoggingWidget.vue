@@ -52,12 +52,30 @@ const teams = computed(() => {
 const setResultsSummaryRef = ref(null);
 
 // Timer functions
+function updateMatchTimer() {
+  if (!match.value?.startTime) {
+    matchTimer.value = 0;
+    return;
+  }
+  
+  const startTime = new Date(match.value.startTime);
+  const currentTime = match.value.endTime ? new Date(match.value.endTime) : new Date();
+  const elapsed = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000);
+  matchTimer.value = Math.max(0, elapsed);
+}
+
 function startMatchTimer() {
   if (timerInterval.value) return;
   
-  timerInterval.value = setInterval(() => {
-    matchTimer.value++;
-  }, 1000);
+  // Initialize timer with current elapsed time
+  updateMatchTimer();
+  
+  // Only start interval if match is still in progress
+  if (match.value?.status === 'inProgress') {
+    timerInterval.value = setInterval(() => {
+      updateMatchTimer();
+    }, 1000);
+  }
 }
 
 function stopMatchTimer() {
@@ -76,6 +94,14 @@ const formattedMatchTime = computed(() => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+});
+
+// Show timer if match has started (includes completed matches to show final duration)
+const shouldShowTimer = computed(() => {
+  return match.value?.startTime && 
+         (match.value.status === 'inProgress' || 
+          match.value.status === 'completed' || 
+          match.value.status === 'finished');
 });
 
 // Match actions
@@ -126,8 +152,10 @@ async function startMatch() {
       const result = await response.json();
       console.log('Match started:', result);
       
-      // Update match state
-      match.value.status = 'inProgress';
+      // Refresh match details to get the updated startTime
+      await fetchMatchDetails();
+      
+      // Start the timer with the correct start time
       startMatchTimer();
       
       // Assign initial team colors to the first set if provided
@@ -275,7 +303,8 @@ async function fetchMatchDetails() {
         teamASetsWon: matchData.teams?.[0]?.setsWon || 0,
         teamBSetsWon: matchData.teams?.[1]?.setsWon || 0,
         status: matchData.status,
-        startTime: new Date(matchData.startTime || Date.now()),
+        startTime: matchData.startTime ? new Date(matchData.startTime) : null,
+        endTime: matchData.endTime ? new Date(matchData.endTime) : null,
         currentSetNumber: matchData.currentSetNumber || 1,
         setsToWin: matchData.numSetsToWin || 2,
         drawAllowed: matchData.draw || false,
@@ -400,7 +429,8 @@ onMounted(async () => {
   await fetchMatchDetails();
   await fetchCurrentSet();
   
-  if (match.value?.status === 'inProgress') {
+  // Start timer for any match that has started (including completed matches)
+  if (match.value?.startTime && (match.value.status === 'inProgress' || match.value.status === 'completed' || match.value.status === 'finished')) {
     startMatchTimer();
   }
 });
@@ -414,7 +444,13 @@ function onSetCompleted(event) {
   console.log('Set completed:', event);
   
   // Refresh match and set data
-  fetchMatchDetails();
+  fetchMatchDetails().then(() => {
+    // If the match was completed, stop the timer and update with final duration
+    if (match.value?.status === 'completed' || match.value?.status === 'finished') {
+      stopMatchTimer();
+      updateMatchTimer();
+    }
+  });
   
   // Always fetch current set because the active set might have changed
   // even if no new set was created (e.g., when voiding goals)
@@ -429,14 +465,17 @@ function onSetCompleted(event) {
 function onMatchCompleted(event) {
   console.log('Match completed:', event);
   
-  // Stop the match timer
+  // Stop the live timer updates
   stopMatchTimer();
   
   // Hide the current set by clearing it
   currentSet.value = null;
   
-  // Refresh match details to get final state
-  fetchMatchDetails();
+  // Refresh match details to get final state including endTime
+  fetchMatchDetails().then(() => {
+    // Update the timer one final time with the actual duration
+    updateMatchTimer();
+  });
   
   // Refresh the sets summary to show all completed sets
   if (setResultsSummaryRef.value) {
@@ -453,7 +492,17 @@ function onMatchCompleted(event) {
     <div class="bg-gray-50 p-4 rounded-lg">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold">Match Logging</h2>
-        <div class="text-lg font-mono">{{ formattedMatchTime }}</div>
+        <div v-if="shouldShowTimer" class="text-lg font-mono flex flex-col items-end">
+          <div class="text-xs text-gray-500 mb-1">Duration</div>
+          <div 
+            :class="[
+              'px-2 py-1 rounded',
+              match?.status === 'inProgress' ? 'bg-red-500 text-white' : ''
+            ]"
+          >
+            {{ formattedMatchTime }}
+          </div>
+        </div>
       </div>
 
       <!-- Overall Match Score -->
