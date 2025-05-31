@@ -232,7 +232,7 @@ Please use the `Crud.vue`file as a template.
 *   **Layout & Elements (inspired by `Crud.vue`):**
     *   **Title:** "All Matches".
     *   **Action Button (Top):** `[ + Create New Match ]`
-        *   *Action:* Shows a Model with the current the daily `MatchConfiguration` and the `PlayerConfiguration`. Th
+        *   *Action:* Shows a Model with the current the daily `MatchConfiguration` and the `PlayerConfiguration`. 
     *   **Filtering & Search Bar (Above the list):**
         *   **Search Input:** `[ Search by Team Name or Match ID... ]`
         *   **Status Filter:** Dropdown or segmented buttons: `[ All ] [ In Progress ] [ Completed ] [ Aborted ]`

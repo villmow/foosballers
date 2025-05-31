@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Props for configuration
 const props = defineProps({
@@ -14,6 +15,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'match-created']);
+const router = useRouter();
 
 // State for player names
 const teamAPlayers = ref([
@@ -158,7 +160,9 @@ async function startMatch() {
     if (response.ok) {
       const match = await response.json();
       console.log('Match created successfully:', match);
-      emit('match-created', match._id, [teamAColor.value, teamBColor.value]);
+      
+      // Navigate to the new match page instead of emitting an event
+      router.push(`/matches/${match._id}`);
     } else {
       console.error('Failed to create match');
     }

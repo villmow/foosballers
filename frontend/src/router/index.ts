@@ -14,6 +14,12 @@ const router = createRouter({
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {
+                    path: '/matches/:matchId',
+                    name: 'match',
+                    component: () => import('@/views/MatchView.vue'),
+                    props: true
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

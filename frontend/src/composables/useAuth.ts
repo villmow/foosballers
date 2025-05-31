@@ -41,7 +41,7 @@ export function useAuth() {
 
 // Route guard setup for authentication
 export function setupAuthGuards(router: any) {
-  router.beforeEach((to: any, from: any, next: any) => {
+  router.beforeEach((to: any, _from: any, next: any) => {
     const { isAuthenticated } = useAuth();
 
     // Allow access to login, landing, and public auth pages
@@ -55,6 +55,7 @@ export function setupAuthGuards(router: any) {
       '/pages/notfound',
       '/' // Allow dashboard/main page to be public
     ];
+    
     if (publicPages.includes(to.path)) {
       // If user is authenticated and tries to access landing or login, redirect to main page
       if (isAuthenticated.value && (to.path === '/landing' || to.path === '/auth/login')) {
@@ -62,7 +63,8 @@ export function setupAuthGuards(router: any) {
       }
       return next();
     }
-    // If not authenticated, redirect to landing
+    
+    // For match pages and other protected routes, require authentication
     if (!isAuthenticated.value) {
       return next({ path: '/landing', query: { redirect: to.fullPath } });
     }
