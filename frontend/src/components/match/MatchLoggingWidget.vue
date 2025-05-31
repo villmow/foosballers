@@ -384,6 +384,17 @@ const isLastSet = computed(() => {
   return teamAWins === (setsToWin - 1) && teamBWins === (setsToWin - 1);
 });
 
+const isMatchCompleted = computed(() => {
+  if (!match.value) return false;
+  
+  // Check if match status indicates completion
+  if (match.value.status === 'completed' || match.value.status === 'finished') {
+    return true;
+  }
+  
+  return false;
+});
+
 // Lifecycle
 onMounted(async () => {
   await fetchMatchDetails();
@@ -519,9 +530,9 @@ function onMatchCompleted(event) {
         :teams="teams"
       />
       
-      <!-- Current Set Widget (only shown when there's an active set) -->
+      <!-- Current Set Widget (only shown when there's an active set and match is not completed) -->
       <SetLoggingWidget 
-        v-if="currentSet"
+        v-if="currentSet && !isMatchCompleted"
         :match-id="matchId"
         :set-data="currentSet"
         :teams="teams"
