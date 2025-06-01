@@ -1,5 +1,6 @@
 <script setup>
 import MatchLoggingWidget from '@/components/match/MatchLoggingWidget.vue';
+import { MatchService } from '@/service/MatchService';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -29,12 +30,10 @@ async function fetchTeamColors() {
   
   try {
     // First try to get the current set
-    const currentSetResponse = await fetch(`/api/matches/${matchId.value}/sets/current`, {
-      credentials: 'include',
-    });
+    const currentSetResponse = await MatchService.getCurrentSet(matchId.value);
 
-    if (currentSetResponse.ok) {
-      const currentSet = await currentSetResponse.json();
+    if (currentSetResponse.success && currentSetResponse.data) {
+      const currentSet = currentSetResponse.data;
       if (currentSet.teamColors && currentSet.teamColors.length === 2) {
         teamColors.value = currentSet.teamColors;
         console.log('Team colors loaded from current set:', teamColors.value);
@@ -43,25 +42,24 @@ async function fetchTeamColors() {
     }
 
     // If no current set, try to get the most recent set from the match
-    const matchResponse = await fetch(`/api/matches/${matchId.value}`, {
-      credentials: 'include',
-    });
+    const matchResponse = await MatchService.getMatch(matchId.value);
 
-    if (matchResponse.ok) {
-      const match = await matchResponse.json();
+    if (matchResponse.success && matchResponse.data) {
+      const match = matchResponse.data;
       
       // If match has sets, try to get the most recent one
       if (match.sets && match.sets.length > 0) {
-        // Get the last set ID and fetch its details
-        const lastSetId = match.sets[match.sets.length - 1];
-        const setResponse = await fetch(`/api/sets/${lastSetId}`, {
-          credentials: 'include',
-        });
+        // Get all sets and find the most recent one with team colors
+        const setsResponse = await MatchService.getSets(matchId.value);
         
-        if (setResponse.ok) {
-          const set = await setResponse.json();
-          if (set.teamColors && set.teamColors.length === 2) {
-            teamColors.value = set.teamColors;
+        if (setsResponse.success && setsResponse.data && setsResponse.data.length > 0) {
+          // Find the most recent set with team colors
+          const setWithColors = setsResponse.data
+            .reverse() // Start from most recent
+            .find(set => set.teamColors && set.teamColors.length === 2);
+          
+          if (setWithColors) {
+            teamColors.value = setWithColors.teamColors;
             console.log('Team colors loaded from recent set:', teamColors.value);
             return;
           }

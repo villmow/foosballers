@@ -300,6 +300,26 @@ export class MatchService {
   }
 
   /**
+   * Get all sets for a match
+   */
+  static async getSets(matchId: string): Promise<{ success: boolean; data: any[] }> {
+    try {
+      const response = await AuthService.authenticatedRequest(`${this.BASE_URL}/${matchId}/sets`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch sets: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching sets:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Assign colors to a specific set
    */
   static async assignColorsToSet(setId: string, teamColors: string[]): Promise<{ success: boolean; data: any }> {

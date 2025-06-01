@@ -1,4 +1,6 @@
 <script setup>
+import { GoalService } from '@/service/GoalService';
+import { TimeoutService } from '@/service/TimeoutService';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -91,22 +93,15 @@ const formattedSetTime = computed(() => {
 // Score management
 async function addGoal(teamIndex) {
   try {
-    const response = await fetch('/api/goals', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        matchId: props.matchId,
-        setId: props.setData.id,
-        teamIndex: teamIndex,
-        timestamp: new Date().toISOString(),
-      }),
+    const response = await GoalService.createGoal({
+      matchId: props.matchId,
+      setId: props.setData.id,
+      teamIndex: teamIndex,
+      timestamp: new Date().toISOString(),
     });
     
-    if (response.ok) {
-      const result = await response.json();
+    if (response.success && response.data) {
+      const result = response.data;
       const goal = result.goal;
       
       // Store the goal ID for potential undo
@@ -156,13 +151,10 @@ async function undoGoal(teamIndex) {
   }
   
   try {
-    const response = await fetch(`/api/goals/${goalId}/void`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    const response = await GoalService.voidGoal(goalId);
     
-    if (response.ok) {
-      const result = await response.json();
+    if (response.success && response.data) {
+      const result = response.data;
       
       // Clear the last goal ID
       if (teamIndex === 0) {
@@ -206,22 +198,15 @@ async function callTimeout(teamIndex) {
   }
   
   try {
-    const response = await fetch('/api/timeouts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        matchId: props.matchId,
-        setId: props.setData.id,
-        teamIndex: teamIndex,
-        timestamp: new Date().toISOString(),
-      }),
+    const response = await TimeoutService.createTimeout({
+      matchId: props.matchId,
+      setId: props.setData.id,
+      teamIndex: teamIndex,
+      timestamp: new Date().toISOString(),
     });
     
-    if (response.ok) {
-      const result = await response.json();
+    if (response.success && response.data) {
+      const result = response.data;
       
       // Update local state with progression data
       if (result.set) {
@@ -264,12 +249,11 @@ async function undoTimeout(teamIndex) {
     return;
   }
   try {
-    const response = await fetch(`/api/timeouts/${lastTimeoutId}/void`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (response.ok) {
-      const result = await response.json();
+    const response = await TimeoutService.voidTimeout(lastTimeoutId);
+    
+    if (response.success && response.data) {
+      const result = response.data;
+      
       if (result.set) {
         Object.assign(props.setData, result.set);
         if (Array.isArray(result.set.scores)) {

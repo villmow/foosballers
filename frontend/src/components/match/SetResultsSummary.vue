@@ -1,4 +1,5 @@
 <script setup>
+import { MatchService } from '@/service/MatchService';
 import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
@@ -17,14 +18,11 @@ const completedSets = ref([]);
 // Fetch completed sets for this match
 async function fetchCompletedSets() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/sets`, {
-      credentials: 'include',
-    });
+    const response = await MatchService.getSets(props.matchId);
     
-    if (response.ok) {
-      const allSets = await response.json();
+    if (response.success && response.data) {
       // Filter for completed sets only and map to display format
-      completedSets.value = allSets
+      completedSets.value = response.data
         .filter(set => set.status === 'completed')
         .map(set => ({
           setNumber: set.setNumber,
@@ -37,7 +35,7 @@ async function fetchCompletedSets() {
         }))
         .sort((a, b) => a.setNumber - b.setNumber);
     } else {
-      console.error('Failed to fetch sets:', response.statusText);
+      console.error('Failed to fetch sets:', response.error || 'Unknown error');
     }
   } catch (error) {
     console.error('Error fetching completed sets:', error);
