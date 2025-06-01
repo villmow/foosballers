@@ -1,8 +1,8 @@
 <script setup>
+import { MatchService } from '@/service/MatchService';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import SetLoggingWidget from './SetLoggingWidget.vue';
 import SetResultsSummary from './SetResultsSummary.vue';
-import { MatchService } from '@/service/MatchService';
 
 const props = defineProps({
   matchId: {

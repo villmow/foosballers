@@ -1,7 +1,7 @@
 <script setup>
+import { MatchService } from '@/service/MatchService';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { MatchService } from '@/service/MatchService';
 
 // Props for configuration
 const props = defineProps({
