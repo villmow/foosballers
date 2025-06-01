@@ -11,6 +11,7 @@ import ToastService from 'primevue/toastservice';
 import '@/assets/styles.scss';
 import { setupAuthGuards } from '@/composables/useAuth';
 import { useAuthStore } from '@/stores/auth';
+import { useMatchConfigStore } from '@/stores/matchConfig';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -28,9 +29,12 @@ app.use(PrimeVue, {
 app.use(ToastService);
 app.use(ConfirmationService);
 
-// Initialize auth store after Pinia is set up
+// Initialize stores after Pinia is set up
 const authStore = useAuthStore();
+const matchConfigStore = useMatchConfigStore();
+
 authStore.initialize();
+matchConfigStore.initialize();
 
 setupAuthGuards(router);
 

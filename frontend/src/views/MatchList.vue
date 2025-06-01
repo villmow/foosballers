@@ -2,6 +2,7 @@
 import MatchConfiguration from '@/components/match/MatchConfiguration.vue';
 import PlayerConfiguration from '@/components/match/PlayerConfiguration.vue';
 import { MatchService } from '@/service/MatchService';
+import { useMatchConfig } from '@/composables/useMatchConfig';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
@@ -9,6 +10,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const toast = useToast();
+const { getConfigWithUserId } = useMatchConfig();
 const dt = ref();
 const matches = ref([]);
 const matchDialog = ref(false);
@@ -21,7 +23,6 @@ const filters = ref({
 });
 const submitted = ref(false);
 const showPlayerConfig = ref(false);
-const matchConfiguration = ref({});
 
 const statuses = ref([
     { label: 'NOT_STARTED', value: 'notStarted' },
@@ -78,7 +79,6 @@ async function loadMatches() {
 
 function openNew() {
     match.value = {};
-    matchConfiguration.value = {};
     submitted.value = false;
     showPlayerConfig.value = false;
     matchDialog.value = true;
@@ -102,7 +102,7 @@ function validateMatchConfiguration() {
 }
 
 function getMatchConfiguration() {
-    return matchConfiguration.value;
+    return getConfigWithUserId();
 }
 
 async function saveMatch() {
@@ -341,10 +341,7 @@ async function onMatchCreated(matchData) {
         <!-- Create/Edit Match Dialog -->
         <Dialog v-model:visible="matchDialog" :style="{ width: '600px' }" header="Match Configuration" :modal="true">
             <div v-if="!showPlayerConfig">
-                <MatchConfiguration 
-                    v-model="matchConfiguration"
-                    @update:modelValue="matchConfiguration = $event"
-                />
+                <MatchConfiguration />
                 
                 <div class="flex justify-end gap-2 mt-6">
                     <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
@@ -354,7 +351,7 @@ async function onMatchCreated(matchData) {
             
             <div v-else>
                 <PlayerConfiguration 
-                    :playerSetup="matchConfiguration.playerSetup || '2v2'"
+                    :playerSetup="getConfigWithUserId().playerSetup || '2v2'"
                     :getMatchConfiguration="getMatchConfiguration"
                     @match-created="onMatchCreated"
                 />

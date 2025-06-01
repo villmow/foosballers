@@ -1,5 +1,6 @@
 <script setup>
 import { computed, defineEmits, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useMatchConfig } from '@/composables/useMatchConfig';
 
 // Form state
 const props = defineProps({
@@ -10,76 +11,101 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue']);
 
-const playerSetup = ref(props.modelValue);
-const numGoalsToWin = ref(5);
-const numSetsToWin = ref(2);
-const timeoutsPerSet = ref(2);
-const draw = ref(false);
-const twoAhead = ref(false);
-const twoAheadUpUntil = ref(8);
+// Use the match config store
+const { 
+  config, 
+  presets, 
+  updateConfig, 
+  applyPreset, 
+  saveAsPreset: savePreset,
+  getConfigWithUserId
+} = useMatchConfig();
 
+// Local reactive properties that sync with the store
+const playerSetup = computed({
+  get: () => config.value.playerSetup,
+  set: (value) => updateConfig({ playerSetup: value })
+});
+const numGoalsToWin = computed({
+  get: () => config.value.numGoalsToWin,
+  set: (value) => updateConfig({ numGoalsToWin: value })
+});
+const numSetsToWin = computed({
+  get: () => config.value.numSetsToWin,
+  set: (value) => updateConfig({ numSetsToWin: value })
+});
+const timeoutsPerSet = computed({
+  get: () => config.value.timeoutsPerSet,
+  set: (value) => updateConfig({ timeoutsPerSet: value })
+});
+const draw = computed({
+  get: () => config.value.draw,
+  set: (value) => updateConfig({ draw: value })
+});
+const twoAhead = computed({
+  get: () => config.value.twoAhead,
+  set: (value) => updateConfig({ twoAhead: value })
+});
+const twoAheadUpUntil = computed({
+  get: () => config.value.twoAheadUpUntil || 8,
+  set: (value) => updateConfig({ twoAheadUpUntil: value })
+});
+
+// Preset methods using the store
 function qualification() {
-    numGoalsToWin.value = 7;
-    numSetsToWin.value = 1;
-    timeoutsPerSet.value = 2;
-    draw.value = false;
-    twoAhead.value = false;
-    twoAheadUpUntil.value = 8;
+  applyPreset('qualification');
 }
 function bestOf3() {
-    numGoalsToWin.value = 5;
-    numSetsToWin.value = 2;
-    timeoutsPerSet.value = 2;
-    draw.value = false;
-    twoAhead.value = true;
-    twoAheadUpUntil.value = 8;
+  applyPreset('bestof3');
 }
 function bestOf5() {
-    numGoalsToWin.value = 5;
-    numSetsToWin.value = 3;
-    timeoutsPerSet.value = 2;
-    draw.value = false;
-    twoAhead.value = true;
-    twoAheadUpUntil.value = 8;
+  applyPreset('bestof5');
 }
 
-const presetOptions = [
+// Convert store presets to the format expected by the UI
+const presetOptions = computed(() => [
   { label: 'Qualification', value: 'qualification' },
   { label: 'Best of 3', value: 'bestof3' },
-  { label: 'Best of 5', value: 'bestof5' }
-];
+  { label: 'Best of 5', value: 'bestof5' },
+  ...presets.value
+    .filter(preset => !['qualification', 'bestof3', 'bestof5'].includes(preset.id))
+    .map(preset => ({ label: preset.name, value: preset.id }))
+]);
+
 const selectedPreset = ref(null);
 
 function onPresetChange(value) {
   if (value === 'qualification') qualification();
   else if (value === 'bestof3') bestOf3();
   else if (value === 'bestof5') bestOf5();
+  else {
+    applyPreset(value);
+  }
 }
 
+// Save preset functionality
+function saveAsPreset() {
+  const presetName = prompt('Enter a name for this preset:');
+  if (presetName && presetName.trim()) {
+    try {
+      savePreset(presetName.trim());
+      // Reset selection to show the new preset
+      selectedPreset.value = null;
+    } catch (error) {
+      console.error('Failed to save preset:', error);
+    }
+  }
+}
+
+// Load presets (placeholder for future functionality)
+function loadPresets() {
+  // This could open a modal or show preset management UI
+  console.log('Load presets functionality - showing available presets:', presets.value);
+}
 
 // Expose configuration data for parent components
 const getConfiguration = () => {
-  let userId = null;
-  const userString = localStorage.getItem('user');
-  if (userString) {
-    try {
-      const user = JSON.parse(userString);
-      userId = user && user.id ? user.id : null;
-    } catch (error) {
-      console.error('Error parsing user from localStorage:', error);
-      // userId remains null
-    }
-  }
-  return {
-    numGoalsToWin: numGoalsToWin.value,
-    numSetsToWin: numSetsToWin.value,
-    timeoutsPerSet: timeoutsPerSet.value,
-    draw: draw.value,
-    twoAhead: twoAhead.value,
-    twoAheadUpUntil: twoAheadUpUntil.value,
-    playerSetup: playerSetup.value,
-    createdBy: userId,
-  };
+  return getConfigWithUserId.value();
 };
 
 // Make getConfiguration available to parent
@@ -113,11 +139,23 @@ onBeforeUnmount(() => {
   }
 });
 
-watch(() => props.modelValue, (val) => {
-  if (val !== playerSetup.value) playerSetup.value = val;
+// Sync playerSetup with props and emit updates
+watch(() => config.value.playerSetup, (newValue) => {
+  emit('update:modelValue', newValue);
 });
-watch(playerSetup, (val) => {
-  emit('update:modelValue', val);
+
+// Sync playerSetup from props to store
+watch(() => props.modelValue, (val) => {
+  if (val !== config.value.playerSetup) {
+    updateConfig({ playerSetup: val });
+  }
+});
+
+// Sync playerSetup from store
+watch(() => config.value.playerSetup, (newValue) => {
+  if (newValue !== playerSetup.value) {
+    playerSetup.value = newValue;
+  }
 });
 </script>
 
