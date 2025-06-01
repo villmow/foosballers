@@ -5,7 +5,7 @@ import { useMatchConfig } from '@/composables/useMatchConfig';
 import { MatchService } from '@/service/MatchService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -23,6 +23,16 @@ const filters = ref({
 });
 const submitted = ref(false);
 const showPlayerConfig = ref(false);
+
+// Computed property to safely access player setup
+const currentPlayerSetup = computed(() => {
+    try {
+        return getConfigWithUserId()?.playerSetup || '2v2';
+    } catch (error) {
+        console.error('Error accessing player setup:', error);
+        return '2v2';
+    }
+});
 
 const statuses = ref([
     { label: 'NOT_STARTED', value: 'notStarted' },
@@ -102,7 +112,13 @@ function validateMatchConfiguration() {
 }
 
 function getMatchConfiguration() {
-    return getConfigWithUserId();
+    try {
+        const config = getConfigWithUserId();
+        return config;
+    } catch (error) {
+        console.error('Error in getMatchConfiguration:', error);
+        throw error;
+    }
 }
 
 async function saveMatch() {
@@ -339,7 +355,7 @@ async function onMatchCreated(matchData) {
         </div>
 
         <!-- Create/Edit Match Dialog -->
-        <Dialog v-model:visible="matchDialog" :style="{ width: '600px' }" header="Match Configuration" :modal="true">
+        <Dialog v-model:visible="matchDialog" :style="{ width: '600px' }" :modal="true" :header="null">
             <div v-if="!showPlayerConfig">
                 <MatchConfiguration />
                 
@@ -351,7 +367,7 @@ async function onMatchCreated(matchData) {
             
             <div v-else>
                 <PlayerConfiguration 
-                    :playerSetup="getConfigWithUserId().playerSetup || '2v2'"
+                    :playerSetup="currentPlayerSetup"
                     :getMatchConfiguration="getMatchConfiguration"
                     @match-created="onMatchCreated"
                 />

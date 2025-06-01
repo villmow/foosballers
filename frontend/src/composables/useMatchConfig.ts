@@ -10,8 +10,8 @@ export function useMatchConfig() {
     presets: computed(() => matchConfigStore.availablePresets),
     isInitialized: computed(() => matchConfigStore.isInitialized),
     
-    // Getters
-    getConfigWithUserId: computed(() => matchConfigStore.getConfigWithUserId),
+    // Getters - simplified to directly call the function
+    getConfigWithUserId: () => matchConfigStore.getConfigWithUserId(),
     
     // Actions
     initialize: matchConfigStore.initialize,

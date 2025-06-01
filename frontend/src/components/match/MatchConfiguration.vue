@@ -105,7 +105,7 @@ function loadPresets() {
 
 // Expose configuration data for parent components
 const getConfiguration = () => {
-  return getConfigWithUserId.value();
+  return getConfigWithUserId();
 };
 
 // Make getConfiguration available to parent
@@ -201,28 +201,10 @@ watch(() => config.value.playerSetup, (newValue) => {
         <label class="mb-1">Win by Two Applies Up To Goal</label>
         <InputNumber v-model="twoAheadUpUntil" :min="1" :max="20" />
       </div>
-      <div class="flex flex-col gap-2">
+      <!-- <div class="flex flex-col gap-2">
         <label class="mb-1">Draw Allowed</label>
         <ToggleSwitch v-model="draw" />
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="flex gap-2 mt-4">
-        <Button 
-          label="Save Settings as Preset" 
-          icon="pi pi-save" 
-          severity="secondary" 
-          outlined
-          @click="saveAsPreset"
-        />
-        <Button 
-          label="Load Presets" 
-          icon="pi pi-folder-open" 
-          severity="secondary" 
-          outlined
-          @click="loadPresets"
-        />
-      </div>
+      </div> -->
     </div>
     <div v-else class="flex flex-col gap-4">
       <!-- Horizontal layout (from FormLayout.vue) -->
@@ -275,12 +257,12 @@ watch(() => config.value.playerSetup, (newValue) => {
           <InputNumber v-model="twoAheadUpUntil" :min="1" :max="20" />
         </div>
       </div>
-      <div class="grid grid-cols-12 gap-2 items-center">
+      <!-- <div class="grid grid-cols-12 gap-2 items-center">
         <label class="col-span-12 md:col-span-3 mb-1 md:mb-0">Draw Allowed</label>
         <div class="col-span-12 md:col-span-9">
           <ToggleSwitch v-model="draw" />
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
