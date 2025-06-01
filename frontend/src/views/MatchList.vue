@@ -1,8 +1,8 @@
 <script setup>
 import MatchConfiguration from '@/components/match/MatchConfiguration.vue';
 import PlayerConfiguration from '@/components/match/PlayerConfiguration.vue';
-import { MatchService } from '@/service/MatchService';
 import { useMatchConfig } from '@/composables/useMatchConfig';
+import { MatchService } from '@/service/MatchService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
