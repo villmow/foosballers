@@ -198,11 +198,6 @@ async function startMatch() {
     alert(`Failed to start match: ${error.message}. Please check the console for details.`);
   }
 }
-
-function cancelMatch() {
-  // Reset form or navigate back to dashboard
-  resetPlayerNames();
-}
 </script>
 
 <template>
@@ -269,7 +264,6 @@ function cancelMatch() {
     </div>
     <div class="flex gap-4 mt-4">
       <Button label="Start Match" icon="pi pi-play" severity="primary" @click="startMatch" />
-      <Button label="Cancel" icon="pi pi-times" severity="secondary" outlined @click="cancelMatch" />
       <Button
         label="Reset"
         icon="pi pi-refresh"

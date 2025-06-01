@@ -1,6 +1,6 @@
 # Task ID: 6
 # Title: Implement Scoring and Timeout Tracking
-# Status: pending
+# Status: done
 # Dependencies: 3, 5
 # Priority: high
 # Description: Develop functionality to record and manage goals and timeouts, including undo capabilities for both.
@@ -51,31 +51,31 @@ Undo Logic:
 10. Test performance with rapid scoring sequences
 
 # Subtasks:
-## 1. Implement API endpoints for goal and timeout management [pending]
+## 1. Implement API endpoints for goal and timeout management [done]
 ### Dependencies: None
 ### Description: Create the backend API endpoints for recording and undoing goals and timeouts during a match.
 ### Details:
 Implement four API endpoints: POST /api/matches/:id/sets/:setId/goals for recording goals, DELETE /api/matches/:id/sets/:setId/goals/:goalId for undoing goals, POST /api/matches/:id/sets/:setId/timeouts for recording timeouts, and DELETE /api/matches/:id/sets/:setId/timeouts/:timeoutId for undoing timeouts. Each endpoint should validate the match and set status before processing the request. Include proper error handling and response codes.
 
-## 2. Develop goal recording and attribution logic [pending]
+## 2. Develop goal recording and attribution logic [done]
 ### Dependencies: 6.1
 ### Description: Implement the business logic for recording goals, attributing them to teams, and updating set scores.
 ### Details:
 Create a service layer that handles goal recording logic: validating match/set status, creating goal records with team attribution, updating set scores, checking for set winning conditions, and handling set completion if needed. Optionally implement tracking of which row scored. The logic should follow the steps outlined in the Goal Recording Logic section.
 
-## 3. Implement timeout tracking with validation [pending]
+## 3. Implement timeout tracking with validation [done]
 ### Dependencies: 6.1
 ### Description: Develop the logic for tracking timeouts with per-set limits and real-time validation.
 ### Details:
 Create a service that manages timeout tracking, enforcing per-set limits for each team. Implement validation to check if a team has remaining timeouts before recording a new one. Track the remaining timeout count for each team within a set. Implement real-time validation to prevent teams from exceeding their timeout limits.
 
-## 4. Develop undo functionality for goals and timeouts [pending]
+## 4. Develop undo functionality for goals and timeouts [done]
 ### Dependencies: 6.2, 6.3
 ### Description: Implement the logic to undo previously recorded goals and timeouts.
 ### Details:
 Create services to handle undoing goals and timeouts. For goals: mark the goal as voided, update the set score, and recheck the winning condition (potentially reverting a completed set to in-progress). For timeouts: mark the timeout as voided and restore the timeout count for the team. Ensure that the undo operations maintain data integrity and properly update all related state.
 
-## 5. Create UI controls for scoring and timeout management [pending]
+## 5. Create UI controls for scoring and timeout management [done]
 ### Dependencies: 6.2, 6.3, 6.4
 ### Description: Develop the user interface components for recording and undoing goals and timeouts.
 ### Details:

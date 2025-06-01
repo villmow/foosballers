@@ -419,7 +419,7 @@
         3,
         5
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -427,7 +427,7 @@
           "description": "Create the backend API endpoints for recording and undoing goals and timeouts during a match.",
           "dependencies": [],
           "details": "Implement four API endpoints: POST /api/matches/:id/sets/:setId/goals for recording goals, DELETE /api/matches/:id/sets/:setId/goals/:goalId for undoing goals, POST /api/matches/:id/sets/:setId/timeouts for recording timeouts, and DELETE /api/matches/:id/sets/:setId/timeouts/:timeoutId for undoing timeouts. Each endpoint should validate the match and set status before processing the request. Include proper error handling and response codes.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests for each endpoint with various scenarios including valid requests, invalid match/set states, and edge cases. Use mock database calls to isolate API logic."
         },
         {
@@ -438,7 +438,7 @@
             1
           ],
           "details": "Create a service layer that handles goal recording logic: validating match/set status, creating goal records with team attribution, updating set scores, checking for set winning conditions, and handling set completion if needed. Optionally implement tracking of which row scored. The logic should follow the steps outlined in the Goal Recording Logic section.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test goal attribution with different scenarios including regular goals, set-winning goals, and goals with row attribution. Verify that set scores are correctly updated and winning conditions are properly detected."
         },
         {
@@ -449,7 +449,7 @@
             1
           ],
           "details": "Create a service that manages timeout tracking, enforcing per-set limits for each team. Implement validation to check if a team has remaining timeouts before recording a new one. Track the remaining timeout count for each team within a set. Implement real-time validation to prevent teams from exceeding their timeout limits.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test timeout tracking with scenarios including valid timeouts, attempts to exceed the limit, and timeouts across different sets. Verify that timeout counts are correctly maintained."
         },
         {
@@ -461,7 +461,7 @@
             3
           ],
           "details": "Create services to handle undoing goals and timeouts. For goals: mark the goal as voided, update the set score, and recheck the winning condition (potentially reverting a completed set to in-progress). For timeouts: mark the timeout as voided and restore the timeout count for the team. Ensure that the undo operations maintain data integrity and properly update all related state.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test undo functionality with scenarios including undoing regular goals, undoing set-winning goals, and undoing timeouts. Verify that all state is correctly restored after undo operations."
         },
         {
@@ -474,7 +474,7 @@
             4
           ],
           "details": "Create UI controls for scoring (including optional row attribution) and timeout tracking. Implement buttons for recording goals for each team, with optional dropdown for row selection. Add timeout buttons for each team that are disabled when a team has used all their timeouts. Include undo buttons for both goals and timeouts with appropriate confirmation dialogs. Display current score and remaining timeouts prominently. Ensure all UI elements update in real-time when changes occur.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Perform component testing to verify UI behavior under different states. Test UI responsiveness to backend state changes. Conduct usability testing to ensure the interface is intuitive for scorekeepers."
         }
       ]
