@@ -346,10 +346,16 @@ async function onMatchCreated(matchData) {
                         {{ formatDuration(slotProps.data) }}
                     </template>
                 </Column>
-                <Column :exportable="false" style="min-width: 16rem">
+                <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
-                        <Button icon="pi pi-eye" outlined rounded class="mr-2" @click="viewMatch(slotProps.data)" v-tooltip.top="'View Match'" />
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editMatch(slotProps.data)" v-tooltip.top="'Edit Match'" />
+                        <Button 
+                            :icon="(slotProps.data.status === 'inProgress' || slotProps.data.status === 'notStarted') ? 'pi pi-pen-to-square' : 'pi pi-eye'" 
+                            outlined 
+                            rounded 
+                            class="mr-2" 
+                            @click="(slotProps.data.status === 'inProgress' || slotProps.data.status === 'notStarted') ? editMatch(slotProps.data) : viewMatch(slotProps.data)" 
+                            :v-tooltip.top="(slotProps.data.status === 'inProgress' || slotProps.data.status === 'notStarted') ? 'Edit Match' : 'View Match'" 
+                        />
                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteMatch(slotProps.data)" v-tooltip.top="'Delete Match'" />
                     </template>
                 </Column>
