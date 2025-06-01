@@ -5,63 +5,117 @@
 # Priority: high
 # Description: Develop a real-time scoreboard system using WebSockets for instant updates, with fallback to polling for environments without WebSocket support.
 # Details:
-1. Implement WebSocket server using Socket.io
-2. Create scoreboard data models for different views
-3. Implement real-time update broadcasting
-4. Develop fallback polling mechanism
+1. Extend existing Socket.io server with scoreboard-specific events
+2. Create scoreboard data models aligned with current Match/Set schemas
+3. Implement real-time update broadcasting integrated with GameProgressionService
+4. Develop fallback polling mechanism using existing API structure
 5. Create unique session URLs for scoreboards
 6. Implement QR code generation for easy sharing
 7. Develop responsive scoreboard layouts
 
 WebSocket Events:
 ```
+'scoreboard:join' - Join a specific scoreboard room
+'scoreboard:leave' - Leave a scoreboard room
 'match:update' - Broadcast match state changes
-'score:update' - Broadcast score changes
-'timeout:update' - Broadcast timeout usage
-'set:update' - Broadcast set changes
+'set:update' - Broadcast set changes and scores
+'goal:scored' - Broadcast individual goal events
+'timeout:called' - Broadcast timeout events
 'view:change' - Broadcast scoreboard view changes
 ```
 
-Scoreboard Data Structure:
+Scoreboard Data Structure (aligned with existing models):
 ```typescript
 interface ScoreboardData {
   matchId: string;
+  sessionId: string;
   teams: [
     {
       name: string;
-      color: string;
-      players: string[];
-      score: number; // Current set score
-      setsWon: number;
-      timeoutsLeft: number;
+      players: Array<{ name: string; playerId: string | null }>;
+      color: string; // From set.teamColors[0]
+      score: number; // Current set scores[0]
+      setsWon: number; // From match.teams[0].setsWon
+      timeoutsLeft: number; // timeoutsPerSet - timeoutsUsed[0]
     },
     {
       name: string;
-      color: string;
-      players: string[];
-      score: number; // Current set score
-      setsWon: number;
-      timeoutsLeft: number;
+      players: Array<{ name: string; playerId: string | null }>;
+      color: string; // From set.teamColors[1]
+      score: number; // Current set scores[1]
+      setsWon: number; // From match.teams[1].setsWon
+      timeoutsLeft: number; // timeoutsPerSet - timeoutsUsed[1]
     }
   ];
-  currentSet: number;
-  sets: Array<{
+  currentSet: {
+    setNumber: number;
+    status: 'notStarted' | 'inProgress' | 'completed';
+    scores: [number, number];
+    timeoutsUsed: [number, number];
+    startTime?: Date;
+    endTime?: Date;
+    winner?: number;
+  };
+  completedSets: Array<{
     setNumber: number;
     scores: [number, number];
     timeoutsUsed: [number, number];
     winner: number | null;
+    duration?: number;
   }>;
-  matchFormat: string;
-  status: string;
+  matchConfiguration: {
+    numGoalsToWin: number;
+    numSetsToWin: number;
+    twoAhead: boolean;
+    twoAheadUpUntil?: number;
+    timeoutsPerSet: number;
+    playerSetup: '1v1' | '2v2';
+  };
+  matchStatus: 'notStarted' | 'inProgress' | 'completed' | 'aborted';
+  startTime?: Date;
+  endTime?: Date;
+  winner?: number | null;
   currentView: 'default' | 'detailed' | 'banner';
-  bannerText: string;
+  bannerText?: string;
 }
 ```
 
+Integration Points:
+- Hook into existing GameProgressionService events for real-time updates
+- Use existing Match/Set/Goal models for data consistency
+- Integrate with current authentication middleware
+- Leverage existing API endpoints: `/api/matches/:id`, `/api/sets/:id`
+
 Polling Fallback:
-- Implement endpoint for scoreboard data: GET /api/scoreboard/:sessionId
+- Implement endpoint: GET /api/scoreboard/:sessionId
+- Use existing match/set data transformation logic
 - Configure polling interval (2-3 seconds)
-- Implement client-side logic to detect WebSocket failure and switch to polling
+- Implement client-side WebSocket failure detection
+
+# Test Strategy:
+1. Test WebSocket connection establishment and room management
+2. Verify that scoreboard updates in real-time when GameProgressionService processes events
+3. Test fallback to polling when WebSockets are unavailable
+4. Verify that unique session URLs work correctly
+5. Test QR code generation and scanning
+6. Verify that scoreboard is responsive on different devices
+7. Test performance with multiple concurrent viewers
+8. Verify that all scoreboard views display correctly with real match data
+9. Test reconnection behavior after connection loss
+10. Verify integration with existing authentication system
+
+# Subtasks:
+## 1. Extend WebSocket Server with Scoreboard Events [pending]
+### Dependencies: None
+### Description: Extend the existing Socket.io server to handle scoreboard-specific events and room management for individual matches.
+### Details:
+1. Add scoreboard event handlers to existing Socket.io server in app.ts
+2. Implement room-based broadcasting using match IDs as room names
+3. Create middleware for scoreboard authentication/authorization
+4. Add event handlers for joining/leaving scoreboard rooms
+5. Implement session-based scoreboard access with unique URLs
+6. Add error handling and logging for scoreboard WebSocket connections
+7. Update shared-types.ts with new WebSocket event interfaces
 
 # Test Strategy:
 1. Test WebSocket connection establishment
@@ -76,61 +130,52 @@ Polling Fallback:
 10. Verify that page title updates with current score
 
 # Subtasks:
-## 1. Set up WebSocket Server with Socket.io [pending]
-### Dependencies: None
-### Description: Implement the WebSocket server using Socket.io to handle real-time communication between clients and server for scoreboard updates.
-### Details:
-1. Install Socket.io package
-2. Configure Socket.io server to run alongside the existing HTTP server
-3. Define event handlers for the specified events ('match:update', 'score:update', etc.)
-4. Implement authentication/authorization for WebSocket connections
-5. Set up namespaces for different scoreboards using sessionId
-6. Implement error handling and logging for WebSocket connections
-
-## 2. Implement Scoreboard Data Models and Storage [pending]
+## 2. Implement Scoreboard Data Service [pending]
 ### Dependencies: 7.1
-### Description: Create the data models for storing and managing scoreboard data according to the specified structure, including persistence and retrieval mechanisms.
+### Description: Create a service layer that transforms existing Match/Set data into scoreboard format and manages scoreboard sessions.
 ### Details:
-1. Implement the ScoreboardData interface in the codebase
-2. Create a repository/service for managing scoreboard data
-3. Implement methods for creating, retrieving, and updating scoreboard data
-4. Set up data validation to ensure scoreboard updates maintain data integrity
-5. Implement session management for unique scoreboard URLs
-6. Create methods to generate initial scoreboard state based on match configuration
+1. Create ScoreboardService class that works with existing data models
+2. Implement methods to generate ScoreboardData from Match and Set documents
+3. Create session management for unique scoreboard URLs with expiration
+4. Implement data transformation methods for different scoreboard views
+5. Add caching layer for frequently accessed scoreboard data
+6. Create methods to handle real-time data updates from GameProgressionService
+7. Implement scoreboard configuration management (view preferences, etc.)
 
-## 3. Develop Real-time Update Broadcasting System [pending]
+## 3. Integrate Real-time Updates with GameProgressionService [pending]
 ### Dependencies: 7.1, 7.2
-### Description: Implement the system for broadcasting scoreboard updates to all connected clients when changes occur, using the WebSocket server.
+### Description: Hook into the existing GameProgressionService to broadcast scoreboard updates when match events occur.
 ### Details:
-1. Create event emitters for each update type ('match:update', 'score:update', etc.)
-2. Implement middleware to capture scoreboard changes and trigger appropriate events
-3. Develop throttling mechanism to prevent broadcast storms
-4. Implement room-based broadcasting to ensure updates only go to relevant clients
-5. Create server-side handlers for client-initiated update requests
-6. Add security measures to validate update requests before broadcasting
+1. Modify GameProgressionService to emit scoreboard events after processing
+2. Create event handlers that transform progression results into scoreboard updates
+3. Implement selective broadcasting to only relevant scoreboard viewers
+4. Add throttling mechanism to prevent excessive updates
+5. Create update queuing system for offline scoreboards
+6. Implement conflict resolution for simultaneous updates
+7. Add monitoring for WebSocket broadcast performance
 
-## 4. Implement Polling Fallback Mechanism [pending]
+## 4. Implement Polling Fallback with Existing API [pending]
 ### Dependencies: 7.2
-### Description: Develop a fallback mechanism using HTTP polling for environments where WebSockets are not supported or are blocked.
+### Description: Create a polling fallback mechanism that uses existing API endpoints when WebSockets are not available.
 ### Details:
-1. Create RESTful endpoint for scoreboard data: GET /api/scoreboard/:sessionId
-2. Implement caching to reduce database load from frequent polling
-3. Add ETag support for efficient polling
-4. Develop client-side detection of WebSocket failures
-5. Implement automatic fallback to polling when WebSockets fail
-6. Configure appropriate polling intervals (2-3 seconds) with exponential backoff
-7. Add monitoring to track WebSocket vs. polling usage
+1. Create GET /api/scoreboard/:sessionId endpoint using existing controllers
+2. Implement efficient data caching using existing database queries
+3. Add ETag support for conditional requests
+4. Create client-side WebSocket failure detection and automatic fallback
+5. Implement exponential backoff for polling requests
+6. Add performance monitoring for polling vs WebSocket usage
+7. Create admin dashboard for monitoring scoreboard access patterns
 
-## 5. Create Responsive Scoreboard UI with Sharing Features [pending]
+## 5. Create Responsive Scoreboard UI Components [pending]
 ### Dependencies: 7.3, 7.4
-### Description: Develop the frontend components for displaying the scoreboard in different views, along with sharing functionality via unique URLs and QR codes.
+### Description: Develop Vue.js components for displaying scoreboards in different views with real-time updates and sharing features.
 ### Details:
-1. Implement responsive scoreboard layouts for 'default', 'detailed', and 'banner' views
-2. Create UI components to display all scoreboard data elements
-3. Implement real-time updates using WebSocket client connection
-4. Add view switching functionality with appropriate animations
-5. Implement unique session URL generation and display
-6. Integrate QR code generation library for easy sharing
-7. Create copy-to-clipboard functionality for scoreboard URLs
-8. Implement view-specific optimizations for different device sizes
+1. Create base ScoreboardComponent with real-time WebSocket integration
+2. Implement responsive layouts for 'default', 'detailed', and 'banner' views
+3. Add view switching functionality with smooth transitions
+4. Integrate QR code generation library (qrcode.js) for sharing
+5. Create copy-to-clipboard functionality for scoreboard URLs
+6. Implement offline detection and fallback to polling
+7. Add accessibility features and keyboard navigation
+8. Create admin controls for commentators to manage scoreboard settings
 
