@@ -52,22 +52,34 @@ async function loadMatches() {
         
         if (response.success && response.data) {
             // Map backend data to component format
-            matches.value = response.data.matches.map(match => ({
-                id: match._id,
-                teams: match.teams || [],
-                status: match.status,
-                createdAt: match.createdAt ? new Date(match.createdAt) : new Date(),
-                updatedAt: match.updatedAt ? new Date(match.updatedAt) : new Date(),
-                startTime: match.startTime ? new Date(match.startTime) : null,
-                endTime: match.endTime ? new Date(match.endTime) : null,
-                duration: match.duration || null,
-                matchConfiguration: {
-                    playerSetup: match.playerSetup,
-                    numGoalsToWin: match.numGoalsToWin,
-                    numSetsToWin: match.numSetsToWin,
-                    name: match.name
-                }
-            }));
+            matches.value = response.data.matches.map(match => {
+                const teams = match.teams || [];
+                const teamA = teams[0] ? (teams[0].players && teams[0].players.length > 0 
+                    ? teams[0].players.map(player => player.name).join(' / ') 
+                    : teams[0].name || 'Team A') : 'Team A';
+                const teamB = teams[1] ? (teams[1].players && teams[1].players.length > 0 
+                    ? teams[1].players.map(player => player.name).join(' / ') 
+                    : teams[1].name || 'Team B') : 'Team B';
+                
+                return {
+                    id: match._id,
+                    teams: teams,
+                    teamA: teamA,
+                    teamB: teamB,
+                    status: match.status,
+                    createdAt: match.createdAt ? new Date(match.createdAt) : new Date(),
+                    updatedAt: match.updatedAt ? new Date(match.updatedAt) : new Date(),
+                    startTime: match.startTime ? new Date(match.startTime) : null,
+                    endTime: match.endTime ? new Date(match.endTime) : null,
+                    duration: match.duration || null,
+                    matchConfiguration: {
+                        playerSetup: match.playerSetup,
+                        numGoalsToWin: match.numGoalsToWin,
+                        numSetsToWin: match.numSetsToWin,
+                        name: match.name
+                    }
+                };
+            });
         } else {
             matches.value = [];
         }
@@ -234,22 +246,12 @@ function formatDate(date) {
     return new Date(date).toLocaleDateString();
 }
 
-function formatTeamA(teams) {
-    if (!teams || !teams[0]) return 'Team A';
-    const team = teams[0];
-    if (team.players && team.players.length > 0) {
-        return team.players.map(player => player.name).join(' / ');
-    }
-    return team.name || 'Team A';
+function formatTeamA(match) {
+    return match.teamA || 'Team A';
 }
 
-function formatTeamB(teams) {
-    if (!teams || !teams[1]) return 'Team B';
-    const team = teams[1];
-    if (team.players && team.players.length > 0) {
-        return team.players.map(player => player.name).join(' / ');
-    }
-    return team.name || 'Team B';
+function formatTeamB(match) {
+    return match.teamB || 'Team B';
 }
 
 function formatScore(match) {
@@ -296,7 +298,7 @@ async function onMatchCreated(matchData) {
                 :paginator="true"
                 :rows="10"
                 :filters="filters"
-                :globalFilterFields="['teams']"
+                :globalFilterFields="['teamA', 'teamB', 'status']"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} matches"
@@ -316,12 +318,12 @@ async function onMatchCreated(matchData) {
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column header="Team A" sortable style="min-width: 16rem">
                     <template #body="slotProps">
-                        {{ formatTeamA(slotProps.data.teams) }}
+                        {{ formatTeamA(slotProps.data) }}
                     </template>
                 </Column>
                 <Column header="Team B" sortable style="min-width: 16rem">
                     <template #body="slotProps">
-                        {{ formatTeamB(slotProps.data.teams) }}
+                        {{ formatTeamB(slotProps.data) }}
                     </template>
                 </Column>
                 <Column header="Score" style="min-width: 8rem">
