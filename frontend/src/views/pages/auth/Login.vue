@@ -1,6 +1,6 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
-import { AuthService } from '@/service/AuthService';
+import { useAuth } from '@/composables/useAuth';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -11,6 +11,7 @@ const checked = ref(false);
 const loading = ref(false);
 const toast = useToast();
 const router = useRouter();
+const { login: authLogin } = useAuth();
 
 const login = async () => {
   if (!email.value || !password.value) {
@@ -21,7 +22,9 @@ const login = async () => {
   try {
     loading.value = true;
     console.log('Attempting login with:', { email: email.value });
-    const response = await AuthService.login(email.value, password.value);
+    
+    // Use the Pinia store login action
+    const response = await authLogin({ email: email.value, password: password.value });
     console.log('Login response:', response);
     
     // Store the token in localStorage or sessionStorage based on "Remember me"
@@ -30,10 +33,12 @@ const login = async () => {
     } else {
       sessionStorage.setItem('token', response.token);
     }
-    // Always store user info in localStorage for role-based checks
-    localStorage.setItem('user', JSON.stringify(response.user));
-    // Redirect to dashboard
-    router.push('/');
+    
+    // Check if there's a redirect query parameter
+    const redirectTo = router.currentRoute.value.query.redirect || '/';
+    
+    // Redirect to dashboard or the originally requested page
+    router.push(redirectTo);
     
   } catch (error) {
     console.error('Login error:', error);

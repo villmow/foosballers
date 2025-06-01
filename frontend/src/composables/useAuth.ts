@@ -1,48 +1,32 @@
 // composable for authentication state
-import { AuthService } from '@/service/AuthService';
-import { computed, ref } from 'vue';
-
-const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
-
-function setUser(newUser: any) {
-  user.value = newUser;
-  if (newUser) {
-    localStorage.setItem('user', JSON.stringify(newUser));
-  } else {
-    localStorage.removeItem('user');
-  }
-}
-
-function isAuthenticated() {
-  return !!user.value;
-}
-
-window.addEventListener('storage', () => {
-  user.value = JSON.parse(localStorage.getItem('user') || 'null');
-});
+import { useAuthStore } from '@/stores/auth';
+import { computed } from 'vue';
 
 export function useAuth() {
-  async function updateUserProfile({ name, email, password }: { name: string; email: string; password?: string }) {
-    // Map 'name' to 'username' for backend compatibility
-    const payload: any = { username: name, email };
-    if (password) payload.password = password;
-    const result = await AuthService.updateUserProfile(payload);
-    // Update local user state if successful
-    setUser({ ...user.value, name, email });
-    return result;
-  }
+  const authStore = useAuthStore()
+
   return {
-    user,
-    setUser,
-    isAuthenticated: computed(isAuthenticated),
-    updateUserProfile
-  };
+    user: computed(() => authStore.user),
+    isAuthenticated: computed(() => authStore.isAuthenticated),
+    isInitialized: computed(() => authStore.isInitialized),
+    setUser: authStore.setUser,
+    clearAuth: authStore.clearAuth,
+    updateUserProfile: authStore.updateUserProfile,
+    login: authStore.login,
+    logout: authStore.logout
+  }
 }
 
 // Route guard setup for authentication
 export function setupAuthGuards(router: any) {
-  router.beforeEach((to: any, _from: any, next: any) => {
-    const { isAuthenticated } = useAuth();
+  router.beforeEach(async (to: any, _from: any, next: any) => {
+    // Get a fresh instance of the auth store
+    const authStore = useAuthStore()
+
+    // Ensure auth is initialized
+    if (!authStore.isInitialized) {
+      await authStore.initialize()
+    }
 
     // Allow access to login, landing, and public auth pages
     const publicPages = [
@@ -53,21 +37,25 @@ export function setupAuthGuards(router: any) {
       '/auth/access',
       '/landing',
       '/pages/notfound',
-      '/' // Allow dashboard/main page to be public
     ];
     
-    if (publicPages.includes(to.path)) {
+    // Check if this is a public page
+    const isPublicPage = publicPages.includes(to.path);
+    
+    if (isPublicPage) {
       // If user is authenticated and tries to access landing or login, redirect to main page
-      if (isAuthenticated.value && (to.path === '/landing' || to.path === '/auth/login')) {
+      if (authStore.isAuthenticated && (to.path === '/landing' || to.path === '/auth/login')) {
         return next('/');
       }
       return next();
     }
     
-    // For match pages and other protected routes, require authentication
-    if (!isAuthenticated.value) {
+    // For protected routes, require authentication
+    if (!authStore.isAuthenticated) {
       return next({ path: '/landing', query: { redirect: to.fullPath } });
     }
+    
+    // User is authenticated, allow access
     next();
   });
 }
