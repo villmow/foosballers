@@ -11,38 +11,38 @@ export const createTimeout = async (req: Request, res: Response): Promise<void> 
 
     // Validate required fields
     if (!matchId || !setId || typeof teamIndex !== 'number' || !timestamp) {
-      res.status(400).json({ error: 'Missing required fields: matchId, setId, teamIndex, timestamp' });
+      res.status(400).json({ success: false, error: 'Missing required fields: matchId, setId, teamIndex, timestamp' });
       return;
     }
 
     // Validate teamIndex
     if (teamIndex !== 0 && teamIndex !== 1) {
-      res.status(400).json({ error: 'teamIndex must be 0 or 1' });
+      res.status(400).json({ success: false, error: 'teamIndex must be 0 or 1' });
       return;
     }
 
     // Verify match and set exist
     const match = await MatchModel.findById(matchId);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
 
     const set = await SetModel.findById(setId);
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
     // Verify set belongs to the match
     if (set.matchId.toString() !== matchId) {
-      res.status(400).json({ error: 'Set does not belong to the specified match' });
+      res.status(400).json({ success: false, error: 'Set does not belong to the specified match' });
       return;
     }
 
     // Check if set is in a state where timeouts can be added
     if (set.status === 'completed') {
-      res.status(400).json({ error: 'Cannot add timeouts to a completed set' });
+      res.status(400).json({ success: false, error: 'Cannot add timeouts to a completed set' });
       return;
     }
 
@@ -56,6 +56,7 @@ export const createTimeout = async (req: Request, res: Response): Promise<void> 
 
       if (currentTimeouts >= match.timeoutsPerSet) {
         res.status(400).json({ 
+          success: false,
           error: `Team has already used all ${match.timeoutsPerSet} timeouts for this set` 
         });
         return;
@@ -83,17 +84,20 @@ export const createTimeout = async (req: Request, res: Response): Promise<void> 
 
     // Return the timeout along with updated set and match information
     res.status(201).json({
-      timeout: populatedTimeout,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        timeout: populatedTimeout,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -112,9 +116,9 @@ export const getMatchTimeouts = async (req: Request, res: Response): Promise<voi
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(timeouts);
+    res.json({ success: true, data: timeouts });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -134,9 +138,9 @@ export const getSetTimeouts = async (req: Request, res: Response): Promise<void>
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(timeouts);
+    res.json({ success: true, data: timeouts });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -147,7 +151,7 @@ export const getMatchTimeoutStats = async (req: Request, res: Response): Promise
 
     const match = await MatchModel.findById(matchId);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
 
@@ -173,12 +177,15 @@ export const getMatchTimeoutStats = async (req: Request, res: Response): Promise
     }
 
     res.json({
-      matchId,
-      timeoutsPerSet: match.timeoutsPerSet || null,
-      sets: timeoutStats
+      success: true,
+      data: {
+        matchId,
+        timeoutsPerSet: match.timeoutsPerSet || null,
+        sets: timeoutStats
+      }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -192,13 +199,13 @@ export const getTimeout = async (req: Request, res: Response): Promise<void> => 
       .populate('setId');
 
     if (!timeout) {
-      res.status(404).json({ error: 'Timeout not found' });
+      res.status(404).json({ success: false, error: 'Timeout not found' });
       return;
     }
 
-    res.json(timeout);
+    res.json({ success: true, data: timeout });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -219,7 +226,7 @@ export const updateTimeout = async (req: Request, res: Response): Promise<void> 
     }
 
     if (Object.keys(actualUpdates).length === 0) {
-      res.status(400).json({ error: 'No valid updates provided' });
+      res.status(400).json({ success: false, error: 'No valid updates provided' });
       return;
     }
 
@@ -230,13 +237,13 @@ export const updateTimeout = async (req: Request, res: Response): Promise<void> 
     ).populate('matchId').populate('setId');
 
     if (!timeout) {
-      res.status(404).json({ error: 'Timeout not found' });
+      res.status(404).json({ success: false, error: 'Timeout not found' });
       return;
     }
 
-    res.json(timeout);
+    res.json({ success: true, data: timeout });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -252,7 +259,7 @@ export const voidTimeout = async (req: Request, res: Response): Promise<void> =>
     ).populate('matchId').populate('setId');
 
     if (!timeout) {
-      res.status(404).json({ error: 'Timeout not found' });
+      res.status(404).json({ success: false, error: 'Timeout not found' });
       return;
     }
 
@@ -262,17 +269,20 @@ export const voidTimeout = async (req: Request, res: Response): Promise<void> =>
 
     // Return the timeout along with updated set and match information
     res.json({
-      timeout,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        timeout,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -288,7 +298,7 @@ export const unvoidTimeout = async (req: Request, res: Response): Promise<void> 
     ).populate('matchId').populate('setId');
 
     if (!timeout) {
-      res.status(404).json({ error: 'Timeout not found' });
+      res.status(404).json({ success: false, error: 'Timeout not found' });
       return;
     }
 
@@ -298,17 +308,20 @@ export const unvoidTimeout = async (req: Request, res: Response): Promise<void> 
 
     // Return the timeout along with updated set and match information
     res.json({
-      timeout,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        timeout,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -319,12 +332,12 @@ export const deleteTimeout = async (req: Request, res: Response): Promise<void> 
 
     const timeout = await TimeoutModel.findByIdAndDelete(timeoutId);
     if (!timeout) {
-      res.status(404).json({ error: 'Timeout not found' });
+      res.status(404).json({ success: false, error: 'Timeout not found' });
       return;
     }
 
-    res.json({ message: 'Timeout deleted successfully' });
+    res.json({ success: true, message: 'Timeout deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };

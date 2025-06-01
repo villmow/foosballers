@@ -29,7 +29,10 @@ describe('Auth Controller - Logout', () => {
       .set('Cookie', ['token=test-token']);
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({ message: 'Logged out successfully' });
+    expect(response.body).toEqual({ 
+      success: true, 
+      message: 'Logged out successfully' 
+    });
     
     // Check that cookie was cleared
     const cookies = response.headers['set-cookie'][0];
@@ -43,7 +46,10 @@ describe('Auth Controller - Logout', () => {
       .set('Authorization', 'Bearer test-token-from-header');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({ message: 'Logged out successfully' });
+    expect(response.body).toEqual({ 
+      success: true, 
+      message: 'Logged out successfully' 
+    });
     expect(blacklistToken).toHaveBeenCalled();
   });
 
@@ -58,6 +64,9 @@ describe('Auth Controller - Logout', () => {
       .set('Authorization', 'Bearer test-token');
 
     expect(response.statusCode).toBe(500);
-    expect(response.body).toEqual({ error: 'Internal server error during logout' });
+    expect(response.body).toEqual({ 
+      success: false, 
+      error: 'Internal server error during logout' 
+    });
   });
 });

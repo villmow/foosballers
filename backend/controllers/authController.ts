@@ -19,21 +19,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Validate input
     if (!email || !password) {
-      res.status(400).json({ message: 'Email and password are required' });
+      res.status(400).json({ success: false, error: 'Email and password are required' });
       return;
     }
 
     // Find user by email
     const user = await UserModel.findOne({ email });
     if (!user) {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ success: false, error: 'Invalid credentials' });
       return;
     }
 
     // Check if account is locked
     if (user.loginAttempts >= 5 && user.lockUntil && user.lockUntil > new Date()) {
       res.status(401).json({
-        message: 'Account is locked. Try again later or reset your password.',
+        success: false,
+        error: 'Account is locked. Try again later or reset your password.',
         lockUntil: user.lockUntil
       });
       return;
@@ -52,7 +53,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       
       await user.save();
       
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ success: false, error: 'Invalid credentials' });
       return;
     }
 
@@ -79,18 +80,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Send response
     res.status(200).json({
+      success: true,
       message: 'Login successful',
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      },
-      token
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        },
+        token
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error during login' });
+    res.status(500).json({ success: false, error: 'Internal server error during login' });
   }
 };
 
@@ -136,10 +140,10 @@ export const logout = async (req: AuthRequest, res: Response): Promise<void> => 
       expires: new Date(0) // Set expiration to epoch time (invalidates immediately)
     });
 
-    res.status(200).json({ message: 'Logged out successfully' });
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ error: 'Internal server error during logout' });
+    res.status(500).json({ success: false, error: 'Internal server error during logout' });
   }
 };
 
@@ -152,7 +156,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   try {
     const user: IUser | null = await UserModel.findOne({ email });
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ success: false, error: 'User not found' });
       return;
     }
 
@@ -163,10 +167,10 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 
     await sendPasswordResetEmail(user.email, token);
 
-    res.status(200).json({ message: 'Password reset email sent' });
+    res.status(200).json({ success: true, message: 'Password reset email sent' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 };
 
@@ -184,7 +188,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     });
 
     if (!user) {
-      res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
+      res.status(400).json({ success: false, error: 'Password reset token is invalid or has expired.' });
       return;
     }
 
@@ -195,18 +199,18 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     await user.save();
 
     // Optionally, log the user in or send a confirmation email
-    res.status(200).json({ message: 'Password has been reset successfully.' });
+    res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
 
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(400).json({ message: 'Invalid token.' });
+      res.status(400).json({ success: false, error: 'Invalid token.' });
       return;
     }
     if (error instanceof jwt.TokenExpiredError) {
-      res.status(400).json({ message: 'Token has expired.' });
+      res.status(400).json({ success: false, error: 'Token has expired.' });
       return;
     }
     console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 };

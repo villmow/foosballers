@@ -79,12 +79,13 @@ export const AuthService = {
       credentials: 'include'
     });
     
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to process forgot password request');
+      throw new Error(data.error || data.message || 'Failed to process forgot password request');
     }
     
-    return await response.json();
+    return { message: data.message };
   },
   
   async resetPassword(token: string, password: string): Promise<{ message: string }> {
@@ -95,12 +96,13 @@ export const AuthService = {
       credentials: 'include'
     });
     
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to reset password');
+      throw new Error(data.error || data.message || 'Failed to reset password');
     }
     
-    return await response.json();
+    return { message: data.message };
   },
   
   async login(email: string, password: string): Promise<{ user: any; token: string }> {
@@ -127,7 +129,7 @@ export const AuthService = {
         }
         
         console.error('Login error data:', errorData);
-        throw new Error(errorData.message || `Login failed with status: ${response.status}`);
+        throw new Error(errorData.error || errorData.message || `Login failed with status: ${response.status}`);
       }
       
       const data = await response.json();
@@ -136,7 +138,8 @@ export const AuthService = {
       // Initialize session management after successful login
       this.initSessionManagement();
       
-      return data;
+      // Return the data from the 'data' field for new format, or whole response for backward compatibility
+      return data.data || data;
     } catch (error) {
       console.error('AuthService login error:', error);
       throw error;
@@ -163,10 +166,11 @@ export const AuthService = {
     
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Logout failed');
+      throw new Error(error.error || error.message || 'Logout failed');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return { message: data.message };
   },
   
   async createUser(user: { username: string; email: string; password: string; role: string }): Promise<{ message: string }> {
@@ -180,7 +184,8 @@ export const AuthService = {
       const error = await response.json();
       throw new Error(error.error || error.message || 'Failed to create user');
     }
-    return await response.json();
+    const data = await response.json();
+    return { message: data.message };
   },
 
   async updateUserProfile(profile: { username: string; email: string; password?: string }): Promise<{ message: string }> {
@@ -194,7 +199,8 @@ export const AuthService = {
       const error = await response.json();
       throw new Error(error.error || error.message || 'Failed to update profile');
     }
-    return await response.json();
+    const data = await response.json();
+    return { message: data.message };
   },
 
   /**

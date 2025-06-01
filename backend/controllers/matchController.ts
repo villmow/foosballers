@@ -10,9 +10,9 @@ export const createMatch = async (req: Request, res: Response): Promise<void> =>
   try {
     const match = new MatchModel(req.body);
     await match.save();
-    res.status(201).json(match);
+    res.status(201).json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -21,12 +21,12 @@ export const getMatch = async (req: Request, res: Response): Promise<void> => {
   try {
     const match = await MatchModel.findById(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
-    res.json(match);
+    res.json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -35,12 +35,12 @@ export const updateMatch = async (req: Request, res: Response): Promise<void> =>
   try {
     const match = await MatchModel.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
-    res.json(match);
+    res.json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -49,12 +49,12 @@ export const deleteMatch = async (req: Request, res: Response): Promise<void> =>
   try {
     const match = await MatchModel.findByIdAndDelete(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
-    res.json({ message: 'Match deleted' });
+    res.json({ success: true, message: 'Match deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -63,7 +63,7 @@ export const startMatch = async (req: Request, res: Response): Promise<void> => 
   try {
     const match = await MatchModel.findById(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
     
@@ -85,13 +85,13 @@ export const startMatch = async (req: Request, res: Response): Promise<void> => 
       match.sets.push(set._id as mongoose.Types.ObjectId);
       match.currentSet = set._id as mongoose.Types.ObjectId;
       await match.save();
-      res.json({ match, set });
+      res.json({ success: true, data: { match, set } });
       return;
     }
     
-    res.json({ match });
+    res.json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -100,11 +100,11 @@ export const startNewSet = async (req: Request, res: Response): Promise<void> =>
   try {
     const match = await MatchModel.findById(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
     if (match.status !== 'inProgress') {
-      res.status(400).json({ error: 'Match is not in progress' });
+      res.status(400).json({ success: false, error: 'Match is not in progress' });
       return;
     }
     
@@ -112,7 +112,7 @@ export const startNewSet = async (req: Request, res: Response): Promise<void> =>
     if (match.currentSet) {
       const currentSet = await SetModel.findById(match.currentSet);
       if (currentSet && currentSet.status !== 'completed') {
-        res.status(400).json({ error: 'Current set is not completed yet' });
+        res.status(400).json({ success: false, error: 'Current set is not completed yet' });
         return;
       }
     }
@@ -142,9 +142,9 @@ export const startNewSet = async (req: Request, res: Response): Promise<void> =>
     match.sets.push(set._id as mongoose.Types.ObjectId);
     match.currentSet = set._id as mongoose.Types.ObjectId;
     await match.save();
-    res.json({ match, set });
+    res.json({ success: true, data: { match, set } });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -153,18 +153,18 @@ export const getCurrentSet = async (req: Request, res: Response): Promise<void> 
   try {
     const match = await MatchModel.findById(req.params.id).populate('currentSet');
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
     
     if (!match.currentSet) {
-      res.status(404).json({ error: 'No current set found' });
+      res.status(404).json({ success: false, error: 'No current set found' });
       return;
     }
     
-    res.json(match.currentSet);
+    res.json({ success: true, data: match.currentSet });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -172,9 +172,9 @@ export const getCurrentSet = async (req: Request, res: Response): Promise<void> 
 export const getMatchSets = async (req: Request, res: Response): Promise<void> => {
   try {
     const sets = await SetModel.find({ matchId: req.params.id }).sort({ setNumber: 1 });
-    res.json(sets);
+    res.json({ success: true, data: sets });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -185,11 +185,11 @@ export const startSet = async (req: Request, res: Response): Promise<void> => {
     const set = await SetModel.findById(setId);
     
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
     if (set.status !== 'notStarted') {
-      res.status(400).json({ error: 'Set can only be started from notStarted status' });
+      res.status(400).json({ success: false, error: 'Set can only be started from notStarted status' });
       return;
     }
     
@@ -197,9 +197,9 @@ export const startSet = async (req: Request, res: Response): Promise<void> => {
     set.startTime = new Date();
     await set.save();
     
-    res.json(set);
+    res.json({ success: true, data: set });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -208,15 +208,15 @@ export const endMatch = async (req: Request, res: Response): Promise<void> => {
   try {
     const match = await MatchModel.findById(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
     const machine = new MatchStateMachine(match);
     machine.endMatch();
     await match.save();
-    res.json(match);
+    res.json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -225,15 +225,15 @@ export const abortMatch = async (req: Request, res: Response): Promise<void> => 
   try {
     const match = await MatchModel.findById(req.params.id);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
     const machine = new MatchStateMachine(match);
     machine.abortMatch();
     await match.save();
-    res.json(match);
+    res.json({ success: true, data: match });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 

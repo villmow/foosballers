@@ -55,21 +55,24 @@ describe('Match API Endpoints', () => {
     (MatchModel.findById as any) = jest.fn().mockResolvedValue({ _id: '1', name: 'Test Match' });
     const res = await request(app).get('/api/matches/1');
     expect(res.statusCode).toBe(200);
-    expect(res.body.name).toBe('Test Match');
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.name).toBe('Test Match');
   });
 
   it('should update a match by id', async () => {
     (MatchModel.findByIdAndUpdate as any) = jest.fn().mockResolvedValue({ _id: '1', name: 'Updated Match' });
     const res = await request(app).put('/api/matches/1').send({ name: 'Updated Match' });
     expect(res.statusCode).toBe(200);
-    expect(res.body.name).toBe('Updated Match');
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.name).toBe('Updated Match');
   });
 
   it('should delete a match by id', async () => {
     (MatchModel.findByIdAndDelete as any) = jest.fn().mockResolvedValue({ _id: '1', name: 'Test Match' });
     const res = await request(app).delete('/api/matches/1');
     expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('Match deleted');
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('Match deleted successfully');
   });
 
   it('should return 404 if match not found (get)', async () => {

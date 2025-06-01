@@ -11,38 +11,38 @@ export const createGoal = async (req: Request, res: Response): Promise<void> => 
 
     // Validate required fields
     if (!matchId || !setId || typeof teamIndex !== 'number' || !timestamp) {
-      res.status(400).json({ error: 'Missing required fields: matchId, setId, teamIndex, timestamp' });
+      res.status(400).json({ success: false, error: 'Missing required fields: matchId, setId, teamIndex, timestamp' });
       return;
     }
 
     // Validate teamIndex
     if (teamIndex !== 0 && teamIndex !== 1) {
-      res.status(400).json({ error: 'teamIndex must be 0 or 1' });
+      res.status(400).json({ success: false, error: 'teamIndex must be 0 or 1' });
       return;
     }
 
     // Verify match and set exist
     const match = await MatchModel.findById(matchId);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
 
     const set = await SetModel.findById(setId);
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
     // Verify set belongs to the match
     if (set.matchId.toString() !== matchId) {
-      res.status(400).json({ error: 'Set does not belong to the specified match' });
+      res.status(400).json({ success: false, error: 'Set does not belong to the specified match' });
       return;
     }
 
     // Check if set is in a state where goals can be added
     if (set.status === 'completed') {
-      res.status(400).json({ error: 'Cannot add goals to a completed set' });
+      res.status(400).json({ success: false, error: 'Cannot add goals to a completed set' });
       return;
     }
 
@@ -68,17 +68,20 @@ export const createGoal = async (req: Request, res: Response): Promise<void> => 
 
     // Return the goal along with updated set and match information
     res.status(201).json({
-      goal: populatedGoal,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        goal: populatedGoal,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -97,9 +100,9 @@ export const getMatchGoals = async (req: Request, res: Response): Promise<void> 
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(goals);
+    res.json({ success: true, data: goals });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -119,9 +122,9 @@ export const getSetGoals = async (req: Request, res: Response): Promise<void> =>
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(goals);
+    res.json({ success: true, data: goals });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -135,13 +138,13 @@ export const getGoal = async (req: Request, res: Response): Promise<void> => {
       .populate('setId');
 
     if (!goal) {
-      res.status(404).json({ error: 'Goal not found' });
+      res.status(404).json({ success: false, error: 'Goal not found' });
       return;
     }
 
-    res.json(goal);
+    res.json({ success: true, data: goal });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -162,7 +165,7 @@ export const updateGoal = async (req: Request, res: Response): Promise<void> => 
     }
 
     if (Object.keys(actualUpdates).length === 0) {
-      res.status(400).json({ error: 'No valid updates provided' });
+      res.status(400).json({ success: false, error: 'No valid updates provided' });
       return;
     }
 
@@ -173,13 +176,13 @@ export const updateGoal = async (req: Request, res: Response): Promise<void> => 
     ).populate('matchId').populate('setId');
 
     if (!goal) {
-      res.status(404).json({ error: 'Goal not found' });
+      res.status(404).json({ success: false, error: 'Goal not found' });
       return;
     }
 
-    res.json(goal);
+    res.json({ success: true, data: goal });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -195,7 +198,7 @@ export const voidGoal = async (req: Request, res: Response): Promise<void> => {
     ).populate('matchId').populate('setId');
 
     if (!goal) {
-      res.status(404).json({ error: 'Goal not found' });
+      res.status(404).json({ success: false, error: 'Goal not found' });
       return;
     }
 
@@ -205,17 +208,20 @@ export const voidGoal = async (req: Request, res: Response): Promise<void> => {
 
     // Return the goal along with updated set and match information
     res.json({
-      goal,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        goal,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -231,7 +237,7 @@ export const unvoidGoal = async (req: Request, res: Response): Promise<void> => 
     ).populate('matchId').populate('setId');
 
     if (!goal) {
-      res.status(404).json({ error: 'Goal not found' });
+      res.status(404).json({ success: false, error: 'Goal not found' });
       return;
     }
 
@@ -241,17 +247,20 @@ export const unvoidGoal = async (req: Request, res: Response): Promise<void> => 
 
     // Return the goal along with updated set and match information
     res.json({
-      goal,
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        goal,
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -262,12 +271,12 @@ export const deleteGoal = async (req: Request, res: Response): Promise<void> => 
 
     const goal = await GoalModel.findByIdAndDelete(goalId);
     if (!goal) {
-      res.status(404).json({ error: 'Goal not found' });
+      res.status(404).json({ success: false, error: 'Goal not found' });
       return;
     }
 
-    res.json({ message: 'Goal deleted successfully' });
+    res.json({ success: true, message: 'Goal deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };

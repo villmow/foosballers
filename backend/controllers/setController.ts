@@ -12,13 +12,14 @@ export const createSet = async (req: Request, res: Response): Promise<void> => {
 
     // Validate required fields
     if (!matchId || typeof setNumber !== 'number') {
-      res.status(400).json({ error: 'Missing required fields: matchId, setNumber' });
+      res.status(400).json({ success: false, error: 'Missing required fields: matchId, setNumber' });
       return;
     }
 
     // Validate teamColors
     if (!teamColors || !Array.isArray(teamColors) || teamColors.length !== 2) {
       res.status(400).json({ 
+        success: false,
         error: 'teamColors must be an array of exactly 2 color strings' 
       });
       return;
@@ -26,6 +27,7 @@ export const createSet = async (req: Request, res: Response): Promise<void> => {
 
     if (!teamColors.every(color => typeof color === 'string' && color.trim().length > 0)) {
       res.status(400).json({ 
+        success: false,
         error: 'Each team color must be a non-empty string' 
       });
       return;
@@ -34,14 +36,14 @@ export const createSet = async (req: Request, res: Response): Promise<void> => {
     // Verify match exists
     const match = await MatchModel.findById(matchId);
     if (!match) {
-      res.status(404).json({ error: 'Match not found' });
+      res.status(404).json({ success: false, error: 'Match not found' });
       return;
     }
 
     // Check if set with this number already exists for this match
     const existingSet = await SetModel.findOne({ matchId, setNumber });
     if (existingSet) {
-      res.status(409).json({ error: 'Set with this number already exists for this match' });
+      res.status(409).json({ success: false, error: 'Set with this number already exists for this match' });
       return;
     }
 
@@ -58,9 +60,9 @@ export const createSet = async (req: Request, res: Response): Promise<void> => {
     
     // Populate the set with match data for response
     const populatedSet = await SetModel.findById(set._id).populate('matchId');
-    res.status(201).json(populatedSet);
+    res.status(201).json({ success: true, data: populatedSet });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -75,13 +77,13 @@ export const getSet = async (req: Request, res: Response): Promise<void> => {
       .populate('timeouts');
 
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
-    res.json(set);
+    res.json({ success: true, data: set });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -102,7 +104,7 @@ export const updateSet = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (Object.keys(actualUpdates).length === 0) {
-      res.status(400).json({ error: 'No valid updates provided' });
+      res.status(400).json({ success: false, error: 'No valid updates provided' });
       return;
     }
 
@@ -113,13 +115,13 @@ export const updateSet = async (req: Request, res: Response): Promise<void> => {
     ).populate('matchId');
 
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
-    res.json(set);
+    res.json({ success: true, data: set });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -130,13 +132,13 @@ export const deleteSet = async (req: Request, res: Response): Promise<void> => {
 
     const set = await SetModel.findByIdAndDelete(setId);
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
-    res.json({ message: 'Set deleted successfully' });
+    res.json({ success: true, message: 'Set deleted successfully' });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -147,11 +149,11 @@ export const startSet = async (req: Request, res: Response): Promise<void> => {
     const set = await SetModel.findById(setId);
     
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
     if (set.status !== 'notStarted') {
-      res.status(400).json({ error: 'Set can only be started from notStarted status' });
+      res.status(400).json({ success: false, error: 'Set can only be started from notStarted status' });
       return;
     }
     
@@ -159,9 +161,9 @@ export const startSet = async (req: Request, res: Response): Promise<void> => {
     set.startTime = new Date();
     await set.save();
     
-    res.json(set);
+    res.json({ success: true, data: set });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -177,16 +179,19 @@ export const completeSet = async (req: Request, res: Response): Promise<void> =>
     
     // Return the set along with updated match information
     res.json({
-      set: progressionResult.set,
-      match: progressionResult.match,
-      progression: {
-        setCompleted: progressionResult.setCompleted,
-        matchCompleted: progressionResult.matchCompleted,
-        newSetCreated: progressionResult.newSetCreated
+      success: true,
+      data: {
+        set: progressionResult.set,
+        match: progressionResult.match,
+        progression: {
+          setCompleted: progressionResult.setCompleted,
+          matchCompleted: progressionResult.matchCompleted,
+          newSetCreated: progressionResult.newSetCreated
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -206,9 +211,9 @@ export const getSetGoals = async (req: Request, res: Response): Promise<void> =>
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(goals);
+    res.json({ success: true, data: goals });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -228,9 +233,9 @@ export const getSetTimeouts = async (req: Request, res: Response): Promise<void>
       .populate('setId')
       .sort({ timestamp: 1 });
 
-    res.json(timeouts);
+    res.json({ success: true, data: timeouts });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -243,6 +248,7 @@ export const assignTeamColors = async (req: Request, res: Response): Promise<voi
     // Validate required fields
     if (!teamColors || !Array.isArray(teamColors) || teamColors.length !== 2) {
       res.status(400).json({ 
+        success: false,
         error: 'teamColors must be an array of exactly 2 color strings' 
       });
       return;
@@ -251,6 +257,7 @@ export const assignTeamColors = async (req: Request, res: Response): Promise<voi
     // Validate that both colors are non-empty strings
     if (!teamColors.every(color => typeof color === 'string' && color.trim().length > 0)) {
       res.status(400).json({ 
+        success: false,
         error: 'Each team color must be a non-empty string' 
       });
       return;
@@ -259,14 +266,14 @@ export const assignTeamColors = async (req: Request, res: Response): Promise<voi
     // Find the set
     const set = await SetModel.findById(setId);
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
     // Verify the associated match exists
     const match = await MatchModel.findById(set.matchId);
     if (!match) {
-      res.status(404).json({ error: 'Associated match not found' });
+      res.status(404).json({ success: false, error: 'Associated match not found' });
       return;
     }
 
@@ -276,9 +283,9 @@ export const assignTeamColors = async (req: Request, res: Response): Promise<voi
 
     // Return the updated set
     const updatedSet = await SetModel.findById(setId).populate('matchId');
-    res.json(updatedSet);
+    res.json({ success: true, data: updatedSet });
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -288,7 +295,7 @@ export const resolveSetByNumber = async (req: Request, res: Response, next: any)
     const { matchId, setNumber } = req.params;
     
     if (!matchId || !setNumber) {
-      res.status(400).json({ error: 'Missing matchId or setNumber' });
+      res.status(400).json({ success: false, error: 'Missing matchId or setNumber' });
       return;
     }
 
@@ -298,7 +305,7 @@ export const resolveSetByNumber = async (req: Request, res: Response, next: any)
     });
 
     if (!set) {
-      res.status(404).json({ error: 'Set not found' });
+      res.status(404).json({ success: false, error: 'Set not found' });
       return;
     }
 
@@ -306,6 +313,6 @@ export const resolveSetByNumber = async (req: Request, res: Response, next: any)
     req.params.setId = (set as any)._id.toString();
     next();
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    res.status(400).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 };
