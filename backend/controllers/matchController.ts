@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import { AuthRequest } from '../middleware/authMiddleware';
 import { MatchModel } from '../models/Match';
 import { MatchStateMachine } from '../models/MatchStateMachine';
 import { SetModel } from '../models/Set';
@@ -233,5 +234,68 @@ export const abortMatch = async (req: Request, res: Response): Promise<void> => 
     res.json(match);
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+  }
+};
+
+// Get all matches created by current user
+export const getMatches = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'Authentication required' });
+      return;
+    }
+
+    const { page, limit, status } = req.query;
+    
+    // Parse pagination parameters with validation
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.max(0, parseInt(limit as string) || 50); // Default 50, 0 means no limit
+    const skip = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
+    
+    // Build query filter
+    const filter: any = { createdBy: req.user.id };
+    if (status) {
+      filter.status = status;
+    }
+    
+    // Execute query with optimized selection (exclude full set objects, keep only IDs)
+    const query = MatchModel.find(filter)
+      .sort({ createdAt: -1 }) // Sort by creation date, newest first
+      .select('-sets'); // Exclude sets field to reduce bandwidth
+    
+    // Apply pagination if limit is specified
+    if (limitNum > 0) {
+      query.skip(skip).limit(limitNum);
+    }
+    
+    const matches = await query.exec();
+    
+    // Get total count for pagination metadata
+    const totalCount = await MatchModel.countDocuments(filter).exec();
+    
+    // Calculate pagination metadata
+    const totalPages = limitNum > 0 ? Math.ceil(totalCount / limitNum) : 1;
+    
+    // Prepare response with consistent structure
+    res.json({
+      success: true,
+      data: {
+        matches,
+        pagination: {
+          page: pageNum,
+          limit: limitNum > 0 ? limitNum : totalCount,
+          total: totalCount,
+          pages: totalPages,
+          hasNext: pageNum < totalPages,
+          hasPrev: pageNum > 1
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error fetching matches',
+      error: error instanceof Error ? error.message : String(error) 
+    });
   }
 };

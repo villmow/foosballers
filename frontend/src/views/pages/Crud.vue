@@ -153,7 +153,7 @@ function getStatusLabel(status) {
                 v-model:selection="selectedProducts"
                 :value="products"
                 dataKey="id"
-                :paginator="true"
+                :   or="true"
                 :rows="10"
                 :filters="filters"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"

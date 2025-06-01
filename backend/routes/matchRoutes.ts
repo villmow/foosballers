@@ -7,6 +7,7 @@ import {
     endMatch,
     getCurrentSet,
     getMatch,
+    getMatches,
     getMatchSets,
     startMatch,
     startNewSet,
@@ -29,6 +30,9 @@ const router = Router();
 
 // Create match (public for now, but could require auth)
 router.post('/', createMatch);
+
+// Get all matches for current user (requires authentication)
+router.get('/', requireAuth, getMatches);
 
 // All other match routes require authentication
 router.use(requireAuth);
