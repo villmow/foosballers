@@ -2,8 +2,8 @@
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useToast } from 'primevue/usetoast';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const email = ref('');
 const password = ref('');
@@ -11,7 +11,47 @@ const checked = ref(false);
 const loading = ref(false);
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
 const { login: authLogin } = useAuth();
+
+// Check for logout reason messages on component mount
+onMounted(() => {
+  const reason = route.query.reason;
+  const message = route.query.message;
+  const timeout = route.query.timeout;
+  
+  if (reason || timeout) {
+    let alertMessage = '';
+    let severity = 'warn';
+    
+    if (timeout) {
+      alertMessage = 'Your session has expired. Please log in again.';
+    } else if (message) {
+      alertMessage = decodeURIComponent(message);
+    } else if (reason === 'token_invalid') {
+      alertMessage = 'Your session is no longer valid. Please log in again.';
+    } else if (reason === 'inactivity') {
+      alertMessage = 'Your session expired due to inactivity. Please log in again.';
+    } else if (reason === 'auth_error') {
+      alertMessage = 'Authentication error occurred. Please log in again.';
+    }
+    
+    if (alertMessage) {
+      toast.add({ 
+        severity, 
+        summary: 'Session Expired', 
+        detail: alertMessage, 
+        life: 5000 
+      });
+      
+      // Clean up the URL by removing the query parameters
+      router.replace({ 
+        path: route.path, 
+        query: {} 
+      });
+    }
+  }
+});
 
 const login = async () => {
   if (!email.value || !password.value) {

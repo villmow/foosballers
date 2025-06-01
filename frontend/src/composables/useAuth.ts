@@ -28,34 +28,57 @@ export function setupAuthGuards(router: any) {
       await authStore.initialize()
     }
 
-    // Allow access to login, landing, and public auth pages
+    // Define public pages that don't require authentication
     const publicPages = [
       '/auth/login',
       '/auth/forgot-password',
       '/auth/reset-password',
       '/auth/error',
       '/auth/access',
-      '/landing',
       '/pages/notfound',
     ];
     
-    // Check if this is a public page
-    const isPublicPage = publicPages.includes(to.path);
-    
-    if (isPublicPage) {
-      // If user is authenticated and tries to access landing or login, redirect to main page
-      if (authStore.isAuthenticated && (to.path === '/landing' || to.path === '/auth/login')) {
+    // Handle root path "/" - show landing if not authenticated, dashboard if authenticated
+    if (to.path === '/') {
+      if (authStore.isAuthenticated) {
+        // User is authenticated, show dashboard (default behavior)
+        return next();
+      } else {
+        // User is not authenticated, redirect to landing page
+        return next('/landing');
+      }
+    }
+
+    // Handle landing page - redirect authenticated users to dashboard
+    if (to.path === '/landing') {
+      if (authStore.isAuthenticated) {
         return next('/');
       }
       return next();
     }
+
+    // Check if this is a public page
+    const isPublicPage = publicPages.includes(to.path);
     
-    // For protected routes, require authentication
-    if (!authStore.isAuthenticated) {
-      return next({ path: '/landing', query: { redirect: to.fullPath } });
+    if (isPublicPage) {
+      // If user is authenticated and tries to access login, redirect to dashboard
+      if (authStore.isAuthenticated && to.path === '/auth/login') {
+        return next('/');
+      }
+      return next();
+    }
+
+    // Check if route or its parent requires authentication
+    const requiresAuth = to.matched.some((record: any) => record.meta.requiresAuth) || 
+                        !isPublicPage; // Default behavior: require auth for non-public pages
+
+    // For routes requiring authentication
+    if (requiresAuth && !authStore.isAuthenticated) {
+      // Redirect to login page with return path
+      return next({ path: '/auth/login', query: { redirect: to.fullPath } });
     }
     
-    // User is authenticated, allow access
+    // User is authenticated or route doesn't require auth, allow access
     next();
   });
 }

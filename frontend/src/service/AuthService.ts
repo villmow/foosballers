@@ -1,5 +1,6 @@
 // Session timeout handler
 let sessionTimeoutId: number | null = null;
+let isRedirecting = false; // Flag to prevent multiple redirects
 
 // Reset session timeout - call this whenever there's user activity
 const resetSessionTimeout = (): void => {
@@ -23,6 +24,48 @@ const startActivityMonitoring = (): void => {
     document.addEventListener(event, resetSessionTimeout);
   });
 };
+
+// Global response interceptor for authentication errors
+const createAuthenticatedFetch = (originalFetch: typeof fetch) => {
+  return async (url: string | Request | URL, options?: RequestInit): Promise<Response> => {
+    const response = await originalFetch(url, options);
+    
+    // Check for authentication errors
+    if (response.status === 401 || response.status === 440) {
+      try {
+        const errorData = await response.clone().json();
+        
+        // Check if this is a token invalidation error
+        if (errorData.error === 'Invalid token' || 
+            errorData.error === 'Authentication required' ||
+            errorData.error === 'Session expired' ||
+            errorData.reason === 'inactivity') {
+          
+          // Prevent multiple simultaneous redirects
+          if (!isRedirecting) {
+            isRedirecting = true;
+            console.log('Token invalidated, redirecting to login...');
+            AuthService.handleTokenInvalidation(errorData.reason || 'token_invalid');
+          }
+        }
+      } catch (e) {
+        // If we can't parse the response, still handle 401/440 as auth errors
+        if (!isRedirecting) {
+          isRedirecting = true;
+          console.log('Authentication error, redirecting to login...');
+          AuthService.handleTokenInvalidation('auth_error');
+        }
+      }
+    }
+    
+    return response;
+  };
+};
+
+// Install the global fetch interceptor
+if (typeof window !== 'undefined') {
+  window.fetch = createAuthenticatedFetch(window.fetch);
+}
 
 // Create headers with token
 const createHeaders = (additionalHeaders = {}): HeadersInit => {
@@ -52,7 +95,51 @@ export const AuthService = {
     localStorage.removeItem('user');
     
     // Redirect to login page with timeout message
-    window.location.href = '/login?timeout=true';
+    window.location.href = '/auth/login?timeout=true';
+  },
+
+  // Handle token invalidation (called by fetch interceptor)
+  handleTokenInvalidation(reason = 'token_invalid') {
+    // Clear any stored auth data
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    
+    // Clear session management
+    if (sessionTimeoutId) {
+      window.clearTimeout(sessionTimeoutId);
+      sessionTimeoutId = null;
+    }
+    
+    // Remove activity listeners
+    ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+      document.removeEventListener(event, resetSessionTimeout);
+    });
+    
+    // Show appropriate message and redirect
+    const currentPath = window.location.pathname;
+    const isAlreadyOnAuthPage = currentPath.startsWith('/auth/') || currentPath === '/landing';
+    
+    if (!isAlreadyOnAuthPage) {
+      // Add query parameters to indicate the reason for logout
+      const params = new URLSearchParams();
+      params.set('reason', reason);
+      if (reason === 'inactivity') {
+        params.set('message', 'Your session expired due to inactivity');
+      } else if (reason === 'token_invalid') {
+        params.set('message', 'Your session is no longer valid');
+      } else {
+        params.set('message', 'Please log in again');
+      }
+      
+      // Always redirect to login page for token invalidation
+      window.location.href = `/auth/login?${params.toString()}`;
+    }
+    
+    // Reset the redirecting flag after a short delay
+    setTimeout(() => {
+      isRedirecting = false;
+    }, 1000);
   },
   
   // Verify if the session is still valid
