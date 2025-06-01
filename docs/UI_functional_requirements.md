@@ -232,7 +232,7 @@ Please use the `Crud.vue`file as a template.
 *   **Layout & Elements (inspired by `Crud.vue`):**
     *   **Title:** "All Matches".
     *   **Action Button (Top):** `[ + Create New Match ]`
-        *   *Action:* Shows a Model with the current the daily `MatchConfiguration` and the `PlayerConfiguration`. 
+        *   *Action:* Shows a Modal with the current `MatchConfiguration` and the `PlayerConfiguration`. A new match can be started from here, which forwards the user to /matches/matchId, which renders the MatchView.
     *   **Filtering & Search Bar (Above the list):**
         *   **Search Input:** `[ Search by Team Name or Match ID... ]`
         *   **Status Filter:** Dropdown or segmented buttons: `[ All ] [ In Progress ] [ Completed ] [ Aborted ]`
@@ -249,8 +249,7 @@ Please use the `Crud.vue`file as a template.
 *   **Behavior:**
     *   On load, fetches matches (`GET /matches`).
     *   Search and filter controls update query parameters for `GET /matches`.
-    *   Clicking "Log Match" for an "In Progress" match navigates to `MatchLoggingWidget` for that match.
-    *   Clicking "View Details" (or the Match ID) navigates to `MatchDetailsWidget`.
+    *   Clicking on a match navigates to `MatchView` for that match.
 
 ---
 
