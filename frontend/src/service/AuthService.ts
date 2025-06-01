@@ -195,5 +195,26 @@ export const AuthService = {
       throw new Error(error.error || error.message || 'Failed to update profile');
     }
     return await response.json();
+  },
+
+  /**
+   * Make an authenticated request with automatic credential handling
+   */
+  async authenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+    const defaultOptions: RequestInit = {
+      credentials: 'include',
+      headers: createHeaders(options.headers),
+    };
+    
+    const mergedOptions = {
+      ...defaultOptions,
+      ...options,
+      headers: {
+        ...defaultOptions.headers,
+        ...options.headers,
+      },
+    };
+
+    return fetch(url, mergedOptions);
   }
 };

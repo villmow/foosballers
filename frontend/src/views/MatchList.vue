@@ -1,6 +1,7 @@
 <script setup>
 import MatchConfiguration from '@/components/match/MatchConfiguration.vue';
 import PlayerConfiguration from '@/components/match/PlayerConfiguration.vue';
+import { MatchService } from '@/service/MatchService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
@@ -23,10 +24,10 @@ const showPlayerConfig = ref(false);
 const matchConfiguration = ref({});
 
 const statuses = ref([
-    { label: 'WAITING_FOR_PLAYERS', value: 'waiting_for_players' },
-    { label: 'IN_PROGRESS', value: 'in_progress' },
+    { label: 'NOT_STARTED', value: 'notStarted' },
+    { label: 'IN_PROGRESS', value: 'inProgress' },
     { label: 'COMPLETED', value: 'completed' },
-    { label: 'CANCELLED', value: 'cancelled' }
+    { label: 'ABORTED', value: 'aborted' }
 ]);
 
 // Load matches on component mount
@@ -36,38 +37,42 @@ onMounted(async () => {
 
 async function loadMatches() {
     try {
-        // TODO: Replace with actual API call
-        // For now, using mock data
-        matches.value = [
-            {
-                id: '1',
-                teams: ['Team Alpha', 'Team Beta'],
-                scores: [3, 5],
-                status: 'completed',
-                createdAt: new Date('2024-01-15'),
-                updatedAt: new Date('2024-01-15'),
+        const response = await MatchService.getMatches();
+        
+        if (response.success && response.data) {
+            // Map backend data to component format
+            matches.value = response.data.matches.map(match => ({
+                id: match._id,
+                teams: match.teams || [],
+                status: match.status,
+                createdAt: match.createdAt ? new Date(match.createdAt) : new Date(),
+                updatedAt: match.updatedAt ? new Date(match.updatedAt) : new Date(),
+                startTime: match.startTime ? new Date(match.startTime) : null,
+                endTime: match.endTime ? new Date(match.endTime) : null,
+                duration: match.duration || null,
                 matchConfiguration: {
-                    playerSetup: '2v2',
-                    numGoalsToWin: 5,
-                    numSetsToWin: 2
+                    playerSetup: match.playerSetup,
+                    numGoalsToWin: match.numGoalsToWin,
+                    numSetsToWin: match.numSetsToWin,
+                    name: match.name
                 }
-            },
-            {
-                id: '2',
-                teams: ['Foosball Masters', 'The Spinners'],
-                scores: [2, 1],
-                status: 'in_progress',
-                createdAt: new Date('2024-01-16'),
-                updatedAt: new Date('2024-01-16'),
-                matchConfiguration: {
-                    playerSetup: '2v2',
-                    numGoalsToWin: 7,
-                    numSetsToWin: 1
-                }
-            }
-        ];
+            }));
+        } else {
+            matches.value = [];
+        }
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load matches', life: 3000 });
+        console.error('Error loading matches:', error);
+        if (error.message.includes('401') || error.message.includes('Authentication')) {
+            toast.add({ 
+                severity: 'warn', 
+                summary: 'Authentication Required', 
+                detail: 'Please log in to view matches', 
+                life: 3000 
+            });
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load matches', life: 3000 });
+        }
+        matches.value = [];
     }
 }
 
@@ -104,22 +109,13 @@ async function saveMatch() {
     submitted.value = true;
     
     try {
-        // TODO: Replace with actual API call to create match
-        const newMatch = {
-            id: createId(),
-            teams: ['New Team A', 'New Team B'],
-            scores: [0, 0],
-            status: 'waiting_for_players',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            matchConfiguration: matchConfiguration.value
-        };
-        
-        matches.value.push(newMatch);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Match Created', life: 3000 });
+        // Note: Match creation is handled by PlayerConfiguration component
+        // This function is kept for potential future use with editing
         hideDialog();
+        toast.add({ severity: 'info', summary: 'Info', detail: 'Match creation is handled by the player configuration step', life: 3000 });
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to create match', life: 3000 });
+        console.error('Error in saveMatch:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'An error occurred', life: 3000 });
     }
 }
 
@@ -139,11 +135,18 @@ function confirmDeleteMatch(matchData) {
 
 async function deleteMatch() {
     try {
-        matches.value = matches.value.filter((val) => val.id !== match.value.id);
-        deleteMatchDialog.value = false;
-        match.value = {};
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Match Deleted', life: 3000 });
+        const response = await MatchService.deleteMatch(match.value.id);
+        
+        if (response.success) {
+            matches.value = matches.value.filter((val) => val.id !== match.value.id);
+            deleteMatchDialog.value = false;
+            match.value = {};
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Match Deleted', life: 3000 });
+        } else {
+            throw new Error('Failed to delete match');
+        }
     } catch (error) {
+        console.error('Error deleting match:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete match', life: 3000 });
     }
 }
@@ -167,11 +170,30 @@ function confirmDeleteSelected() {
 
 async function deleteSelectedMatches() {
     try {
-        matches.value = matches.value.filter((val) => !selectedMatches.value.includes(val));
-        deleteMatchesDialog.value = false;
-        selectedMatches.value = null;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Matches Deleted', life: 3000 });
+        const matchIds = selectedMatches.value.map(match => match.id);
+        
+        // Use bulk delete if available, otherwise delete individually
+        const deletePromises = matchIds.map(id => MatchService.deleteMatch(id));
+        
+        const results = await Promise.allSettled(deletePromises);
+        const successfulDeletes = results.filter(result => result.status === 'fulfilled' && result.value.success).length;
+        const failedDeletes = results.length - successfulDeletes;
+        
+        if (successfulDeletes > 0) {
+            matches.value = matches.value.filter((val) => !selectedMatches.value.includes(val));
+            deleteMatchesDialog.value = false;
+            selectedMatches.value = null;
+            toast.add({ 
+                severity: 'success', 
+                summary: 'Successful', 
+                detail: `${successfulDeletes} match(es) deleted${failedDeletes > 0 ? `, ${failedDeletes} failed` : ''}`, 
+                life: 3000 
+            });
+        } else {
+            throw new Error('Failed to delete any matches');
+        }
     } catch (error) {
+        console.error('Error deleting matches:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete matches', life: 3000 });
     }
 }
@@ -180,11 +202,11 @@ function getStatusLabel(status) {
     switch (status) {
         case 'completed':
             return 'success';
-        case 'in_progress':
+        case 'inProgress':
             return 'info';
-        case 'waiting_for_players':
+        case 'notStarted':
             return 'warn';
-        case 'cancelled':
+        case 'aborted':
             return 'danger';
         default:
             return null;
@@ -192,21 +214,46 @@ function getStatusLabel(status) {
 }
 
 function formatDate(date) {
+    if (!date) return 'N/A';
     return new Date(date).toLocaleDateString();
 }
 
-function formatTeams(teams) {
-    return teams.join(' vs ');
+function formatTeamA(teams) {
+    if (!teams || !teams[0]) return 'Team A';
+    const team = teams[0];
+    if (team.players && team.players.length > 0) {
+        return team.players.map(player => player.name).join(' / ');
+    }
+    return team.name || 'Team A';
 }
 
-function formatScore(scores) {
-    return scores.join(' - ');
+function formatTeamB(teams) {
+    if (!teams || !teams[1]) return 'Team B';
+    const team = teams[1];
+    if (team.players && team.players.length > 0) {
+        return team.players.map(player => player.name).join(' / ');
+    }
+    return team.name || 'Team B';
 }
 
-function onMatchCreated(matchData) {
+function formatScore(match) {
+    if (!match.teams || match.teams.length < 2) return 'N/A';
+    return `${match.teams[0].setsWon || 0} - ${match.teams[1].setsWon || 0}`;
+}
+
+function formatDuration(match) {
+    if (!match.startTime || !match.endTime) return 'N/A';
+    const duration = match.duration || (new Date(match.endTime).getTime() - new Date(match.startTime).getTime()) / 1000;
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    return `${minutes}m ${seconds}s`;
+}
+
+async function onMatchCreated(matchData) {
     // Handle match creation from PlayerConfiguration component
-    matches.value.push(matchData);
     hideDialog();
+    // Reload matches to get the latest data from the server
+    await loadMatches();
     toast.add({ severity: 'success', summary: 'Success', detail: 'Match created successfully!', life: 3000 });
 }
 </script>
@@ -251,15 +298,19 @@ function onMatchCreated(matchData) {
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="id" header="Match ID" sortable style="min-width: 8rem"></Column>
-                <Column header="Teams" sortable style="min-width: 16rem">
+                <Column header="Team A" sortable style="min-width: 16rem">
                     <template #body="slotProps">
-                        {{ formatTeams(slotProps.data.teams) }}
+                        {{ formatTeamA(slotProps.data.teams) }}
+                    </template>
+                </Column>
+                <Column header="Team B" sortable style="min-width: 16rem">
+                    <template #body="slotProps">
+                        {{ formatTeamB(slotProps.data.teams) }}
                     </template>
                 </Column>
                 <Column header="Score" style="min-width: 8rem">
                     <template #body="slotProps">
-                        {{ formatScore(slotProps.data.scores) }}
+                        {{ formatScore(slotProps.data) }}
                     </template>
                 </Column>
                 <Column field="status" header="Status" sortable style="min-width: 10rem">
@@ -272,9 +323,9 @@ function onMatchCreated(matchData) {
                         {{ formatDate(slotProps.data.createdAt) }}
                     </template>
                 </Column>
-                <Column header="Setup" style="min-width: 8rem">
+                <Column header="Duration" style="min-width: 8rem">
                     <template #body="slotProps">
-                        {{ slotProps.data.matchConfiguration?.playerSetup || 'N/A' }}
+                        {{ formatDuration(slotProps.data) }}
                     </template>
                 </Column>
                 <Column :exportable="false" style="min-width: 16rem">
