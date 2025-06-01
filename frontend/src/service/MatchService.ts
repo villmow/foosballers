@@ -94,7 +94,15 @@ export class MatchService {
         throw new Error(`Failed to fetch match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle direct match object response from backend
+      if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error fetching match:', error);
       throw error;
@@ -118,7 +126,15 @@ export class MatchService {
         throw new Error(`Failed to create match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle direct match object response from backend
+      if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error creating match:', error);
       throw error;
@@ -142,7 +158,15 @@ export class MatchService {
         throw new Error(`Failed to update match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle direct match object response from backend
+      if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error updating match:', error);
       throw error;
@@ -206,7 +230,17 @@ export class MatchService {
         throw new Error(`Failed to start match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle { match, set } response format or direct match object
+      if (rawData.match) {
+        return { success: true, data: rawData.match };
+      } else if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error starting match:', error);
       throw error;
@@ -226,7 +260,15 @@ export class MatchService {
         throw new Error(`Failed to end match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle direct match object response from backend
+      if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error ending match:', error);
       throw error;
@@ -246,9 +288,87 @@ export class MatchService {
         throw new Error(`Failed to abort match: ${response.statusText}`);
       }
 
-      return await response.json();
+      const rawData = await response.json();
+      
+      // Handle direct match object response from backend
+      if (rawData._id) {
+        return { success: true, data: rawData };
+      }
+      
+      // Handle wrapped response format
+      return rawData;
     } catch (error) {
       console.error('Error aborting match:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the current set for a match
+   */
+  static async getCurrentSet(matchId: string): Promise<{ success: boolean; data: any }> {
+    try {
+      const response = await AuthService.authenticatedRequest(`${this.BASE_URL}/${matchId}/sets/current`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, data: null };
+        }
+        throw new Error(`Failed to fetch current set: ${response.statusText}`);
+      }
+
+      return { success: true, data: await response.json() };
+    } catch (error) {
+      console.error('Error fetching current set:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new set for a match
+   */
+  static async createSet(matchId: string): Promise<{ success: boolean; data: any }> {
+    try {
+      const response = await AuthService.authenticatedRequest(`${this.BASE_URL}/${matchId}/sets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create set: ${response.statusText}`);
+      }
+
+      return { success: true, data: await response.json() };
+    } catch (error) {
+      console.error('Error creating set:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Assign colors to a specific set
+   */
+  static async assignColorsToSet(setId: string, teamColors: string[]): Promise<{ success: boolean; data: any }> {
+    try {
+      const response = await AuthService.authenticatedRequest(`/api/sets/${setId}/colors`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ teamColors }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to assign colors to set: ${response.statusText}`);
+      }
+
+      return { success: true, data: await response.json() };
+    } catch (error) {
+      console.error('Error assigning colors to set:', error);
       throw error;
     }
   }

@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import SetLoggingWidget from './SetLoggingWidget.vue';
 import SetResultsSummary from './SetResultsSummary.vue';
+import { MatchService } from '@/service/MatchService';
 
 const props = defineProps({
   matchId: {
@@ -117,20 +118,17 @@ async function abortMatch() {
   
   try {
     if (isAbortableMatch) {
-      // Call API to abort match
-      const response = await fetch(`/api/matches/${props.matchId}/abort`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      // Use MatchService to abort match
+      const response = await MatchService.abortMatch(props.matchId);
       
-      if (response.ok) {
+      if (response.success) {
         console.log('Match aborted successfully');
         // Stop the match timer
         stopMatchTimer();
         // Emit event to remove the widget from dashboard
         emit('match-ended');
       } else {
-        console.error('Failed to abort match:', response.statusText);
+        console.error('Failed to abort match');
       }
     } else {
       // Just close/remove the widget without calling abort API
@@ -143,14 +141,10 @@ async function abortMatch() {
 
 async function startMatch() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/start`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    const response = await MatchService.startMatch(props.matchId);
     
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Match started:', result);
+    if (response.success && response.data) {
+      console.log('Match started:', response.data);
       
       // Refresh match details to get the updated startTime
       await fetchMatchDetails();
@@ -159,14 +153,14 @@ async function startMatch() {
       startMatchTimer();
       
       // Assign initial team colors to the first set if provided
-      if (result.set && localTeamColors.value && localTeamColors.value.length === 2) {
-        await assignColorsToSet(result.set._id, localTeamColors.value);
+      if (response.data.currentSet && localTeamColors.value && localTeamColors.value.length === 2) {
+        await assignColorsToSet(response.data.currentSet, localTeamColors.value);
       }
       
       // Fetch current set to get updated data
       await fetchCurrentSet();
     } else {
-      console.error('Failed to start match:', response.statusText);
+      console.error('Failed to start match');
     }
   } catch (error) {
     console.error('Error starting match:', error);
@@ -203,25 +197,17 @@ async function swapColors() {
 // Assign colors to a specific set
 async function assignColorsToSet(setId, teamColors) {
   try {
-    const response = await fetch(`/api/sets/${setId}/colors`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ teamColors }),
-    });
+    const response = await MatchService.assignColorsToSet(setId, teamColors);
     
-    if (response.ok) {
-      const updatedSet = await response.json();
-      console.log('Colors assigned to set:', updatedSet);
+    if (response.success && response.data) {
+      console.log('Colors assigned to set:', response.data);
       
       // Update current set if it matches
       if (currentSet.value && currentSet.value.id === setId) {
-        currentSet.value.teamColors = updatedSet.teamColors;
+        currentSet.value.teamColors = response.data.teamColors;
       }
     } else {
-      console.error('Failed to assign colors to set:', response.statusText);
+      console.error('Failed to assign colors to set');
     }
   } catch (error) {
     console.error('Error assigning colors to set:', error);
@@ -230,9 +216,15 @@ async function assignColorsToSet(setId, teamColors) {
 
 async function endMatch() {
   try {
-    // TODO: Call API to end match
-    console.log('Ending match...');
-    // Show match summary and navigate to match details
+    const response = await MatchService.endMatch(props.matchId);
+    
+    if (response.success && response.data) {
+      console.log('Match ended successfully:', response.data);
+      // Show match summary and navigate to match details
+      emit('match-ended');
+    } else {
+      console.error('Failed to end match');
+    }
   } catch (error) {
     console.error('Error ending match:', error);
   }
@@ -240,32 +232,25 @@ async function endMatch() {
 
 async function startNextSet() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/sets`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    });
+    const response = await MatchService.createSet(props.matchId);
     
-    if (response.ok) {
-      const result = await response.json();
-      console.log('New set created:', result.set);
+    if (response.success && response.data) {
+      console.log('New set created:', response.data.set);
       
       // Update the current set data
-      if (result.set) {
+      if (response.data.set) {
         const timeoutsPerSet = match.value?.timeoutsPerSet || 2; // Default to 2 if not set
         
         currentSet.value = {
-          id: result.set._id,
-          setNumber: result.set.setNumber,
-          status: result.set.status,
-          teamAScore: result.set.scores[0],
-          teamBScore: result.set.scores[1],
-          teamATimeouts: timeoutsPerSet - result.set.timeoutsUsed[0],
-          teamBTimeouts: timeoutsPerSet - result.set.timeoutsUsed[1],
+          id: response.data.set._id,
+          setNumber: response.data.set.setNumber,
+          status: response.data.set.status,
+          teamAScore: response.data.set.scores[0],
+          teamBScore: response.data.set.scores[1],
+          teamATimeouts: timeoutsPerSet - response.data.set.timeoutsUsed[0],
+          teamBTimeouts: timeoutsPerSet - response.data.set.timeoutsUsed[1],
           timeoutsPerSet: timeoutsPerSet,
-          teamColors: result.set.teamColors || ['#aaaaaa', '#cccccc'], // Include team colors from set
+          teamColors: response.data.set.teamColors || ['#aaaaaa', '#cccccc'], // Include team colors from set
           // Add match configuration for game rules
           numGoalsToWin: match.value?.numGoalsToWin || 5,
           twoAhead: match.value?.twoAhead || false,
@@ -276,7 +261,7 @@ async function startNextSet() {
       // Refresh match details to get updated set count
       await fetchMatchDetails();
     } else {
-      console.error('Failed to start next set:', response.statusText);
+      console.error('Failed to start next set');
     }
   } catch (error) {
     console.error('Error starting next set:', error);
@@ -286,12 +271,10 @@ async function startNextSet() {
 // Data fetching
 async function fetchMatchDetails() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}`, {
-      credentials: 'include',
-    });
+    const response = await MatchService.getMatch(props.matchId);
     
-    if (response.ok) {
-      const matchData = await response.json();
+    if (response.success && response.data) {
+      const matchData = response.data;
       
       // Convert backend format to component format
       match.value = {
@@ -313,7 +296,7 @@ async function fetchMatchDetails() {
         twoAhead: matchData.twoAhead || false,
       };
     } else {
-      console.error('Failed to fetch match details:', response.statusText);
+      console.error('Failed to fetch match details');
     }
   } catch (error) {
     console.error('Error fetching match details:', error);
@@ -322,12 +305,11 @@ async function fetchMatchDetails() {
 
 async function fetchCurrentSet() {
   try {
-    const response = await fetch(`/api/matches/${props.matchId}/sets/current`, {
-      credentials: 'include',
-    });
     console.log('Fetching current set for match:', props.matchId);
-    if (response.ok) {
-      const set = await response.json();
+    const response = await MatchService.getCurrentSet(props.matchId);
+    
+    if (response.success && response.data) {
+      const set = response.data;
       console.log('Current set data:', set);
       // Get match details to determine timeouts per set
       const timeoutsPerSet = match.value?.timeoutsPerSet || 2; // Default to 2 if not set
@@ -348,12 +330,10 @@ async function fetchCurrentSet() {
         twoAhead: match.value?.twoAhead || false,
         twoAheadUpUntil: match.value?.twoAheadUpUntil || 8,
       };
-    } else if (response.status === 404) {
+    } else {
       // No current set found - this might happen for new matches
       console.log('No current set found, match may need to be started');
       currentSet.value = null;
-    } else {
-      console.error('Failed to fetch current set:', response.statusText);
     }
   } catch (error) {
     console.error('Error fetching current set:', error);

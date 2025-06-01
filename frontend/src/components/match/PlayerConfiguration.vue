@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { MatchService } from '@/service/MatchService';
 
 // Props for configuration
 const props = defineProps({
@@ -111,6 +112,10 @@ async function fetchPlayersFromAPI() {
 
 onMounted(() => {
   fetchPlayersFromAPI();
+  
+  // Debug: Test MatchService import
+  console.log('MatchService imported successfully:', MatchService);
+  console.log('MatchService methods:', Object.getOwnPropertyNames(MatchService));
 });
 
 async function startMatch() {
@@ -126,49 +131,71 @@ async function startMatch() {
   }
   
   try {
+    console.log('Starting match creation process...');
+    
     // Get match configuration from parent component
-    const matchConfig = props.getMatchConfiguration();
+    console.log('Getting match configuration...');
+    let matchConfig;
+    try {
+      matchConfig = props.getMatchConfiguration();
+      console.log('Match configuration:', matchConfig);
+    } catch (configError) {
+      console.error('Error getting match configuration:', configError);
+      throw new Error('Failed to get match configuration: ' + configError.message);
+    }
     
     const matchData = {
       playerSetup: props.playerSetup,
       teams: [
         {
           name: teamNames.value[0],
-          players: team1Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
+          players: team1Players.map(p => ({ name: p.name, playerId: null })),
+          setsWon: 0,
         },
         {
           name: teamNames.value[1],
-          players: team2Players.map(p => ({ name: p.name, playerId: null })), // Assuming playerId can be null initially
+          players: team2Players.map(p => ({ name: p.name, playerId: null })),
+          setsWon: 0,
         },
       ],
-      teamColors: [teamAColor.value, teamBColor.value], // Send colors separately for first set
-      ...matchConfig, // Spread the match configuration
-      // Get user ID from context or store
+      teamColors: [teamAColor.value, teamBColor.value],
+      status: 'notStarted',
+      ...matchConfig,
     };
     
     console.log('Creating match with data:', matchData);
+    console.log('MatchService available:', !!MatchService);
+    console.log('MatchService.createMatch available:', !!MatchService?.createMatch);
     
-    // TODO: Call API to create match
-    const response = await fetch('/api/matches', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(matchData),
-    });
+    // Test if MatchService is imported correctly
+    if (!MatchService) {
+      throw new Error('MatchService is not available');
+    }
     
-    if (response.ok) {
-      const match = await response.json();
-      console.log('Match created successfully:', match);
+    if (!MatchService.createMatch) {
+      throw new Error('MatchService.createMatch method is not available');
+    }
+    
+    // Use MatchService to create match
+    console.log('Calling MatchService.createMatch...');
+    const response = await MatchService.createMatch(matchData);
+    console.log('MatchService response:', response);
+    
+    if (response && response.success && response.data) {
+      console.log('Match created successfully:', response.data);
       
-      // Navigate to the new match page instead of emitting an event
-      router.push(`/matches/${match._id}`);
+      // Navigate to the new match page
+      router.push(`/matches/${response.data._id}`);
     } else {
-      console.error('Failed to create match');
+      console.error('Response indicates failure:', response);
+      throw new Error('Failed to create match - response indicates failure');
     }
   } catch (error) {
     console.error('Error starting match:', error);
-    alert('Failed to start match. Please try again.');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    alert(`Failed to start match: ${error.message}. Please check the console for details.`);
   }
 }
 
