@@ -4,6 +4,7 @@ import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
 import { TimeoutModel } from '../models/Timeout';
 import { GameProgressionService } from '../services/gameProgressionService';
+import { ScoreboardBroadcastService } from '../services/scoreboardBroadcastService';
 
 // Create a new set
 export const createSet = async (req: Request, res: Response): Promise<void> => {
@@ -176,6 +177,14 @@ export const completeSet = async (req: Request, res: Response): Promise<void> =>
     // Process game progression explicitly using the service
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processManualSetCompletion(setId, winner);
+    
+    // Broadcast scoreboard updates
+    if (progressionResult.set) {
+      await ScoreboardBroadcastService.broadcastSetUpdate(progressionResult.set, progressionResult.newSetCreated);
+    }
+    if (progressionResult.matchCompleted && progressionResult.match) {
+      await ScoreboardBroadcastService.broadcastMatchUpdate(progressionResult.match);
+    }
     
     // Return the set along with updated match information
     res.json({

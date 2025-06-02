@@ -3,6 +3,7 @@ import { GoalModel } from '../models/Goal';
 import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
 import { GameProgressionService } from '../services/gameProgressionService';
+import { ScoreboardBroadcastService } from '../services/scoreboardBroadcastService';
 
 // Create a new goal
 export const createGoal = async (req: Request, res: Response): Promise<void> => {
@@ -60,6 +61,9 @@ export const createGoal = async (req: Request, res: Response): Promise<void> => 
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processGoalProgression(goal);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastGoal(goal, progressionResult);
     
     // Populate the goal with match and set data for response
     const populatedGoal = await GoalModel.findById(goal._id)
@@ -205,6 +209,9 @@ export const voidGoal = async (req: Request, res: Response): Promise<void> => {
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processGoalVoidingProgression(goal);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastGoal(goal, progressionResult);
 
     // Return the goal along with updated set and match information
     res.json({
@@ -244,6 +251,9 @@ export const unvoidGoal = async (req: Request, res: Response): Promise<void> => 
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processGoalVoidingProgression(goal);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastGoal(goal, progressionResult);
 
     // Return the goal along with updated set and match information
     res.json({

@@ -118,14 +118,18 @@ export interface ServerToClientEvents {
   message: (msg: ChatMessage) => void;
   // Scoreboard events
   'scoreboard:data': (data: ScoreboardData) => void;
+  'scoreboard:authenticated': (data: ScoreboardData) => void;
   'scoreboard:goal': (event: GoalEvent) => void;
   'scoreboard:timeout': (event: TimeoutEvent) => void;
   'scoreboard:set_update': (event: SetEvent) => void;
   'scoreboard:match_update': (event: MatchEvent) => void;
   'scoreboard:view_change': (event: ViewChangeEvent) => void;
+  'scoreboard:view_changed': (event: ViewChangeEvent) => void;
   'scoreboard:error': (error: { message: string; code: string }) => void;
   'scoreboard:joined': (data: { matchId: string; sessionId: string }) => void;
   'scoreboard:left': (data: { matchId: string; sessionId: string }) => void;
+  'scoreboard:viewer_joined': (data: { matchId: string; sessionId: string }) => void;
+  'scoreboard:viewer_left': (data: { matchId: string; sessionId: string }) => void;
 }
 
 export interface ClientToServerEvents {

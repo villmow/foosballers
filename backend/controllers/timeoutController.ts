@@ -3,6 +3,7 @@ import { MatchModel } from '../models/Match';
 import { SetModel } from '../models/Set';
 import { TimeoutModel } from '../models/Timeout';
 import { GameProgressionService } from '../services/gameProgressionService';
+import { ScoreboardBroadcastService } from '../services/scoreboardBroadcastService';
 
 // Create a new timeout
 export const createTimeout = async (req: Request, res: Response): Promise<void> => {
@@ -76,6 +77,9 @@ export const createTimeout = async (req: Request, res: Response): Promise<void> 
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processTimeoutProgression(timeout);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastTimeout(timeout, progressionResult);
     
     // Populate the timeout with match and set data for response
     const populatedTimeout = await TimeoutModel.findById(timeout._id)
@@ -266,6 +270,9 @@ export const voidTimeout = async (req: Request, res: Response): Promise<void> =>
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processTimeoutVoidingProgression(timeout);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastTimeout(timeout, progressionResult);
 
     // Return the timeout along with updated set and match information
     res.json({
@@ -305,6 +312,9 @@ export const unvoidTimeout = async (req: Request, res: Response): Promise<void> 
     // Process game progression explicitly
     const progressionService = new GameProgressionService();
     const progressionResult = await progressionService.processTimeoutVoidingProgression(timeout);
+    
+    // Broadcast scoreboard updates
+    await ScoreboardBroadcastService.broadcastTimeout(timeout, progressionResult);
 
     // Return the timeout along with updated set and match information
     res.json({

@@ -105,7 +105,7 @@ Polling Fallback:
 10. Verify integration with existing authentication system
 
 # Subtasks:
-## 1. Extend WebSocket Server with Scoreboard Events [pending]
+## 1. Extend WebSocket Server with Scoreboard Events [done]
 ### Dependencies: None
 ### Description: Extend the existing Socket.io server to handle scoreboard-specific events and room management for individual matches.
 ### Details:
@@ -117,19 +117,6 @@ Polling Fallback:
 6. Add error handling and logging for scoreboard WebSocket connections
 7. Update shared-types.ts with new WebSocket event interfaces
 
-# Test Strategy:
-1. Test WebSocket connection establishment
-2. Verify that scoreboard updates in real-time when scores change
-3. Test fallback to polling when WebSockets are unavailable
-4. Verify that unique session URLs work correctly
-5. Test QR code generation and scanning
-6. Verify that scoreboard is responsive on different devices
-7. Test performance with multiple concurrent viewers
-8. Verify that all scoreboard views display correctly
-9. Test reconnection behavior after connection loss
-10. Verify that page title updates with current score
-
-# Subtasks:
 ## 2. Implement Scoreboard Data Service [pending]
 ### Dependencies: 7.1
 ### Description: Create a service layer that transforms existing Match/Set data into scoreboard format and manages scoreboard sessions.
