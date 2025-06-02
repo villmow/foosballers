@@ -509,7 +509,7 @@
             1
           ],
           "details": "1. Create ScoreboardService class that works with existing data models\n2. Implement methods to generate ScoreboardData from Match and Set documents\n3. Create session management for unique scoreboard URLs with expiration\n4. Implement data transformation methods for different scoreboard views\n5. Add caching layer for frequently accessed scoreboard data\n6. Create methods to handle real-time data updates from GameProgressionService\n7. Implement scoreboard configuration management (view preferences, etc.)",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Write unit tests for data transformation methods with various match states. Test session management and URL generation. Verify caching behavior and data consistency."
         },
         {
@@ -521,7 +521,7 @@
             2
           ],
           "details": "1. Modify GameProgressionService to emit scoreboard events after processing\n2. Create event handlers that transform progression results into scoreboard updates\n3. Implement selective broadcasting to only relevant scoreboard viewers\n4. Add throttling mechanism to prevent excessive updates\n5. Create update queuing system for offline scoreboards\n6. Implement conflict resolution for simultaneous updates\n7. Add monitoring for WebSocket broadcast performance",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test with multiple connected clients to verify all clients receive updates. Simulate high-frequency match events to test throttling. Verify that updates are only sent to clients watching the specific match."
         },
         {

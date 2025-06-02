@@ -117,7 +117,7 @@ Polling Fallback:
 6. Add error handling and logging for scoreboard WebSocket connections
 7. Update shared-types.ts with new WebSocket event interfaces
 
-## 2. Implement Scoreboard Data Service [pending]
+## 2. Implement Scoreboard Data Service [done]
 ### Dependencies: 7.1
 ### Description: Create a service layer that transforms existing Match/Set data into scoreboard format and manages scoreboard sessions.
 ### Details:
@@ -129,7 +129,7 @@ Polling Fallback:
 6. Create methods to handle real-time data updates from GameProgressionService
 7. Implement scoreboard configuration management (view preferences, etc.)
 
-## 3. Integrate Real-time Updates with GameProgressionService [pending]
+## 3. Integrate Real-time Updates with GameProgressionService [done]
 ### Dependencies: 7.1, 7.2
 ### Description: Hook into the existing GameProgressionService to broadcast scoreboard updates when match events occur.
 ### Details:

@@ -12,9 +12,28 @@ interface ScoreboardSession {
   bannerText?: string;
 }
 
+interface CacheEntry<T> {
+  data: T;
+  timestamp: Date;
+  ttl: number;
+}
+
+interface ScoreboardCache {
+  scoreboardData: Map<string, CacheEntry<ScoreboardData>>;
+  matchData: Map<string, CacheEntry<any>>;
+}
+
 export class ScoreboardService {
   private static sessions: Map<string, ScoreboardSession> = new Map();
   private static readonly SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+  
+  // Caching layer for frequently accessed scoreboard data
+  private static cache: ScoreboardCache = {
+    scoreboardData: new Map(),
+    matchData: new Map()
+  };
+  private static readonly CACHE_TTL = 30 * 1000; // 30 seconds TTL for scoreboard data
+  private static readonly MATCH_CACHE_TTL = 60 * 1000; // 1 minute TTL for match data
 
   /**
    * Create a new scoreboard session for a match
@@ -81,6 +100,13 @@ export class ScoreboardService {
    */
   static async generateScoreboardData(matchId: string, sessionId?: string): Promise<ScoreboardData | null> {
     try {
+      // Check cache first for performance
+      const cacheKey = `${matchId}:${sessionId || 'default'}`;
+      const cached = this.getFromCache(this.cache.scoreboardData, cacheKey);
+      if (cached) {
+        return cached;
+      }
+
       const match = await MatchModel.findById(matchId);
       if (!match) return null;
 
@@ -153,6 +179,9 @@ export class ScoreboardService {
         bannerText
       };
 
+      // Cache the result
+      this.setInCache(this.cache.scoreboardData, cacheKey, scoreboardData, this.CACHE_TTL);
+
       return scoreboardData;
     } catch (error) {
       console.error('Error generating scoreboard data:', error);
@@ -172,11 +201,17 @@ export class ScoreboardService {
    */
   private static cleanupExpiredSessions(): void {
     const now = new Date();
-    for (const [sessionId, session] of this.sessions.entries()) {
+    const sessionsToDelete: string[] = [];
+    
+    this.sessions.forEach((session, sessionId) => {
       if (now > session.expiresAt) {
-        this.sessions.delete(sessionId);
+        sessionsToDelete.push(sessionId);
       }
-    }
+    });
+    
+    sessionsToDelete.forEach(sessionId => {
+      this.sessions.delete(sessionId);
+    });
   }
 
   /**
@@ -192,5 +227,128 @@ export class ScoreboardService {
    */
   static removeSession(sessionId: string): boolean {
     return this.sessions.delete(sessionId);
+  }
+
+  /**
+   * Cache helper methods
+   */
+  private static setInCache<T>(cache: Map<string, CacheEntry<T>>, key: string, data: T, ttl: number): void {
+    cache.set(key, {
+      data,
+      timestamp: new Date(),
+      ttl
+    });
+  }
+
+  private static getFromCache<T>(cache: Map<string, CacheEntry<T>>, key: string): T | null {
+    const entry = cache.get(key);
+    if (!entry) return null;
+
+    const now = new Date();
+    const age = now.getTime() - entry.timestamp.getTime();
+    
+    if (age > entry.ttl) {
+      cache.delete(key);
+      return null;
+    }
+
+    return entry.data;
+  }
+
+  /**
+   * Invalidate cache for a specific match (called when match data changes)
+   */
+  static invalidateMatchCache(matchId: string): void {
+    // Remove all cache entries related to this match
+    const keysToDelete: string[] = [];
+    this.cache.scoreboardData.forEach((entry, key) => {
+      if (key.startsWith(`${matchId}:`)) {
+        keysToDelete.push(key);
+      }
+    });
+    
+    keysToDelete.forEach(key => {
+      this.cache.scoreboardData.delete(key);
+    });
+    
+    // Remove match-specific data cache
+    this.cache.matchData.delete(matchId);
+  }
+
+  /**
+   * Clear all expired cache entries
+   */
+  static cleanupCache(): void {
+    const now = new Date();
+    const scoreboardKeysToDelete: string[] = [];
+    const matchKeysToDelete: string[] = [];
+    
+    this.cache.scoreboardData.forEach((entry, key) => {
+      const age = now.getTime() - entry.timestamp.getTime();
+      if (age > entry.ttl) {
+        scoreboardKeysToDelete.push(key);
+      }
+    });
+    
+    this.cache.matchData.forEach((entry, key) => {
+      const age = now.getTime() - entry.timestamp.getTime();
+      if (age > entry.ttl) {
+        matchKeysToDelete.push(key);
+      }
+    });
+    
+    scoreboardKeysToDelete.forEach(key => {
+      this.cache.scoreboardData.delete(key);
+    });
+    
+    matchKeysToDelete.forEach(key => {
+      this.cache.matchData.delete(key);
+    });
+  }
+
+  /**
+   * Get cache statistics (for monitoring)
+   */
+  static getCacheStats(): { 
+    scoreboardEntries: number; 
+    matchEntries: number; 
+    totalSize: number;
+    oldestEntry?: Date;
+  } {
+    let oldestEntry: Date | undefined;
+    let totalSize = 0;
+    
+    this.cache.scoreboardData.forEach((entry) => {
+      totalSize++;
+      if (!oldestEntry || entry.timestamp < oldestEntry) {
+        oldestEntry = entry.timestamp;
+      }
+    });
+    
+    this.cache.matchData.forEach((entry) => {
+      totalSize++;
+      if (!oldestEntry || entry.timestamp < oldestEntry) {
+        oldestEntry = entry.timestamp;
+      }
+    });
+    
+    return {
+      scoreboardEntries: this.cache.scoreboardData.size,
+      matchEntries: this.cache.matchData.size,
+      totalSize,
+      oldestEntry
+    };
+  }
+
+  /**
+   * Handle real-time data updates from GameProgressionService
+   * This method should be called when match state changes to invalidate cache
+   */
+  static handleMatchUpdate(matchId: string): void {
+    // Invalidate cache for the updated match
+    this.invalidateMatchCache(matchId);
+    
+    // Clean up expired cache entries
+    this.cleanupCache();
   }
 }
