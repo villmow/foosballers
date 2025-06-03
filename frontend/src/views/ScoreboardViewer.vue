@@ -202,7 +202,7 @@
           </div>
 
           <!-- Match Completed -->
-          <div v-if="scoreboardData.match.status === 'completed' && scoreboardData.match.winner !== undefined" class="text-center mt-6">
+          <div v-if="scoreboardData.match.status === 'completed' && scoreboardData.match.winner !== undefined && scoreboardData.match.winner !== null" class="text-center mt-6">
             <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
               <h3 class="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
                 Match Completed!

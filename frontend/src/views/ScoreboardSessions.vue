@@ -169,23 +169,12 @@ const loadMatches = async () => {
 
 const loadAllSessions = async () => {
   try {
-    const allSessions: ScoreboardSession[] = [];
-    
-    for (const match of matches.value) {
-      try {
-        const response = await ScoreboardService.getMatchSessions(match._id);
-        if (response.success) {
-          allSessions.push(...response.data.sessions);
-        }
-      } catch (error) {
-        // Skip matches that error (might not have sessions)
-        console.warn(`Failed to load sessions for match ${match._id}:`, error);
-      }
+    const response = await ScoreboardService.getAllSessions();
+    if (response.success) {
+      sessions.value = response.data.sessions.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
     }
-    
-    sessions.value = allSessions.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
   } catch (error) {
     console.error('Error loading sessions:', error);
   }

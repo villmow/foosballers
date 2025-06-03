@@ -177,6 +177,36 @@ router.get('/match/:matchId/sessions', requireAuth, async (req: Request, res: Re
 });
 
 /**
+ * GET /api/scoreboard/sessions
+ * Get all active sessions (regardless of match assignment)
+ */
+router.get('/sessions', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const sessions = ScoreboardService.getAllSessions();
+    
+    res.json({
+      success: true,
+      data: {
+        sessionCount: sessions.length,
+        sessions: sessions.map(session => ({
+          sessionId: session.sessionId,
+          matchId: session.matchId,
+          currentView: session.currentView,
+          createdAt: session.createdAt,
+          expiresAt: session.expiresAt,
+          bannerText: session.bannerText
+        }))
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    });
+  }
+});
+
+/**
  * GET /api/scoreboard/match/:matchId
  * Get scoreboard data for a match (without session)
  */

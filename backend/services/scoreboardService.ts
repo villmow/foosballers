@@ -245,6 +245,14 @@ export class ScoreboardService {
   }
 
   /**
+   * Get all active sessions (regardless of match assignment)
+   */
+  static getAllSessions(): ScoreboardSession[] {
+    this.cleanupExpiredSessions();
+    return Array.from(this.sessions.values());
+  }
+
+  /**
    * Remove a session
    */
   static removeSession(sessionId: string): boolean {

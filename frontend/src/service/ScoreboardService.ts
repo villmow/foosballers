@@ -54,6 +54,14 @@ export interface SessionsForMatchResponse {
   };
 }
 
+export interface AllSessionsResponse {
+  success: boolean;
+  data: {
+    sessionCount: number;
+    sessions: ScoreboardSession[];
+  };
+}
+
 export class ScoreboardService {
   private static readonly BASE_URL = '/api/scoreboard';
 
@@ -165,6 +173,26 @@ export class ScoreboardService {
       return await response.json();
     } catch (error) {
       console.error('Error fetching match sessions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all active sessions (regardless of match assignment, requires authentication)
+   */
+  static async getAllSessions(): Promise<AllSessionsResponse> {
+    try {
+      const response = await AuthService.authenticatedRequest(`${this.BASE_URL}/sessions`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch all sessions: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching all sessions:', error);
       throw error;
     }
   }
