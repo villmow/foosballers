@@ -85,12 +85,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import { ScoreboardService, type ScoreboardSession } from '@/service/ScoreboardService';
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import { useToast } from 'primevue/usetoast';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
   visible: boolean;

@@ -233,12 +233,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
-import Button from 'primevue/button';
-import Tag from 'primevue/tag';
-import ProgressSpinner from 'primevue/progressspinner';
 import { ScoreboardService, type ScoreboardData } from '@/service/ScoreboardService';
+import Button from 'primevue/button';
+import ProgressSpinner from 'primevue/progressspinner';
+import Tag from 'primevue/tag';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

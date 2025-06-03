@@ -202,15 +202,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import Dialog from 'primevue/dialog';
+import { MatchService, type Match } from '@/service/MatchService';
+import { ScoreboardService, type ScoreboardSession } from '@/service/ScoreboardService';
 import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import RadioButton from 'primevue/radiobutton';
-import Dropdown from 'primevue/dropdown';
-import { ScoreboardService, type ScoreboardSession } from '@/service/ScoreboardService';
-import { MatchService, type Match } from '@/service/MatchService';
+import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface Props {
   visible: boolean;

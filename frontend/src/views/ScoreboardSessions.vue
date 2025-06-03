@@ -119,18 +119,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Tag from 'primevue/tag';
-import ProgressSpinner from 'primevue/progressspinner';
-import ConfirmDialog from 'primevue/confirmdialog';
-import { ScoreboardService, type ScoreboardSession } from '@/service/ScoreboardService';
-import { MatchService, type Match } from '@/service/MatchService';
 import CreateSessionDialog from '@/components/scoreboard/CreateSessionDialog.vue';
 import SessionSettingsDialog from '@/components/scoreboard/SessionSettingsDialog.vue';
+import { MatchService, type Match } from '@/service/MatchService';
+import { ScoreboardService, type ScoreboardSession } from '@/service/ScoreboardService';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import ConfirmDialog from 'primevue/confirmdialog';
+import ProgressSpinner from 'primevue/progressspinner';
+import Tag from 'primevue/tag';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
+import { onMounted, ref } from 'vue';
 
 const confirm = useConfirm();
 const toast = useToast();
