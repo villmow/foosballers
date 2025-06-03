@@ -26,6 +26,11 @@ const router = createRouter({
                     props: true
                 },
                 {
+                    path: '/scoreboard-sessions',
+                    name: 'scoreboard-sessions',
+                    component: () => import('@/views/ScoreboardSessions.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')
@@ -165,6 +170,13 @@ const router = createRouter({
             path: '/auth/reset-password',
             name: 'resetPassword',
             component: () => import('@/views/pages/auth/ResetPassword.vue')
+        },
+        {
+            path: '/scoreboard/:sessionId',
+            name: 'scoreboard-viewer',
+            component: () => import('@/views/ScoreboardViewer.vue'),
+            props: true,
+            meta: { requiresAuth: false }
         }
     ]
 });

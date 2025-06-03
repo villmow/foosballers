@@ -5,7 +5,7 @@ import { ScoreboardData } from '../shared-types';
 
 interface ScoreboardSession {
   sessionId: string;
-  matchId: string;
+  matchId?: string;
   createdAt: Date;
   expiresAt: Date;
   currentView: 'default' | 'detailed' | 'banner';
@@ -38,17 +38,20 @@ export class ScoreboardService {
   /**
    * Create a new scoreboard session for a match
    */
-  static createSession(matchId: string): ScoreboardSession {
+  static createSession(matchId?: string): ScoreboardSession {
     const sessionId = this.generateSessionId();
     const now = new Date();
     
     const session: ScoreboardSession = {
       sessionId,
-      matchId,
       createdAt: now,
       expiresAt: new Date(now.getTime() + this.SESSION_DURATION),
       currentView: 'default'
     };
+
+    if (matchId) {
+      session.matchId = matchId;
+    }
 
     this.sessions.set(sessionId, session);
     this.cleanupExpiredSessions();
@@ -75,9 +78,17 @@ export class ScoreboardService {
   /**
    * Validate if a session can access a specific match
    */
-  static validateSession(sessionId: string, matchId: string): boolean {
+  static validateSession(sessionId: string, matchId?: string): boolean {
     const session = this.getSession(sessionId);
-    return session !== null && session.matchId === matchId;
+    if (!session) return false;
+    
+    // If no matchId is provided or session has no match, check if session exists
+    if (!matchId || !session.matchId) {
+      return true;
+    }
+    
+    // If both exist, ensure they match
+    return session.matchId === matchId;
   }
 
   /**
@@ -92,6 +103,17 @@ export class ScoreboardService {
       session.bannerText = bannerText;
     }
 
+    return true;
+  }
+
+  /**
+   * Assign a match to an existing session
+   */
+  static assignMatchToSession(sessionId: string, matchId: string): boolean {
+    const session = this.getSession(sessionId);
+    if (!session) return false;
+
+    session.matchId = matchId;
     return true;
   }
 

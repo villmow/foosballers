@@ -10,7 +10,10 @@ const model = ref([
     },
     {
         label: 'Foosball',
-        items: [{ label: 'Matches', icon: 'pi pi-fw pi-list', to: '/matches' }]
+        items: [
+            { label: 'Matches', icon: 'pi pi-fw pi-list', to: '/matches' },
+            { label: 'Scoreboard Sessions', icon: 'pi pi-fw pi-video', to: '/scoreboard-sessions' }
+        ]
     },
     {
         label: 'UI Components',

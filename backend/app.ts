@@ -122,17 +122,23 @@ io.on('connection', (socket: ScoreboardSocket) => {
       const matchId = data.matchId;
       const sessionId = validation.sessionId!;
       
-      // Join match and session rooms
-      const matchRoom = getMatchRoom(matchId);
+      // Join session room (always) and match room (if matchId exists)
       const sessionRoom = getSessionRoom(sessionId);
-      
-      await socket.join(matchRoom);
       await socket.join(sessionRoom);
       
-      console.log(`Socket ${socket.id} joined scoreboard rooms: ${matchRoom}, ${sessionRoom}`);
+      if (matchId) {
+        const matchRoom = getMatchRoom(matchId);
+        await socket.join(matchRoom);
+        console.log(`Socket ${socket.id} joined scoreboard rooms: ${matchRoom}, ${sessionRoom}`);
+      } else {
+        console.log(`Socket ${socket.id} joined session room: ${sessionRoom} (no match assigned)`);
+      }
 
-      // Get initial scoreboard data
-      const scoreboardData = await ScoreboardService.generateScoreboardData(matchId, sessionId);
+      // Get initial scoreboard data only if matchId exists
+      let scoreboardData = null;
+      if (matchId) {
+        scoreboardData = await ScoreboardService.generateScoreboardData(matchId, sessionId);
+      }
       
       if (scoreboardData) {
         // Send initial data to the joining client
@@ -142,13 +148,19 @@ io.on('connection', (socket: ScoreboardSocket) => {
         socket.emit('scoreboard:joined', { matchId, sessionId });
         
         // Notify other clients in the match room about the new viewer
+        const matchRoom = getMatchRoom(matchId);
         socket.to(matchRoom).emit('scoreboard:viewer_joined', { matchId, sessionId });
         
         callback?.({ success: true, data: scoreboardData });
-      } else {
+      } else if (matchId) {
+        // Match exists but no data could be generated
         const error = { message: 'Failed to get scoreboard data', code: 'DATA_ERROR' };
         socket.emit('scoreboard:error', error);
         callback?.({ success: false, error: 'Failed to get scoreboard data' });
+      } else {
+        // No match assigned to session - this is valid
+        socket.emit('scoreboard:joined', { matchId: null, sessionId });
+        callback?.({ success: true, data: null, message: 'Session joined but no match assigned' });
       }
     } catch (error) {
       console.error('Error handling scoreboard:join:', error);

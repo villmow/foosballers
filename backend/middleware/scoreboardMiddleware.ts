@@ -32,10 +32,12 @@ export const validateScoreboardJoin = async (
   data: ScoreboardJoinData
 ): Promise<{ success: boolean; error?: string; sessionId?: string }> => {
   try {
-    // Validate match exists
-    const match = await MatchModel.findById(data.matchId);
-    if (!match) {
-      return { success: false, error: 'Match not found' };
+    // Validate match exists if matchId is provided
+    if (data.matchId) {
+      const match = await MatchModel.findById(data.matchId);
+      if (!match) {
+        return { success: false, error: 'Match not found' };
+      }
     }
 
     let sessionId = data.sessionId;

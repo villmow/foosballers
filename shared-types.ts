@@ -104,14 +104,14 @@ export interface ViewChangeEvent {
 }
 
 export interface ScoreboardJoinData {
-  matchId: string;
+  matchId?: string;
   sessionId?: string;
   view?: 'default' | 'detailed' | 'banner';
 }
 
 export interface ScoreboardAuthData {
   sessionId: string;
-  matchId: string;
+  matchId?: string;
 }
 
 export interface ServerToClientEvents {
@@ -124,7 +124,7 @@ export interface ServerToClientEvents {
   'scoreboard:match_update': (event: MatchEvent) => void;
   'scoreboard:view_change': (event: ViewChangeEvent) => void;
   'scoreboard:error': (error: { message: string; code: string }) => void;
-  'scoreboard:joined': (data: { matchId: string; sessionId: string }) => void;
+  'scoreboard:joined': (data: { matchId?: string; sessionId: string }) => void;
   'scoreboard:left': (data: { matchId: string; sessionId: string }) => void;
 }
 

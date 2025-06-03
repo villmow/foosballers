@@ -13,11 +13,6 @@ router.post('/session', async (req: Request, res: Response): Promise<void> => {
   try {
     const { matchId } = req.body;
 
-    if (!matchId) {
-      res.status(400).json({ success: false, error: 'matchId is required' });
-      return;
-    }
-
     const session = ScoreboardService.createSession(matchId);
     
     res.status(201).json({
@@ -46,6 +41,17 @@ router.get('/session/:sessionId', async (req: Request, res: Response): Promise<v
       return;
     }
 
+    // If session has no match assigned, return session info without scoreboard data
+    if (!session.matchId) {
+      res.json({
+        success: true,
+        session,
+        data: null,
+        message: 'Session exists but no match assigned'
+      });
+      return;
+    }
+
     const scoreboardData = await ScoreboardService.generateScoreboardData(session.matchId, sessionId);
     if (!scoreboardData) {
       res.status(404).json({ success: false, error: 'Match data not found' });
@@ -54,6 +60,7 @@ router.get('/session/:sessionId', async (req: Request, res: Response): Promise<v
 
     res.json({
       success: true,
+      session,
       data: scoreboardData
     });
   } catch (error) {
@@ -90,11 +97,15 @@ router.put('/session/:sessionId/view', async (req: Request, res: Response): Prom
       return;
     }
 
-    // Get updated scoreboard data
-    const scoreboardData = await ScoreboardService.generateScoreboardData(session.matchId, sessionId);
+    // Get updated scoreboard data only if session has a match
+    let scoreboardData = null;
+    if (session.matchId) {
+      scoreboardData = await ScoreboardService.generateScoreboardData(session.matchId, sessionId);
+    }
 
     res.json({
       success: true,
+      session: ScoreboardService.getSession(sessionId),
       data: scoreboardData
     });
   } catch (error) {
@@ -209,6 +220,39 @@ router.post('/cleanup', requireAuth, async (req: Request, res: Response): Promis
     });
   } catch (error) {
     res.status(400).json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    });
+  }
+});
+
+/**
+ * PUT /api/scoreboard/session/:sessionId/match
+ * Assign a match to an existing scoreboard session
+ */
+router.put('/session/:sessionId/match', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { sessionId } = req.params;
+    const { matchId } = req.body;
+
+    if (!matchId) {
+      res.status(400).json({ success: false, error: 'matchId is required' });
+      return;
+    }
+
+    const success = ScoreboardService.assignMatchToSession(sessionId, matchId);
+    if (!success) {
+      res.status(404).json({ success: false, error: 'Session not found or expired' });
+      return;
+    }
+
+    const session = ScoreboardService.getSession(sessionId);
+    res.json({
+      success: true,
+      session
+    });
+  } catch (error) {
+    res.status(500).json({ 
       success: false, 
       error: error instanceof Error ? error.message : String(error) 
     });
